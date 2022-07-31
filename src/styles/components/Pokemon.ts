@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
-const handleColorType = (type) => {
+const handleColorType = (type: string) => {
+    console.log('color', type);
     switch (type) {
         case 'steel':
             return '#F4F4F4';
@@ -41,6 +42,7 @@ const handleColorType = (type) => {
 
 export const Card = styled.div`
     list-style: none;
+    margin: 15px;
     padding: 40px;
     color: #222;
     text-align: center;

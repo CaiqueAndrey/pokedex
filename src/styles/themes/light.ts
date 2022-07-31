@@ -6,6 +6,7 @@ const theme: DefaultTheme = {
   colors: {
     background: '#EFEFBB',
     header:'#D6060B',
+    footer: '#CECECE',
     switchHeader:'#D6060B',
     text: '#FFF',
 

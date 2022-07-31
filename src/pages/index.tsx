@@ -9,6 +9,7 @@ import { Header } from '../components/Header';
 import { Div } from '../styles/pages/Home';
 
 import themeLight from '../styles/themes/light';
+import { Footer } from '../components/Footer';
 
 
 export default function Home() {
@@ -23,10 +24,8 @@ export default function Home() {
           </Head>
 
           <Header />
-
-          <section>
-            <Pokedex/>
-          </section>
+          <Pokedex/>
+          <Footer />
         </Div>
       </ThemeProvider>
     </CalculatorProvider>
