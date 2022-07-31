@@ -9,14 +9,17 @@ interface PropsPokemon {
 }
 
 const Pokemon: React.FC<PropsPokemon> = ({types, pokemonId, pokemonName}) => {
-    const pokemonType = types.map(typeInfo => typeInfo.type.name)
+    
+    const pokemonType = types ? types.map(typeInfo => typeInfo.type.name) : types
+    console.log('type', types);
     // const { actions } = useContext(CalculatorContext);
-    const imgUrl = `https://pokeres.bastionbot.org/images/pokemon/${pokemonId}.png`;
+    // const imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+    const imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
     return (
-        <Card color={types[0].name}>
+        <Card color={types[0].type.name}>
             <CardImage src={imgUrl} alt={pokemonName}/>
             <CardTitle>#{pokemonId} - {pokemonName}</CardTitle>
-            <CardSubtitle>${pokemonType.join(' e ')}</CardSubtitle>
+            <CardSubtitle>{pokemonType.join(' e ')}</CardSubtitle>
         </Card>
     );
 }

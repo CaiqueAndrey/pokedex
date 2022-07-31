@@ -8,6 +8,7 @@ declare module 'styled-components' {
         colors: {
             background: string;
             header: string;
+            footer: string;
             switchHeader: string;
             text: string;
 
