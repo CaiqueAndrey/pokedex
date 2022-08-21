@@ -20,7 +20,6 @@ export function Pokedex() {
             setLoading(true);
             getPokemons(index);
             if(index === 150){
-                
                 setLoading(false);
             }
         }
