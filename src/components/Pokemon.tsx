@@ -11,7 +11,7 @@ interface PropsPokemon {
 const Pokemon: React.FC<PropsPokemon> = ({types, pokemonId, pokemonName}) => {
     
     const pokemonType = types ? types.map(typeInfo => typeInfo.type.name) : types
-    console.log('type', types);
+    // console.log('type', types);
     // const { actions } = useContext(CalculatorContext);
     // const imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
     const imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;

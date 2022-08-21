@@ -7,15 +7,11 @@ interface PokemonsData {
 }
 
 interface PokedexContextData {
-    displayValue: string;
-    firstOperand: number;
-    hasSecondOperand: boolean;
-    operator: string;
-    actions: (valueButton: string) => void;
-    history: Array<string>;
-    resetHistory: () => void;
+    getPokemons: (id: number) => void;
     pokemons: Array<PokemonsData>;
-    setPokemons: Dispatch<SetStateAction<Array<PokemonsData>>>;
+    searchPokemon: (valueSearch: string) => void;
+    filteredPokemons: Array<PokemonsData> | Array<void>;
+    search: string;
 }
 
 interface PokedexProviderProps {
@@ -25,129 +21,38 @@ interface PokedexProviderProps {
 export const PokedexContext = createContext({} as PokedexContextData)
 
 export function PokedexProvider({children}: PokedexProviderProps) {
-    const [displayValue, setDisplayValue] = useState("0");
     const [pokemons, setPokemons] = useState<Array<PokemonsData>>([]);
-    const [firstOperand, setFirstOperand] = useState(null);
-    const [hasSecondOperand, setHasSecondOperand] = useState(false);
-    const [operator, setOperator] = useState(null);
-    const [history, setHistory] = useState([]);
     const [search, setSearch] = useState('');
 
-    function searchPokemon(search: string) {
-        pokemons.filter(poke => poke.name.includes(search));
-    }
+    async function getPokemons(id: number){
 
-    function inputDigit(digit: string) {
-        if (hasSecondOperand === true) {
-            setDisplayValue(digit);
-            setHasSecondOperand(false);
-        } else {
-            setDisplayValue(displayValue === "0" ? digit : displayValue + digit);
-        }
-    }
-
-    function inputDecimal(dot: string) {
-        if (hasSecondOperand === true) {
-            setDisplayValue("0.");
-            setHasSecondOperand(false);
-            return
-        }
-
-        if (!displayValue.includes(dot)) {
-            setDisplayValue(displayValue + dot);
-        }
-    }
-
-    function handleOperator(nextOperator: string) {
-        const inputValue = parseFloat(displayValue);
-        
-        if (operator && hasSecondOperand)  {
-            setOperator(nextOperator);
-            return;
-        }
-
-
-        if (firstOperand == null && !isNaN(inputValue)) {
-            setFirstOperand(inputValue);
-        } else if (operator) {
-            const result = calculate(firstOperand, inputValue, operator);
+        try {
+            let response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+            let pokemon = await response.json();
             
-            setDisplayValue(`${parseFloat(result.toFixed(7))}`);
-            setFirstOperand(result);
-            
-            if(operator !== '=')
-                saveHistory(firstOperand, inputValue, operator, result);
-        }
-
-        setHasSecondOperand(true);
-        setOperator(nextOperator);
-        
-    }
-
-    function calculate(firstOperand: number, secondOperand: number, operator: string) {
-        if (operator === '+') {
-            return firstOperand + secondOperand;
-        } else if (operator === '-') {
-            return firstOperand - secondOperand;
-        } else if (operator === '*') {
-            return firstOperand * secondOperand;
-        } else if (operator === '/') {
-            return firstOperand / secondOperand;
-        }
-        
-        return secondOperand;
-    }
-
-    function saveHistory(firstOperand: number, secondOperand: number, operator: string, result:number) {
-        let item = `${firstOperand} ${operator} ${secondOperand} ${'='} ${result}`;
-        setHistory(()=>history.concat(item));
-    }
-
-    function resetHistory() {
-        setHistory([]);
-    }
-
-    function resetCalculator() {
-        setDisplayValue("0");
-        setFirstOperand(null);
-        setHasSecondOperand(false);
-        setOperator(null);
-    }
-
-
-    function actions(valueButton: string){
-        switch (valueButton) {
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case '=':
-                handleOperator(valueButton);
-            break;
-            case '.':
-                inputDecimal(valueButton);
-            break;
-            case 'all-clear':
-                resetCalculator();
-            break;
-            default:
-            if (Number.isInteger(parseFloat(valueButton))) {
-                inputDigit(valueButton);
-            }
+            return setPokemons(oldPokemons => {
+                return [pokemon, ...oldPokemons].sort((a,b)=> a.id-b.id);
+            });
+        } catch (error) {
+            console.log(error);
         }
     }
+
+    function searchPokemon(valueSearch: string) {
+        setSearch(valueSearch);
+    }
+
+    const filteredPokemons = search.length > 0 
+        ? pokemons.filter(poke => poke.name.includes(search))
+        : [];
 
     return (
         <PokedexContext.Provider value={{
-            displayValue,
-            firstOperand,
-            hasSecondOperand,
-            operator,
-            actions,
-            history,
-            resetHistory,
+            getPokemons,
             pokemons,
-            setPokemons,
+            searchPokemon,
+            filteredPokemons,
+            search
         }}>
             {children}
         </PokedexContext.Provider>

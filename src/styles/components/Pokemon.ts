@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 
 const handleColorType = (type: string) => {
-    console.log('color', type);
     switch (type) {
         case 'steel':
             return '#F4F4F4';
