@@ -1,6 +1,12 @@
-import { createContext, ReactNode, useState } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useState } from "react";
 
-interface CalculatorContextData {
+interface PokemonsData {
+    types: Array<object>;
+    id: string;
+    name: string;
+}
+
+interface PokedexContextData {
     displayValue: string;
     firstOperand: number;
     hasSecondOperand: boolean;
@@ -8,20 +14,28 @@ interface CalculatorContextData {
     actions: (valueButton: string) => void;
     history: Array<string>;
     resetHistory: () => void;
+    pokemons: Array<PokemonsData>;
+    setPokemons: Dispatch<SetStateAction<Array<PokemonsData>>>;
 }
 
-interface CalculatorProviderProps {
+interface PokedexProviderProps {
     children: ReactNode;
 }
 
-export const CalculatorContext = createContext({} as CalculatorContextData)
+export const PokedexContext = createContext({} as PokedexContextData)
 
-export function CalculatorProvider({children}: CalculatorProviderProps) {
+export function PokedexProvider({children}: PokedexProviderProps) {
     const [displayValue, setDisplayValue] = useState("0");
+    const [pokemons, setPokemons] = useState<Array<PokemonsData>>([]);
     const [firstOperand, setFirstOperand] = useState(null);
     const [hasSecondOperand, setHasSecondOperand] = useState(false);
     const [operator, setOperator] = useState(null);
     const [history, setHistory] = useState([]);
+    const [search, setSearch] = useState('');
+
+    function searchPokemon(search: string) {
+        pokemons.filter(poke => poke.name.includes(search));
+    }
 
     function inputDigit(digit: string) {
         if (hasSecondOperand === true) {
@@ -124,16 +138,18 @@ export function CalculatorProvider({children}: CalculatorProviderProps) {
     }
 
     return (
-        <CalculatorContext.Provider value={{
+        <PokedexContext.Provider value={{
             displayValue,
             firstOperand,
             hasSecondOperand,
             operator,
             actions,
             history,
-            resetHistory
+            resetHistory,
+            pokemons,
+            setPokemons,
         }}>
             {children}
-        </CalculatorContext.Provider>
+        </PokedexContext.Provider>
     )
 }

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { CalculatorContext } from '../contexts/CalculatorContext';
+import { PokedexContext } from '../contexts/PokedexContext';
 import { Card, CardImage, CardSubtitle, CardTitle }  from '../styles/components/Pokemon';
 
 interface PropsPokemon {

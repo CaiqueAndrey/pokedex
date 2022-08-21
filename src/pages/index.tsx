@@ -3,7 +3,7 @@ import { GetServerSideProps } from 'next';
 
 import { DefaultTheme, ThemeProvider } from 'styled-components';
 import GlobalStyle from '../styles/globals';
-import { CalculatorProvider } from '../contexts/CalculatorContext';
+import { PokedexProvider } from '../contexts/PokedexContext';
 import { Pokedex } from '../components/Pokedex';
 import { Header } from '../components/Header';
 import { Div } from '../styles/pages/Home';
@@ -15,7 +15,7 @@ import { Footer } from '../components/Footer';
 export default function Home() {
 
   return (
-    <CalculatorProvider>
+    <PokedexProvider>
       <ThemeProvider theme={themeLight}>
         <GlobalStyle />
         <Div>
@@ -28,6 +28,6 @@ export default function Home() {
           <Footer />
         </Div>
       </ThemeProvider>
-    </CalculatorProvider>
+    </PokedexProvider>
   )
 }

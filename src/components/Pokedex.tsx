@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { PokedexContext } from '../contexts/PokedexContext';
 import { Div } from '../styles/components/Pokedex';
 import Pokemon from './Pokemon';
 
 export function Pokedex() {
+    const { pokemons, setPokemons } = useContext(PokedexContext);
 
-    const [pokemons, setPokemons] = useState([]);
+    // const [pokemons, setPokemons] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const types = [{type:{name:'fire'}},{type:{name:'water'}},{type:{name:'grass'}}];
@@ -17,7 +19,6 @@ export function Pokedex() {
                 let pokemon = await response.json();
                 
                 return setPokemons(oldPokemons => {
-
                     return [pokemon, ...oldPokemons].sort((a,b)=> a.id-b.id);
                 });
               } catch (error) {
