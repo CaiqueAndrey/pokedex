@@ -11,18 +11,34 @@ export const Div = styled.div`
     justify-content: space-between;
     align-items: center;
 
-    strong {
-        font-weight: 600;
-        font-size: 3rem;
-        color: ${props => props.theme.colors.text};
-        margin-left: 1rem;
+    span {
+        display: flex;
+        justify-content: space-between;
+        width: 90%;
+
+        strong {
+            font-weight: 600;
+            font-size: 3rem;
+            color: ${props => props.theme.colors.text};
+            margin: 0 1rem;
+        }
+
+        .search {
+            width: 70%;
+            padding: 5px;
+            border: 2px solid #D6060B;
+            border-radius: 5px;
+
+        }
+    
+        svg{
+            width: 2rem;
+            height: 2rem;
+            color: ${props => props.theme.colors.text};
+        }
     }
 
-    svg{
-        width: 2rem;
-        height: 2rem;
-        color: ${props => props.theme.colors.text};
-    }
+    
 
     
     @media screen and (max-width:1400px){

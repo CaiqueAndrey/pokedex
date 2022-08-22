@@ -1,54 +1,17 @@
 import styled from 'styled-components';
+import theme from '../themes/light';
+import { handleColorPokemonType } from '../../utils';
 
-const handleColorType = (type: string) => {
-    console.log('color', type);
-    switch (type) {
-        case 'steel':
-            return '#F4F4F4';
-        case 'fire':
-            return '#FDDFDF';
-        case 'grass':
-            return '#DEFDE0';
-        case 'eletric':
-            return '#FCF7DE';
-        case 'water':
-            return '#DEF3FD';
-        case 'ice':
-            return '#DEF3FD';
-        case 'ground':
-            return '#F4E7DA';
-        case 'rock':
-            return '#D5D5D4';
-        case 'fairy':
-            return '#FCEAFF';
-        case 'poison':
-            return '#98D7A5';
-        case 'bug':
-            return '#F8D5A3';
-        case 'dragon':
-            return '#98B3E6';
-        case 'psychic':
-            return '#EAEDA1';
-        case 'flying':
-            return '#F5F5F5';
-        case 'fighting':
-            return '#E6E0D4';
-        case 'normal':
-            return '#F5F5F5';    
-        default:
-            return '#FFF';
-    }
-}
 
 export const Card = styled.div`
     list-style: none;
     margin: 15px;
-    padding: 40px;
+    padding: 40px 0;
     color: #222;
     text-align: center;
     border-radius: 20px;
     position: relative;
-    background-color: ${({ color }) => handleColorType(color)};
+    background-color: ${({ color }) => handleColorPokemonType(color, 'background')};
 
     &:after {
         content: "";
@@ -67,6 +30,12 @@ export const Card = styled.div`
         animation: bounce 0.5s linear;
     }
 `;
+export const CardDescription = styled.span`
+    display: inline-block;
+    width: 100%;
+    background-color: #1A1617;
+    z-index: 1;
+`;
 
 export const CardTitle = styled.h2`
     text-transform: capitalize;
@@ -75,13 +44,18 @@ export const CardTitle = styled.h2`
 	font-weight: normal;
 	position: relative;
 	z-index: 2;
+    color: #FFF;
 `;
 
-export const CardSubtitle = styled.strong`
-    margin-top: 5px;
-    color: #666;
-    font-weight: lighter;
+export const CardSubtitle = styled.label`
+    text-transform: capitalize;
+    display: inline-block;
+    margin: 5px 5px;
+    padding: 0 10px;
+    background-color: ${({ color }) => handleColorPokemonType(color, 'background')};
+    color: ${({ color }) => handleColorPokemonType(color, 'color')};;
     position: relative;
+    border-radius: 5px;
     z-index: 2;
 `;
 

@@ -6,12 +6,13 @@ export const Div = styled.div`
     margin: 0;
     padding: 2rem;
     background: ${props => props.theme.colors.footer};
-
+    
     display: flex;
     justify-content: center;
     align-items: center;
-
+    
     p {
+        color: #000;
         img{
             width: 5rem;
             height: 2.5rem;

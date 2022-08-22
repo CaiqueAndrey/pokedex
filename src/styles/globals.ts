@@ -14,8 +14,14 @@ export default createGlobalStyle`
   body {
     background: ${props => props.theme.colors.background};
     color: ${props => props.theme.colors.text};
-    background: #EFEFBB;
-    background: linear-gradient(to right, rgb(197, 230, 236), rgb(239, 187, 230));
+    /* background: #EFEFBB;
+    background: linear-gradient(to right, rgb(197, 230, 236), rgb(239, 187, 230)); */
+    background: rgb(255,255,255);
+    background: linear-gradient(
+      90deg, rgba(255,255,255,1) 22%,
+      rgba(160,160,160,1) 100%,
+      rgba(72,72,72,1) 100%
+    );
     color: white;
     margin: 0;
   }

@@ -1,37 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { PokedexContext } from '../contexts/PokedexContext';
 import { Div } from '../styles/components/Pokedex';
 import Pokemon from './Pokemon';
 
 export function Pokedex() {
+    const { 
+        pokemons, 
+        getPokemons, 
+        search, 
+        filteredPokemons 
+    } = useContext(PokedexContext);
 
-    const [pokemons, setPokemons] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const types = [{type:{name:'fire'}},{type:{name:'water'}},{type:{name:'grass'}}];
 
     useEffect(()=> {
-        const getPokemons = async (id: number) => {
-            setLoading(true);
-            try {
-                let response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-                let pokemon = await response.json();
-                
-                return setPokemons(oldPokemons => {
-
-                    return [pokemon, ...oldPokemons].sort((a,b)=> a.id-b.id);
-                });
-              } catch (error) {
-                console.log(error);
-              }
-        }
-
         for (let index = 1; index <= 150; index+= 1) {
+            setLoading(true);
             getPokemons(index);
             if(index === 150){
-                
                 setLoading(false);
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -40,18 +32,30 @@ export function Pokedex() {
                 <>
                     { loading && <div>Carregando...</div> }
                     {
-                        pokemons.length > 0 &&
-                        pokemons.map((pokemon, index) => {
-                            
-                            return (
-                                <Pokemon 
-                                types={pokemon.types}
-                                pokemonId={pokemon.id}
-                                pokemonName={pokemon.name}
-                                key={index}
+                        search.length > 0  ? 
+                        (
+                            filteredPokemons.map((pokemon, index) => {
+                                return (
+                                    <Pokemon 
+                                    types={pokemon.types}
+                                    pokemonId={pokemon.id}
+                                    pokemonName={pokemon.name}
+                                    key={index}
                                     />
-                            )
-                        })
+                                )
+                            })
+                        ) : (
+                            pokemons.map((pokemon, index) => {
+                                return (
+                                    <Pokemon 
+                                    types={pokemon.types}
+                                    pokemonId={pokemon.id}
+                                    pokemonName={pokemon.name}
+                                    key={index}
+                                    />
+                                )
+                            })
+                        )
                     }
                 </>
                 
