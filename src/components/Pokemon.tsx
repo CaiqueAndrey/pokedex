@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { PokedexContext } from '../contexts/PokedexContext';
-import { Card, CardImage, CardSubtitle, CardTitle }  from '../styles/components/Pokemon';
+import { Card, CardDescription, CardImage, CardSubtitle, CardTitle }  from '../styles/components/Pokemon';
 
 interface PropsPokemon {
     types: any;
@@ -18,8 +18,19 @@ const Pokemon: React.FC<PropsPokemon> = ({types, pokemonId, pokemonName}) => {
     return (
         <Card color={types[0].type.name}>
             <CardImage src={imgUrl} alt={pokemonName}/>
-            <CardTitle>#{pokemonId} - {pokemonName}</CardTitle>
-            <CardSubtitle>{pokemonType.join(' e ')}</CardSubtitle>
+            <CardDescription>
+                <CardTitle>#{pokemonId} - {pokemonName}</CardTitle>
+                {
+                    types.map((typeInfo, index) => {
+                        console.log('typeInfo', typeInfo);
+                       return <CardSubtitle
+                                color={typeInfo.type.name}
+                                key={index}>
+                                    {typeInfo.type.name}
+                                </CardSubtitle>
+                    })
+                }
+            </CardDescription>
         </Card>
     );
 }

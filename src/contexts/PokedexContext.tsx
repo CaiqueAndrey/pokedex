@@ -16,7 +16,7 @@ interface PokemonsData {
 interface PokedexContextData {
     getPokemons: (id: number) => void;
     pokemons: Array<PokemonsData>;
-    searchPokemon: (type: string, valueSearch: string) => void;
+    searchPokemon: (valueSearch: string) => void;
     filteredPokemons: Array<PokemonsData> | Array<void>;
     search: string;
 }
@@ -46,25 +46,41 @@ export function PokedexProvider({children}: PokedexProviderProps) {
         }
     } 
 
-    let filteredPokemons = [];
+    const filteredPokemons = search.length > 0 
+        ? pokemons.filter(poke => poke.name.includes(search))
+        : [];
 
-    function searchPokemon(type: string, valueSearch: string) {
-        switch (type) {
+    function searchPokemon(valueSearch: string) {
+        // if (search.length === 0){
+        //     filteredPokemons = [];
+        // }
+        setSearch(valueSearch);
+        // console.log('search seted', search);
+
+        /* switch (type) {
             case 'name':
-                setSearch(valueSearch);     
+                filteredPokemons = [];     
                 filteredPokemons = pokemons.filter(poke => poke.name.includes(search))
                 break;
             case 'type':
-                setSearch(valueSearch);
+                filteredPokemons = [];
+                console.log('search', search);
                 filteredPokemons = pokemons.map(pokemon => {
-                    return pokemon.types.filter(poke => poke.type.name.includes(search))
+                    // console.log('pokemon', pokemon)
+                    pokemon.types.forEach(poke => {
+                        if(poke.type.name.includes(search)){
+                            filteredPokemons.push(pokemon);
+                            // console.log('filteredPokemons', filteredPokemons);
+                        }
+
+                    });
                 });
-                console.log('filtered type', filteredPokemons)
                 break;
         
             default:
                 break;
-        }
+
+        } */
     }
 
 

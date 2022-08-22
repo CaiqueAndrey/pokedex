@@ -1,3 +1,4 @@
 import { initialPokemonsMock } from './mocks';
+import handleColorPokemonType from './handleColorPokemonType';
 
-export { initialPokemonsMock };
+export { initialPokemonsMock, handleColorPokemonType };

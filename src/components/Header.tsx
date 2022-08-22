@@ -15,13 +15,14 @@ export function Header() {
                     type='search' 
                     placeholder='Search the pokémon...' 
                     disabled={pokemons.length === 0}
-                    onChange={e => searchPokemon('name', e.target.value)} 
+                    onChange={e => searchPokemon(e.target.value)} 
                 />
                 {/* <button type='button' disabled={pokemons.length === 0}>Search</button> */}
             </span>
-            <span>
+            {/* <span>
                 <label>Tipo:</label>
-                <select onChange={e => searchPokemon('type',e.target.value)}>
+                <select onChange={e => searchPokemon('type', e.target.value)}>
+                    <option value='' disabled>Selecione um tipo</option>
                     <option value='water'>Água</option>
                     <option value='dragon'>Dragão</option>
                     <option value='eletric'>Elétrico</option>
@@ -39,7 +40,7 @@ export function Header() {
                     <option value='poison'>Veneno</option>
                     <option value='flying'>Voador</option>
                 </select>    
-            </span>            
+            </span>    */}         
         </Div>
     );
 }
