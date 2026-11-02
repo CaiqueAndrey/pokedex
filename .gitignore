@@ -34,3 +34,12 @@ yarn-error.log*
 .vercel
 
 yarn.lock
+
+# tooling
+/playwright-report/
+/test-results/
+*.tsbuildinfo
+.env
+.yarn/*
+!.yarn/releases
+/.next-e2e/

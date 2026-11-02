@@ -1,0 +1,10 @@
+.next
+node_modules
+.yarn
+coverage
+playwright-report
+test-results
+yarn.lock
+project-goal.md
+src/server/pokeapi/fixtures
+.next-e2e
