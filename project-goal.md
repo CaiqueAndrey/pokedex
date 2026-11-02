@@ -619,6 +619,23 @@ tool `simulate_battle` do MCP (§8.7) reaproveita.
   (ex.: 20–40%). Se sair disso, ajustar orçamentos, não o código da batalha.
 - E2E: draftar 6 (com seed fixa), vencer/perder uma batalha, ver a insígnia salva.
 
+### Modos, controles e histórico (refino pós-Fase 8)
+
+- **Modos**, escolhidos ao começar o desafio (mesmo balanceamento, muda a informação visível):
+  - **Fácil:** mostra o time adversário na ordem (quem abre a batalha), a força total dele e os
+    atributos base dos seus Pokémon (no draft e na pré-batalha).
+  - **Difícil:** o time adversário fica escondido até a batalha começar; sem atributos detalhados.
+- **Velocidade da batalha:** lenta, média ou rápida (salva no `localStorage`), além de "pular".
+- **Ordem do time:** setas, arrastar e soltar (mouse) ou tocar em dois Pokémon para trocá-los
+  (toque e teclado).
+- **Percurso e histórico da corrida:** as 5 batalhas como trilha (vencidas, próxima, a enfrentar),
+  com os dois times de cada batalha já disputada. Fica ao lado da pré-batalha e aparece no fim
+  (vitória ou derrota). Um novo desafio começa com o histórico vazio.
+- **Orçamento mais claro:** barra em três partes (usado, reservado para as próximas vagas, livre),
+  o máximo que cabe na rodada e "sobra depois" em cada oferta. As ofertas **sempre** cabem: o jogador
+  nunca precisa desfazer uma escolha.
+- **Arte:** Brock, Insígnia da Rocha, troféu de campeão (vitória) e tela de game over (derrota).
+
 ### Estado e persistência
 
 - Corrida em andamento: `localStorage` (`pokedex:gym-run:v1`, validado com Zod): seed, escolhas,

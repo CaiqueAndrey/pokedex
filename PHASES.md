@@ -12,6 +12,6 @@ Roadmap from `project-goal.md` §11. Each phase ends with a learning note in `do
 | 05  | Detail page               | Done    | [05-pokemon-detail](docs/phases/05-pokemon-detail.md)         |
 | 06  | Favorites and team        | Done    | [06-favorites-and-team](docs/phases/06-favorites-and-team.md) |
 | 07  | Compare and polish        | Done    | [07-compare-and-polish](docs/phases/07-compare-and-polish.md) |
-| 08  | Gym mode (draft, battles) | Planned | — (project-goal.md §8.8)                                      |
+| 08  | Gym mode (draft, battles) | Done    | [08-gym-mode](docs/phases/08-gym-mode.md)                     |
 | 09  | MCP server                | Planned | —                                                             |
 | 10  | Deploy (Vercel)           | Planned | Out of scope until phase 9 is done (project-goal.md §12)      |

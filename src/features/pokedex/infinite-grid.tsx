@@ -21,24 +21,28 @@ export function InfiniteGrid({
   filters: PokedexFilters;
 }) {
   const [items, setItems] = useState(initial);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const sentinel = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
+  // Refs, not state: an observer callback from a stale render must not re-request a page.
+  const loadedPage = useRef(1);
+  const more = useRef(initialHasMore);
 
   const loadMore = useCallback(async () => {
-    if (busy.current || !hasMore) return;
+    if (busy.current || !more.current) return;
     busy.current = true;
     setStatus("loading");
     try {
-      const params = filtersToSearchParams({ ...filters, view: "pages", page: page + 1 });
+      const page = loadedPage.current + 1;
+      const params = filtersToSearchParams({ ...filters, view: "pages", page });
       params.set("list", "1");
       const response = await fetch(`/api/pokemon?${params.toString()}`);
       if (!response.ok) throw new Error(String(response.status));
       const data = (await response.json()) as { results: PokemonSummary[]; hasMore: boolean };
+      loadedPage.current = page;
+      more.current = data.hasMore;
       setItems((current) => [...current, ...data.results]);
-      setPage((current) => current + 1);
       setHasMore(data.hasMore);
       setStatus("idle");
     } catch {
@@ -46,7 +50,7 @@ export function InfiniteGrid({
     } finally {
       busy.current = false;
     }
-  }, [filters, hasMore, page]);
+  }, [filters]);
 
   useEffect(() => {
     const node = sentinel.current;

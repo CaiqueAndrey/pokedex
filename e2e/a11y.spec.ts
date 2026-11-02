@@ -9,6 +9,7 @@ const pages = [
   "/favorites",
   "/team",
   "/compare?a=pikachu&b=raichu",
+  "/gym",
 ];
 
 for (const theme of ["light", "dark"] as const) {

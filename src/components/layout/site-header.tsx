@@ -1,4 +1,4 @@
-import { Heart, Scale, Shuffle, Users } from "lucide-react";
+import { Heart, Scale, Shuffle, Swords, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -7,6 +7,7 @@ import { messages } from "@/config/messages";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
+  { href: "/gym", label: messages.nav.gym, Icon: Swords },
   { href: "/favorites", label: messages.nav.favorites, Icon: Heart },
   { href: "/team", label: messages.nav.team, Icon: Users },
   { href: "/compare", label: messages.nav.compare, Icon: Scale },

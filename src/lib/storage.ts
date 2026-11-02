@@ -26,6 +26,9 @@ export const STORAGE_KEYS = {
   favorites: "pokedex:favorites:v1",
   team: "pokedex:team:v1",
   theme: "pokedex:theme:v1",
+  gymRun: "pokedex:gym-run:v1",
+  badges: "pokedex:badges:v1",
+  battleSpeed: "pokedex:battle-speed:v1",
 } as const;
 
 export const nameListSchema = z.array(z.string().min(1).max(80)).max(2000);
