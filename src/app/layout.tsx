@@ -5,6 +5,7 @@ import { HideOnFocusRoutes } from "@/components/layout/hide-on-routes";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { messages } from "@/config/messages";
+import { siteUrl } from "@/config/site";
 import "./globals.css";
 
 const pixelify = Pixelify_Sans({
@@ -33,6 +34,7 @@ const numbers = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: { default: messages.appName, template: `%s · ${messages.appName}` },
   description: messages.appDescription,
   applicationName: messages.appName,
