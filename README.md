@@ -3,7 +3,7 @@
 A Pokédex built with the [PokeAPI](https://pokeapi.co/): all 1025 species plus alternative forms
 (regional, Mega, Gigantamax), with search and filters in the URL, a rich detail page (stats,
 evolutions, weaknesses), favorites, a team builder with coverage analysis, and a side-by-side
-comparison. The UI is in Portuguese; code and docs are in English.
+comparison, plus a **gym mode**: draft a team and win five simulated battles for the Boulder Badge (`/gym`). The UI is in Portuguese; code and docs are in English.
 
 This is a study project. The plan lives in [`project-goal.md`](project-goal.md) (Portuguese), the
 per-phase learning notes in [`docs/phases/`](docs/phases/) and the status in [`PHASES.md`](PHASES.md).
@@ -24,15 +24,16 @@ yarn dev                     # http://localhost:3000
 
 ## Scripts
 
-| Script                | What it does                                             |
-| --------------------- | -------------------------------------------------------- |
-| `yarn dev` / `build`  | Run / build the app                                      |
-| `yarn lint`           | ESLint                                                   |
-| `yarn format[:check]` | Prettier                                                 |
-| `yarn typecheck`      | `tsc --noEmit`                                           |
-| `yarn test`           | Vitest unit tests (use recorded fixtures, never the API) |
-| `yarn test:e2e`       | Playwright against a local fixtures server               |
-| `yarn fixtures`       | Re-record `src/server/pokeapi/fixtures/pokeapi.json`     |
+| Script                    | What it does                                             |
+| ------------------------- | -------------------------------------------------------- |
+| `yarn dev` / `build`      | Run / build the app                                      |
+| `yarn lint`               | ESLint                                                   |
+| `yarn format[:check]`     | Prettier                                                 |
+| `yarn typecheck`          | `tsc --noEmit`                                           |
+| `yarn test`               | Vitest unit tests (use recorded fixtures, never the API) |
+| `yarn test:e2e`           | Playwright against a local fixtures server               |
+| `yarn fixtures`           | Re-record `src/server/pokeapi/fixtures/pokeapi.json`     |
+| `yarn battle-pool:record` | Re-record the gym draft pool snapshot (GraphQL)          |
 
 ## How it works
 

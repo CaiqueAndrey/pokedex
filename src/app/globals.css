@@ -48,14 +48,15 @@
   --color-primary-600: var(--primary-600);
   --color-primary-700: var(--primary-700);
   --color-on-primary: var(--on-primary);
-  --font-sans: var(--font-pixelify), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-press-start), ui-monospace, monospace;
+  --font-sans: var(--font-numbers), var(--font-pixelify), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-numbers), var(--font-press-start), ui-monospace, monospace;
 
   --animate-float: float 3.5s ease-in-out infinite;
   --animate-fade-up: fade-up 0.5s ease-out both;
   --animate-pan: pan 8s ease-in-out infinite;
   --animate-spin-slow: spin 6s linear infinite;
   --animate-pop: pop 0.3s ease-out;
+  --animate-shine: shine 2.8s linear infinite;
 
   @keyframes float {
     0%,
@@ -83,6 +84,14 @@
     }
     50% {
       background-position: 100% 50%;
+    }
+  }
+  @keyframes shine {
+    from {
+      transform: translateX(-150%) skewX(-20deg);
+    }
+    to {
+      transform: translateX(350%) skewX(-20deg);
     }
   }
   @keyframes pop {

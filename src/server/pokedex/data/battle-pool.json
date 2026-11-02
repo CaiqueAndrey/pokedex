@@ -1,0 +1,7330 @@
+[
+  {
+    "id": 1,
+    "name": "bulbasaur",
+    "family": 1,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 45,
+      "attack": 49,
+      "defense": 49,
+      "special-attack": 65,
+      "special-defense": 65,
+      "speed": 45
+    },
+    "bst": 318
+  },
+  {
+    "id": 2,
+    "name": "ivysaur",
+    "family": 1,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 62,
+      "defense": 63,
+      "special-attack": 80,
+      "special-defense": 80,
+      "speed": 60
+    },
+    "bst": 405
+  },
+  {
+    "id": 3,
+    "name": "venusaur",
+    "family": 1,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 80,
+      "attack": 82,
+      "defense": 83,
+      "special-attack": 100,
+      "special-defense": 100,
+      "speed": 80
+    },
+    "bst": 525
+  },
+  {
+    "id": 4,
+    "name": "charmander",
+    "family": 2,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 39,
+      "attack": 52,
+      "defense": 43,
+      "special-attack": 60,
+      "special-defense": 50,
+      "speed": 65
+    },
+    "bst": 309
+  },
+  {
+    "id": 5,
+    "name": "charmeleon",
+    "family": 2,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 58,
+      "attack": 64,
+      "defense": 58,
+      "special-attack": 80,
+      "special-defense": 65,
+      "speed": 80
+    },
+    "bst": 405
+  },
+  {
+    "id": 6,
+    "name": "charizard",
+    "family": 2,
+    "baby": false,
+    "types": ["fire", "flying"],
+    "stats": {
+      "hp": 78,
+      "attack": 84,
+      "defense": 78,
+      "special-attack": 109,
+      "special-defense": 85,
+      "speed": 100
+    },
+    "bst": 534
+  },
+  {
+    "id": 7,
+    "name": "squirtle",
+    "family": 3,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 44,
+      "attack": 48,
+      "defense": 65,
+      "special-attack": 50,
+      "special-defense": 64,
+      "speed": 43
+    },
+    "bst": 314
+  },
+  {
+    "id": 8,
+    "name": "wartortle",
+    "family": 3,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 59,
+      "attack": 63,
+      "defense": 80,
+      "special-attack": 65,
+      "special-defense": 80,
+      "speed": 58
+    },
+    "bst": 405
+  },
+  {
+    "id": 9,
+    "name": "blastoise",
+    "family": 3,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 79,
+      "attack": 83,
+      "defense": 100,
+      "special-attack": 85,
+      "special-defense": 105,
+      "speed": 78
+    },
+    "bst": 530
+  },
+  {
+    "id": 10,
+    "name": "caterpie",
+    "family": 4,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 45,
+      "attack": 30,
+      "defense": 35,
+      "special-attack": 20,
+      "special-defense": 20,
+      "speed": 45
+    },
+    "bst": 195
+  },
+  {
+    "id": 11,
+    "name": "metapod",
+    "family": 4,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 50,
+      "attack": 20,
+      "defense": 55,
+      "special-attack": 25,
+      "special-defense": 25,
+      "speed": 30
+    },
+    "bst": 205
+  },
+  {
+    "id": 12,
+    "name": "butterfree",
+    "family": 4,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 45,
+      "defense": 50,
+      "special-attack": 90,
+      "special-defense": 80,
+      "speed": 70
+    },
+    "bst": 395
+  },
+  {
+    "id": 13,
+    "name": "weedle",
+    "family": 5,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 40,
+      "attack": 35,
+      "defense": 30,
+      "special-attack": 20,
+      "special-defense": 20,
+      "speed": 50
+    },
+    "bst": 195
+  },
+  {
+    "id": 14,
+    "name": "kakuna",
+    "family": 5,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 45,
+      "attack": 25,
+      "defense": 50,
+      "special-attack": 25,
+      "special-defense": 25,
+      "speed": 35
+    },
+    "bst": 205
+  },
+  {
+    "id": 15,
+    "name": "beedrill",
+    "family": 5,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 65,
+      "attack": 90,
+      "defense": 40,
+      "special-attack": 45,
+      "special-defense": 80,
+      "speed": 75
+    },
+    "bst": 395
+  },
+  {
+    "id": 16,
+    "name": "pidgey",
+    "family": 6,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 40,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 56
+    },
+    "bst": 251
+  },
+  {
+    "id": 17,
+    "name": "pidgeotto",
+    "family": 6,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 63,
+      "attack": 60,
+      "defense": 55,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 71
+    },
+    "bst": 349
+  },
+  {
+    "id": 18,
+    "name": "pidgeot",
+    "family": 6,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 83,
+      "attack": 80,
+      "defense": 75,
+      "special-attack": 70,
+      "special-defense": 70,
+      "speed": 101
+    },
+    "bst": 479
+  },
+  {
+    "id": 19,
+    "name": "rattata",
+    "family": 7,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 30,
+      "attack": 56,
+      "defense": 35,
+      "special-attack": 25,
+      "special-defense": 35,
+      "speed": 72
+    },
+    "bst": 253
+  },
+  {
+    "id": 20,
+    "name": "raticate",
+    "family": 7,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 55,
+      "attack": 81,
+      "defense": 60,
+      "special-attack": 50,
+      "special-defense": 70,
+      "speed": 97
+    },
+    "bst": 413
+  },
+  {
+    "id": 21,
+    "name": "spearow",
+    "family": 8,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 60,
+      "defense": 30,
+      "special-attack": 31,
+      "special-defense": 31,
+      "speed": 70
+    },
+    "bst": 262
+  },
+  {
+    "id": 22,
+    "name": "fearow",
+    "family": 8,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 65,
+      "attack": 90,
+      "defense": 65,
+      "special-attack": 61,
+      "special-defense": 61,
+      "speed": 100
+    },
+    "bst": 442
+  },
+  {
+    "id": 23,
+    "name": "ekans",
+    "family": 9,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 35,
+      "attack": 60,
+      "defense": 44,
+      "special-attack": 40,
+      "special-defense": 54,
+      "speed": 55
+    },
+    "bst": 288
+  },
+  {
+    "id": 24,
+    "name": "arbok",
+    "family": 9,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 95,
+      "defense": 69,
+      "special-attack": 65,
+      "special-defense": 79,
+      "speed": 80
+    },
+    "bst": 448
+  },
+  {
+    "id": 25,
+    "name": "pikachu",
+    "family": 10,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 35,
+      "attack": 55,
+      "defense": 40,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 90
+    },
+    "bst": 320
+  },
+  {
+    "id": 26,
+    "name": "raichu",
+    "family": 10,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 60,
+      "attack": 90,
+      "defense": 55,
+      "special-attack": 90,
+      "special-defense": 80,
+      "speed": 110
+    },
+    "bst": 485
+  },
+  {
+    "id": 27,
+    "name": "sandshrew",
+    "family": 11,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 50,
+      "attack": 75,
+      "defense": 85,
+      "special-attack": 20,
+      "special-defense": 30,
+      "speed": 40
+    },
+    "bst": 300
+  },
+  {
+    "id": 28,
+    "name": "sandslash",
+    "family": 11,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 75,
+      "attack": 100,
+      "defense": 110,
+      "special-attack": 45,
+      "special-defense": 55,
+      "speed": 65
+    },
+    "bst": 450
+  },
+  {
+    "id": 29,
+    "name": "nidoran-f",
+    "family": 12,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 55,
+      "attack": 47,
+      "defense": 52,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 41
+    },
+    "bst": 275
+  },
+  {
+    "id": 30,
+    "name": "nidorina",
+    "family": 12,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 70,
+      "attack": 62,
+      "defense": 67,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 56
+    },
+    "bst": 365
+  },
+  {
+    "id": 31,
+    "name": "nidoqueen",
+    "family": 12,
+    "baby": false,
+    "types": ["poison", "ground"],
+    "stats": {
+      "hp": 90,
+      "attack": 92,
+      "defense": 87,
+      "special-attack": 75,
+      "special-defense": 85,
+      "speed": 76
+    },
+    "bst": 505
+  },
+  {
+    "id": 32,
+    "name": "nidoran-m",
+    "family": 13,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 46,
+      "attack": 57,
+      "defense": 40,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 50
+    },
+    "bst": 273
+  },
+  {
+    "id": 33,
+    "name": "nidorino",
+    "family": 13,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 61,
+      "attack": 72,
+      "defense": 57,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 65
+    },
+    "bst": 365
+  },
+  {
+    "id": 34,
+    "name": "nidoking",
+    "family": 13,
+    "baby": false,
+    "types": ["poison", "ground"],
+    "stats": {
+      "hp": 81,
+      "attack": 102,
+      "defense": 77,
+      "special-attack": 85,
+      "special-defense": 75,
+      "speed": 85
+    },
+    "bst": 505
+  },
+  {
+    "id": 35,
+    "name": "clefairy",
+    "family": 14,
+    "baby": false,
+    "types": ["fairy"],
+    "stats": {
+      "hp": 70,
+      "attack": 45,
+      "defense": 48,
+      "special-attack": 60,
+      "special-defense": 65,
+      "speed": 35
+    },
+    "bst": 323
+  },
+  {
+    "id": 36,
+    "name": "clefable",
+    "family": 14,
+    "baby": false,
+    "types": ["fairy"],
+    "stats": {
+      "hp": 95,
+      "attack": 70,
+      "defense": 73,
+      "special-attack": 95,
+      "special-defense": 90,
+      "speed": 60
+    },
+    "bst": 483
+  },
+  {
+    "id": 37,
+    "name": "vulpix",
+    "family": 15,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 38,
+      "attack": 41,
+      "defense": 40,
+      "special-attack": 50,
+      "special-defense": 65,
+      "speed": 65
+    },
+    "bst": 299
+  },
+  {
+    "id": 38,
+    "name": "ninetales",
+    "family": 15,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 73,
+      "attack": 76,
+      "defense": 75,
+      "special-attack": 81,
+      "special-defense": 100,
+      "speed": 100
+    },
+    "bst": 505
+  },
+  {
+    "id": 39,
+    "name": "jigglypuff",
+    "family": 16,
+    "baby": false,
+    "types": ["normal", "fairy"],
+    "stats": {
+      "hp": 115,
+      "attack": 45,
+      "defense": 20,
+      "special-attack": 45,
+      "special-defense": 25,
+      "speed": 20
+    },
+    "bst": 270
+  },
+  {
+    "id": 40,
+    "name": "wigglytuff",
+    "family": 16,
+    "baby": false,
+    "types": ["normal", "fairy"],
+    "stats": {
+      "hp": 140,
+      "attack": 70,
+      "defense": 45,
+      "special-attack": 85,
+      "special-defense": 50,
+      "speed": 45
+    },
+    "bst": 435
+  },
+  {
+    "id": 41,
+    "name": "zubat",
+    "family": 17,
+    "baby": false,
+    "types": ["poison", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 35,
+      "special-attack": 30,
+      "special-defense": 40,
+      "speed": 55
+    },
+    "bst": 245
+  },
+  {
+    "id": 42,
+    "name": "golbat",
+    "family": 17,
+    "baby": false,
+    "types": ["poison", "flying"],
+    "stats": {
+      "hp": 75,
+      "attack": 80,
+      "defense": 70,
+      "special-attack": 65,
+      "special-defense": 75,
+      "speed": 90
+    },
+    "bst": 455
+  },
+  {
+    "id": 43,
+    "name": "oddish",
+    "family": 18,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 45,
+      "attack": 50,
+      "defense": 55,
+      "special-attack": 75,
+      "special-defense": 65,
+      "speed": 30
+    },
+    "bst": 320
+  },
+  {
+    "id": 44,
+    "name": "gloom",
+    "family": 18,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 65,
+      "defense": 70,
+      "special-attack": 85,
+      "special-defense": 75,
+      "speed": 40
+    },
+    "bst": 395
+  },
+  {
+    "id": 45,
+    "name": "vileplume",
+    "family": 18,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 75,
+      "attack": 80,
+      "defense": 85,
+      "special-attack": 110,
+      "special-defense": 90,
+      "speed": 50
+    },
+    "bst": 490
+  },
+  {
+    "id": 46,
+    "name": "paras",
+    "family": 19,
+    "baby": false,
+    "types": ["bug", "grass"],
+    "stats": {
+      "hp": 35,
+      "attack": 70,
+      "defense": 55,
+      "special-attack": 45,
+      "special-defense": 55,
+      "speed": 25
+    },
+    "bst": 285
+  },
+  {
+    "id": 47,
+    "name": "parasect",
+    "family": 19,
+    "baby": false,
+    "types": ["bug", "grass"],
+    "stats": {
+      "hp": 60,
+      "attack": 95,
+      "defense": 80,
+      "special-attack": 60,
+      "special-defense": 80,
+      "speed": 30
+    },
+    "bst": 405
+  },
+  {
+    "id": 48,
+    "name": "venonat",
+    "family": 20,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 55,
+      "defense": 50,
+      "special-attack": 40,
+      "special-defense": 55,
+      "speed": 45
+    },
+    "bst": 305
+  },
+  {
+    "id": 49,
+    "name": "venomoth",
+    "family": 20,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 70,
+      "attack": 65,
+      "defense": 60,
+      "special-attack": 90,
+      "special-defense": 75,
+      "speed": 90
+    },
+    "bst": 450
+  },
+  {
+    "id": 50,
+    "name": "diglett",
+    "family": 21,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 10,
+      "attack": 55,
+      "defense": 25,
+      "special-attack": 35,
+      "special-defense": 45,
+      "speed": 95
+    },
+    "bst": 265
+  },
+  {
+    "id": 51,
+    "name": "dugtrio",
+    "family": 21,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 35,
+      "attack": 100,
+      "defense": 50,
+      "special-attack": 50,
+      "special-defense": 70,
+      "speed": 120
+    },
+    "bst": 425
+  },
+  {
+    "id": 52,
+    "name": "meowth",
+    "family": 22,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 35,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 90
+    },
+    "bst": 290
+  },
+  {
+    "id": 53,
+    "name": "persian",
+    "family": 22,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 65,
+      "attack": 70,
+      "defense": 60,
+      "special-attack": 65,
+      "special-defense": 65,
+      "speed": 115
+    },
+    "bst": 440
+  },
+  {
+    "id": 54,
+    "name": "psyduck",
+    "family": 23,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 50,
+      "attack": 52,
+      "defense": 48,
+      "special-attack": 65,
+      "special-defense": 50,
+      "speed": 55
+    },
+    "bst": 320
+  },
+  {
+    "id": 55,
+    "name": "golduck",
+    "family": 23,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 80,
+      "attack": 82,
+      "defense": 78,
+      "special-attack": 95,
+      "special-defense": 80,
+      "speed": 85
+    },
+    "bst": 500
+  },
+  {
+    "id": 56,
+    "name": "mankey",
+    "family": 24,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 40,
+      "attack": 80,
+      "defense": 35,
+      "special-attack": 35,
+      "special-defense": 45,
+      "speed": 70
+    },
+    "bst": 305
+  },
+  {
+    "id": 57,
+    "name": "primeape",
+    "family": 24,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 65,
+      "attack": 105,
+      "defense": 60,
+      "special-attack": 60,
+      "special-defense": 70,
+      "speed": 95
+    },
+    "bst": 455
+  },
+  {
+    "id": 58,
+    "name": "growlithe",
+    "family": 25,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 55,
+      "attack": 70,
+      "defense": 45,
+      "special-attack": 70,
+      "special-defense": 50,
+      "speed": 60
+    },
+    "bst": 350
+  },
+  {
+    "id": 59,
+    "name": "arcanine",
+    "family": 25,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 90,
+      "attack": 110,
+      "defense": 80,
+      "special-attack": 100,
+      "special-defense": 80,
+      "speed": 95
+    },
+    "bst": 555
+  },
+  {
+    "id": 60,
+    "name": "poliwag",
+    "family": 26,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 40,
+      "attack": 50,
+      "defense": 40,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 90
+    },
+    "bst": 300
+  },
+  {
+    "id": 61,
+    "name": "poliwhirl",
+    "family": 26,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 65,
+      "attack": 65,
+      "defense": 65,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 90
+    },
+    "bst": 385
+  },
+  {
+    "id": 62,
+    "name": "poliwrath",
+    "family": 26,
+    "baby": false,
+    "types": ["water", "fighting"],
+    "stats": {
+      "hp": 90,
+      "attack": 95,
+      "defense": 95,
+      "special-attack": 70,
+      "special-defense": 90,
+      "speed": 70
+    },
+    "bst": 510
+  },
+  {
+    "id": 63,
+    "name": "abra",
+    "family": 27,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 25,
+      "attack": 20,
+      "defense": 15,
+      "special-attack": 105,
+      "special-defense": 55,
+      "speed": 90
+    },
+    "bst": 310
+  },
+  {
+    "id": 64,
+    "name": "kadabra",
+    "family": 27,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 40,
+      "attack": 35,
+      "defense": 30,
+      "special-attack": 120,
+      "special-defense": 70,
+      "speed": 105
+    },
+    "bst": 400
+  },
+  {
+    "id": 65,
+    "name": "alakazam",
+    "family": 27,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 55,
+      "attack": 50,
+      "defense": 45,
+      "special-attack": 135,
+      "special-defense": 95,
+      "speed": 120
+    },
+    "bst": 500
+  },
+  {
+    "id": 66,
+    "name": "machop",
+    "family": 28,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 70,
+      "attack": 80,
+      "defense": 50,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 35
+    },
+    "bst": 305
+  },
+  {
+    "id": 67,
+    "name": "machoke",
+    "family": 28,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 80,
+      "attack": 100,
+      "defense": 70,
+      "special-attack": 50,
+      "special-defense": 60,
+      "speed": 45
+    },
+    "bst": 405
+  },
+  {
+    "id": 68,
+    "name": "machamp",
+    "family": 28,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 90,
+      "attack": 130,
+      "defense": 80,
+      "special-attack": 65,
+      "special-defense": 85,
+      "speed": 55
+    },
+    "bst": 505
+  },
+  {
+    "id": 69,
+    "name": "bellsprout",
+    "family": 29,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 50,
+      "attack": 75,
+      "defense": 35,
+      "special-attack": 70,
+      "special-defense": 30,
+      "speed": 40
+    },
+    "bst": 300
+  },
+  {
+    "id": 70,
+    "name": "weepinbell",
+    "family": 29,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 65,
+      "attack": 90,
+      "defense": 50,
+      "special-attack": 85,
+      "special-defense": 45,
+      "speed": 55
+    },
+    "bst": 390
+  },
+  {
+    "id": 71,
+    "name": "victreebel",
+    "family": 29,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 80,
+      "attack": 105,
+      "defense": 65,
+      "special-attack": 100,
+      "special-defense": 70,
+      "speed": 70
+    },
+    "bst": 490
+  },
+  {
+    "id": 72,
+    "name": "tentacool",
+    "family": 30,
+    "baby": false,
+    "types": ["water", "poison"],
+    "stats": {
+      "hp": 40,
+      "attack": 40,
+      "defense": 35,
+      "special-attack": 50,
+      "special-defense": 100,
+      "speed": 70
+    },
+    "bst": 335
+  },
+  {
+    "id": 73,
+    "name": "tentacruel",
+    "family": 30,
+    "baby": false,
+    "types": ["water", "poison"],
+    "stats": {
+      "hp": 80,
+      "attack": 70,
+      "defense": 65,
+      "special-attack": 80,
+      "special-defense": 120,
+      "speed": 100
+    },
+    "bst": 515
+  },
+  {
+    "id": 74,
+    "name": "geodude",
+    "family": 31,
+    "baby": false,
+    "types": ["rock", "ground"],
+    "stats": {
+      "hp": 40,
+      "attack": 80,
+      "defense": 100,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 20
+    },
+    "bst": 300
+  },
+  {
+    "id": 75,
+    "name": "graveler",
+    "family": 31,
+    "baby": false,
+    "types": ["rock", "ground"],
+    "stats": {
+      "hp": 55,
+      "attack": 95,
+      "defense": 115,
+      "special-attack": 45,
+      "special-defense": 45,
+      "speed": 35
+    },
+    "bst": 390
+  },
+  {
+    "id": 76,
+    "name": "golem",
+    "family": 31,
+    "baby": false,
+    "types": ["rock", "ground"],
+    "stats": {
+      "hp": 80,
+      "attack": 120,
+      "defense": 130,
+      "special-attack": 55,
+      "special-defense": 65,
+      "speed": 45
+    },
+    "bst": 495
+  },
+  {
+    "id": 77,
+    "name": "ponyta",
+    "family": 32,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 50,
+      "attack": 85,
+      "defense": 55,
+      "special-attack": 65,
+      "special-defense": 65,
+      "speed": 90
+    },
+    "bst": 410
+  },
+  {
+    "id": 78,
+    "name": "rapidash",
+    "family": 32,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 65,
+      "attack": 100,
+      "defense": 70,
+      "special-attack": 80,
+      "special-defense": 80,
+      "speed": 105
+    },
+    "bst": 500
+  },
+  {
+    "id": 79,
+    "name": "slowpoke",
+    "family": 33,
+    "baby": false,
+    "types": ["water", "psychic"],
+    "stats": {
+      "hp": 90,
+      "attack": 65,
+      "defense": 65,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 15
+    },
+    "bst": 315
+  },
+  {
+    "id": 80,
+    "name": "slowbro",
+    "family": 33,
+    "baby": false,
+    "types": ["water", "psychic"],
+    "stats": {
+      "hp": 95,
+      "attack": 75,
+      "defense": 110,
+      "special-attack": 100,
+      "special-defense": 80,
+      "speed": 30
+    },
+    "bst": 490
+  },
+  {
+    "id": 81,
+    "name": "magnemite",
+    "family": 34,
+    "baby": false,
+    "types": ["electric", "steel"],
+    "stats": {
+      "hp": 25,
+      "attack": 35,
+      "defense": 70,
+      "special-attack": 95,
+      "special-defense": 55,
+      "speed": 45
+    },
+    "bst": 325
+  },
+  {
+    "id": 82,
+    "name": "magneton",
+    "family": 34,
+    "baby": false,
+    "types": ["electric", "steel"],
+    "stats": {
+      "hp": 50,
+      "attack": 60,
+      "defense": 95,
+      "special-attack": 120,
+      "special-defense": 70,
+      "speed": 70
+    },
+    "bst": 465
+  },
+  {
+    "id": 83,
+    "name": "farfetchd",
+    "family": 35,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 52,
+      "attack": 90,
+      "defense": 55,
+      "special-attack": 58,
+      "special-defense": 62,
+      "speed": 60
+    },
+    "bst": 377
+  },
+  {
+    "id": 84,
+    "name": "doduo",
+    "family": 36,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 35,
+      "attack": 85,
+      "defense": 45,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 75
+    },
+    "bst": 310
+  },
+  {
+    "id": 85,
+    "name": "dodrio",
+    "family": 36,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 110,
+      "defense": 70,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 110
+    },
+    "bst": 470
+  },
+  {
+    "id": 86,
+    "name": "seel",
+    "family": 37,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 65,
+      "attack": 45,
+      "defense": 55,
+      "special-attack": 45,
+      "special-defense": 70,
+      "speed": 45
+    },
+    "bst": 325
+  },
+  {
+    "id": 87,
+    "name": "dewgong",
+    "family": 37,
+    "baby": false,
+    "types": ["water", "ice"],
+    "stats": {
+      "hp": 90,
+      "attack": 70,
+      "defense": 80,
+      "special-attack": 70,
+      "special-defense": 95,
+      "speed": 70
+    },
+    "bst": 475
+  },
+  {
+    "id": 88,
+    "name": "grimer",
+    "family": 38,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 80,
+      "attack": 80,
+      "defense": 50,
+      "special-attack": 40,
+      "special-defense": 50,
+      "speed": 25
+    },
+    "bst": 325
+  },
+  {
+    "id": 89,
+    "name": "muk",
+    "family": 38,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 105,
+      "attack": 105,
+      "defense": 75,
+      "special-attack": 65,
+      "special-defense": 100,
+      "speed": 50
+    },
+    "bst": 500
+  },
+  {
+    "id": 90,
+    "name": "shellder",
+    "family": 39,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 30,
+      "attack": 65,
+      "defense": 100,
+      "special-attack": 45,
+      "special-defense": 25,
+      "speed": 40
+    },
+    "bst": 305
+  },
+  {
+    "id": 91,
+    "name": "cloyster",
+    "family": 39,
+    "baby": false,
+    "types": ["water", "ice"],
+    "stats": {
+      "hp": 50,
+      "attack": 95,
+      "defense": 180,
+      "special-attack": 85,
+      "special-defense": 45,
+      "speed": 70
+    },
+    "bst": 525
+  },
+  {
+    "id": 92,
+    "name": "gastly",
+    "family": 40,
+    "baby": false,
+    "types": ["ghost", "poison"],
+    "stats": {
+      "hp": 30,
+      "attack": 35,
+      "defense": 30,
+      "special-attack": 100,
+      "special-defense": 35,
+      "speed": 80
+    },
+    "bst": 310
+  },
+  {
+    "id": 93,
+    "name": "haunter",
+    "family": 40,
+    "baby": false,
+    "types": ["ghost", "poison"],
+    "stats": {
+      "hp": 45,
+      "attack": 50,
+      "defense": 45,
+      "special-attack": 115,
+      "special-defense": 55,
+      "speed": 95
+    },
+    "bst": 405
+  },
+  {
+    "id": 94,
+    "name": "gengar",
+    "family": 40,
+    "baby": false,
+    "types": ["ghost", "poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 65,
+      "defense": 60,
+      "special-attack": 130,
+      "special-defense": 75,
+      "speed": 110
+    },
+    "bst": 500
+  },
+  {
+    "id": 95,
+    "name": "onix",
+    "family": 41,
+    "baby": false,
+    "types": ["rock", "ground"],
+    "stats": {
+      "hp": 35,
+      "attack": 45,
+      "defense": 160,
+      "special-attack": 30,
+      "special-defense": 45,
+      "speed": 70
+    },
+    "bst": 385
+  },
+  {
+    "id": 96,
+    "name": "drowzee",
+    "family": 42,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 48,
+      "defense": 45,
+      "special-attack": 43,
+      "special-defense": 90,
+      "speed": 42
+    },
+    "bst": 328
+  },
+  {
+    "id": 97,
+    "name": "hypno",
+    "family": 42,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 85,
+      "attack": 73,
+      "defense": 70,
+      "special-attack": 73,
+      "special-defense": 115,
+      "speed": 67
+    },
+    "bst": 483
+  },
+  {
+    "id": 98,
+    "name": "krabby",
+    "family": 43,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 30,
+      "attack": 105,
+      "defense": 90,
+      "special-attack": 25,
+      "special-defense": 25,
+      "speed": 50
+    },
+    "bst": 325
+  },
+  {
+    "id": 99,
+    "name": "kingler",
+    "family": 43,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 55,
+      "attack": 130,
+      "defense": 115,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 75
+    },
+    "bst": 475
+  },
+  {
+    "id": 100,
+    "name": "voltorb",
+    "family": 44,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 40,
+      "attack": 30,
+      "defense": 50,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 100
+    },
+    "bst": 330
+  },
+  {
+    "id": 101,
+    "name": "electrode",
+    "family": 44,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 70,
+      "special-attack": 80,
+      "special-defense": 80,
+      "speed": 150
+    },
+    "bst": 490
+  },
+  {
+    "id": 102,
+    "name": "exeggcute",
+    "family": 45,
+    "baby": false,
+    "types": ["grass", "psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 40,
+      "defense": 80,
+      "special-attack": 60,
+      "special-defense": 45,
+      "speed": 40
+    },
+    "bst": 325
+  },
+  {
+    "id": 103,
+    "name": "exeggutor",
+    "family": 45,
+    "baby": false,
+    "types": ["grass", "psychic"],
+    "stats": {
+      "hp": 95,
+      "attack": 95,
+      "defense": 85,
+      "special-attack": 125,
+      "special-defense": 75,
+      "speed": 55
+    },
+    "bst": 530
+  },
+  {
+    "id": 104,
+    "name": "cubone",
+    "family": 46,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 50,
+      "attack": 50,
+      "defense": 95,
+      "special-attack": 40,
+      "special-defense": 50,
+      "speed": 35
+    },
+    "bst": 320
+  },
+  {
+    "id": 105,
+    "name": "marowak",
+    "family": 46,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 60,
+      "attack": 80,
+      "defense": 110,
+      "special-attack": 50,
+      "special-defense": 80,
+      "speed": 45
+    },
+    "bst": 425
+  },
+  {
+    "id": 106,
+    "name": "hitmonlee",
+    "family": 47,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 50,
+      "attack": 120,
+      "defense": 53,
+      "special-attack": 35,
+      "special-defense": 110,
+      "speed": 87
+    },
+    "bst": 455
+  },
+  {
+    "id": 107,
+    "name": "hitmonchan",
+    "family": 47,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 50,
+      "attack": 105,
+      "defense": 79,
+      "special-attack": 35,
+      "special-defense": 110,
+      "speed": 76
+    },
+    "bst": 455
+  },
+  {
+    "id": 108,
+    "name": "lickitung",
+    "family": 48,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 90,
+      "attack": 55,
+      "defense": 75,
+      "special-attack": 60,
+      "special-defense": 75,
+      "speed": 30
+    },
+    "bst": 385
+  },
+  {
+    "id": 109,
+    "name": "koffing",
+    "family": 49,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 40,
+      "attack": 65,
+      "defense": 95,
+      "special-attack": 60,
+      "special-defense": 45,
+      "speed": 35
+    },
+    "bst": 340
+  },
+  {
+    "id": 110,
+    "name": "weezing",
+    "family": 49,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 65,
+      "attack": 90,
+      "defense": 120,
+      "special-attack": 85,
+      "special-defense": 70,
+      "speed": 60
+    },
+    "bst": 490
+  },
+  {
+    "id": 111,
+    "name": "rhyhorn",
+    "family": 50,
+    "baby": false,
+    "types": ["ground", "rock"],
+    "stats": {
+      "hp": 80,
+      "attack": 85,
+      "defense": 95,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 25
+    },
+    "bst": 345
+  },
+  {
+    "id": 112,
+    "name": "rhydon",
+    "family": 50,
+    "baby": false,
+    "types": ["ground", "rock"],
+    "stats": {
+      "hp": 105,
+      "attack": 130,
+      "defense": 120,
+      "special-attack": 45,
+      "special-defense": 45,
+      "speed": 40
+    },
+    "bst": 485
+  },
+  {
+    "id": 113,
+    "name": "chansey",
+    "family": 51,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 250,
+      "attack": 5,
+      "defense": 5,
+      "special-attack": 35,
+      "special-defense": 105,
+      "speed": 50
+    },
+    "bst": 450
+  },
+  {
+    "id": 114,
+    "name": "tangela",
+    "family": 52,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 65,
+      "attack": 55,
+      "defense": 115,
+      "special-attack": 100,
+      "special-defense": 40,
+      "speed": 60
+    },
+    "bst": 435
+  },
+  {
+    "id": 115,
+    "name": "kangaskhan",
+    "family": 53,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 105,
+      "attack": 95,
+      "defense": 80,
+      "special-attack": 40,
+      "special-defense": 80,
+      "speed": 90
+    },
+    "bst": 490
+  },
+  {
+    "id": 116,
+    "name": "horsea",
+    "family": 54,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 30,
+      "attack": 40,
+      "defense": 70,
+      "special-attack": 70,
+      "special-defense": 25,
+      "speed": 60
+    },
+    "bst": 295
+  },
+  {
+    "id": 117,
+    "name": "seadra",
+    "family": 54,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 55,
+      "attack": 65,
+      "defense": 95,
+      "special-attack": 95,
+      "special-defense": 45,
+      "speed": 85
+    },
+    "bst": 440
+  },
+  {
+    "id": 118,
+    "name": "goldeen",
+    "family": 55,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 45,
+      "attack": 67,
+      "defense": 60,
+      "special-attack": 35,
+      "special-defense": 50,
+      "speed": 63
+    },
+    "bst": 320
+  },
+  {
+    "id": 119,
+    "name": "seaking",
+    "family": 55,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 80,
+      "attack": 92,
+      "defense": 65,
+      "special-attack": 65,
+      "special-defense": 80,
+      "speed": 68
+    },
+    "bst": 450
+  },
+  {
+    "id": 120,
+    "name": "staryu",
+    "family": 56,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 30,
+      "attack": 45,
+      "defense": 55,
+      "special-attack": 70,
+      "special-defense": 55,
+      "speed": 85
+    },
+    "bst": 340
+  },
+  {
+    "id": 121,
+    "name": "starmie",
+    "family": 56,
+    "baby": false,
+    "types": ["water", "psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 75,
+      "defense": 85,
+      "special-attack": 100,
+      "special-defense": 85,
+      "speed": 115
+    },
+    "bst": 520
+  },
+  {
+    "id": 122,
+    "name": "mr-mime",
+    "family": 57,
+    "baby": false,
+    "types": ["psychic", "fairy"],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 65,
+      "special-attack": 100,
+      "special-defense": 120,
+      "speed": 90
+    },
+    "bst": 460
+  },
+  {
+    "id": 123,
+    "name": "scyther",
+    "family": 58,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 70,
+      "attack": 110,
+      "defense": 80,
+      "special-attack": 55,
+      "special-defense": 80,
+      "speed": 105
+    },
+    "bst": 500
+  },
+  {
+    "id": 124,
+    "name": "jynx",
+    "family": 59,
+    "baby": false,
+    "types": ["ice", "psychic"],
+    "stats": {
+      "hp": 65,
+      "attack": 50,
+      "defense": 35,
+      "special-attack": 115,
+      "special-defense": 95,
+      "speed": 95
+    },
+    "bst": 455
+  },
+  {
+    "id": 125,
+    "name": "electabuzz",
+    "family": 60,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 65,
+      "attack": 83,
+      "defense": 57,
+      "special-attack": 95,
+      "special-defense": 85,
+      "speed": 105
+    },
+    "bst": 490
+  },
+  {
+    "id": 126,
+    "name": "magmar",
+    "family": 61,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 65,
+      "attack": 95,
+      "defense": 57,
+      "special-attack": 100,
+      "special-defense": 85,
+      "speed": 93
+    },
+    "bst": 495
+  },
+  {
+    "id": 127,
+    "name": "pinsir",
+    "family": 62,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 65,
+      "attack": 125,
+      "defense": 100,
+      "special-attack": 55,
+      "special-defense": 70,
+      "speed": 85
+    },
+    "bst": 500
+  },
+  {
+    "id": 128,
+    "name": "tauros",
+    "family": 63,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 75,
+      "attack": 100,
+      "defense": 95,
+      "special-attack": 40,
+      "special-defense": 70,
+      "speed": 110
+    },
+    "bst": 490
+  },
+  {
+    "id": 129,
+    "name": "magikarp",
+    "family": 64,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 20,
+      "attack": 10,
+      "defense": 55,
+      "special-attack": 15,
+      "special-defense": 20,
+      "speed": 80
+    },
+    "bst": 200
+  },
+  {
+    "id": 130,
+    "name": "gyarados",
+    "family": 64,
+    "baby": false,
+    "types": ["water", "flying"],
+    "stats": {
+      "hp": 95,
+      "attack": 125,
+      "defense": 79,
+      "special-attack": 60,
+      "special-defense": 100,
+      "speed": 81
+    },
+    "bst": 540
+  },
+  {
+    "id": 131,
+    "name": "lapras",
+    "family": 65,
+    "baby": false,
+    "types": ["water", "ice"],
+    "stats": {
+      "hp": 130,
+      "attack": 85,
+      "defense": 80,
+      "special-attack": 85,
+      "special-defense": 95,
+      "speed": 60
+    },
+    "bst": 535
+  },
+  {
+    "id": 132,
+    "name": "ditto",
+    "family": 66,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 48,
+      "attack": 48,
+      "defense": 48,
+      "special-attack": 48,
+      "special-defense": 48,
+      "speed": 48
+    },
+    "bst": 288
+  },
+  {
+    "id": 133,
+    "name": "eevee",
+    "family": 67,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 55,
+      "attack": 55,
+      "defense": 50,
+      "special-attack": 45,
+      "special-defense": 65,
+      "speed": 55
+    },
+    "bst": 325
+  },
+  {
+    "id": 134,
+    "name": "vaporeon",
+    "family": 67,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 130,
+      "attack": 65,
+      "defense": 60,
+      "special-attack": 110,
+      "special-defense": 95,
+      "speed": 65
+    },
+    "bst": 525
+  },
+  {
+    "id": 135,
+    "name": "jolteon",
+    "family": 67,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 65,
+      "attack": 65,
+      "defense": 60,
+      "special-attack": 110,
+      "special-defense": 95,
+      "speed": 130
+    },
+    "bst": 525
+  },
+  {
+    "id": 136,
+    "name": "flareon",
+    "family": 67,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 65,
+      "attack": 130,
+      "defense": 60,
+      "special-attack": 95,
+      "special-defense": 110,
+      "speed": 65
+    },
+    "bst": 525
+  },
+  {
+    "id": 137,
+    "name": "porygon",
+    "family": 68,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 65,
+      "attack": 60,
+      "defense": 70,
+      "special-attack": 85,
+      "special-defense": 75,
+      "speed": 40
+    },
+    "bst": 395
+  },
+  {
+    "id": 138,
+    "name": "omanyte",
+    "family": 69,
+    "baby": false,
+    "types": ["rock", "water"],
+    "stats": {
+      "hp": 35,
+      "attack": 40,
+      "defense": 100,
+      "special-attack": 90,
+      "special-defense": 55,
+      "speed": 35
+    },
+    "bst": 355
+  },
+  {
+    "id": 139,
+    "name": "omastar",
+    "family": 69,
+    "baby": false,
+    "types": ["rock", "water"],
+    "stats": {
+      "hp": 70,
+      "attack": 60,
+      "defense": 125,
+      "special-attack": 115,
+      "special-defense": 70,
+      "speed": 55
+    },
+    "bst": 495
+  },
+  {
+    "id": 140,
+    "name": "kabuto",
+    "family": 70,
+    "baby": false,
+    "types": ["rock", "water"],
+    "stats": {
+      "hp": 30,
+      "attack": 80,
+      "defense": 90,
+      "special-attack": 55,
+      "special-defense": 45,
+      "speed": 55
+    },
+    "bst": 355
+  },
+  {
+    "id": 141,
+    "name": "kabutops",
+    "family": 70,
+    "baby": false,
+    "types": ["rock", "water"],
+    "stats": {
+      "hp": 60,
+      "attack": 115,
+      "defense": 105,
+      "special-attack": 65,
+      "special-defense": 70,
+      "speed": 80
+    },
+    "bst": 495
+  },
+  {
+    "id": 142,
+    "name": "aerodactyl",
+    "family": 71,
+    "baby": false,
+    "types": ["rock", "flying"],
+    "stats": {
+      "hp": 80,
+      "attack": 105,
+      "defense": 65,
+      "special-attack": 60,
+      "special-defense": 75,
+      "speed": 130
+    },
+    "bst": 515
+  },
+  {
+    "id": 143,
+    "name": "snorlax",
+    "family": 72,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 160,
+      "attack": 110,
+      "defense": 65,
+      "special-attack": 65,
+      "special-defense": 110,
+      "speed": 30
+    },
+    "bst": 540
+  },
+  {
+    "id": 147,
+    "name": "dratini",
+    "family": 76,
+    "baby": false,
+    "types": ["dragon"],
+    "stats": {
+      "hp": 41,
+      "attack": 64,
+      "defense": 45,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 50
+    },
+    "bst": 300
+  },
+  {
+    "id": 148,
+    "name": "dragonair",
+    "family": 76,
+    "baby": false,
+    "types": ["dragon"],
+    "stats": {
+      "hp": 61,
+      "attack": 84,
+      "defense": 65,
+      "special-attack": 70,
+      "special-defense": 70,
+      "speed": 70
+    },
+    "bst": 420
+  },
+  {
+    "id": 149,
+    "name": "dragonite",
+    "family": 76,
+    "baby": false,
+    "types": ["dragon", "flying"],
+    "stats": {
+      "hp": 91,
+      "attack": 134,
+      "defense": 95,
+      "special-attack": 100,
+      "special-defense": 100,
+      "speed": 80
+    },
+    "bst": 600
+  },
+  {
+    "id": 152,
+    "name": "chikorita",
+    "family": 79,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 45,
+      "attack": 49,
+      "defense": 65,
+      "special-attack": 49,
+      "special-defense": 65,
+      "speed": 45
+    },
+    "bst": 318
+  },
+  {
+    "id": 153,
+    "name": "bayleef",
+    "family": 79,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 60,
+      "attack": 62,
+      "defense": 80,
+      "special-attack": 63,
+      "special-defense": 80,
+      "speed": 60
+    },
+    "bst": 405
+  },
+  {
+    "id": 154,
+    "name": "meganium",
+    "family": 79,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 80,
+      "attack": 82,
+      "defense": 100,
+      "special-attack": 83,
+      "special-defense": 100,
+      "speed": 80
+    },
+    "bst": 525
+  },
+  {
+    "id": 155,
+    "name": "cyndaquil",
+    "family": 80,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 39,
+      "attack": 52,
+      "defense": 43,
+      "special-attack": 60,
+      "special-defense": 50,
+      "speed": 65
+    },
+    "bst": 309
+  },
+  {
+    "id": 156,
+    "name": "quilava",
+    "family": 80,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 58,
+      "attack": 64,
+      "defense": 58,
+      "special-attack": 80,
+      "special-defense": 65,
+      "speed": 80
+    },
+    "bst": 405
+  },
+  {
+    "id": 157,
+    "name": "typhlosion",
+    "family": 80,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 78,
+      "attack": 84,
+      "defense": 78,
+      "special-attack": 109,
+      "special-defense": 85,
+      "speed": 100
+    },
+    "bst": 534
+  },
+  {
+    "id": 158,
+    "name": "totodile",
+    "family": 81,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 50,
+      "attack": 65,
+      "defense": 64,
+      "special-attack": 44,
+      "special-defense": 48,
+      "speed": 43
+    },
+    "bst": 314
+  },
+  {
+    "id": 159,
+    "name": "croconaw",
+    "family": 81,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 65,
+      "attack": 80,
+      "defense": 80,
+      "special-attack": 59,
+      "special-defense": 63,
+      "speed": 58
+    },
+    "bst": 405
+  },
+  {
+    "id": 160,
+    "name": "feraligatr",
+    "family": 81,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 85,
+      "attack": 105,
+      "defense": 100,
+      "special-attack": 79,
+      "special-defense": 83,
+      "speed": 78
+    },
+    "bst": 530
+  },
+  {
+    "id": 161,
+    "name": "sentret",
+    "family": 82,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 35,
+      "attack": 46,
+      "defense": 34,
+      "special-attack": 35,
+      "special-defense": 45,
+      "speed": 20
+    },
+    "bst": 215
+  },
+  {
+    "id": 162,
+    "name": "furret",
+    "family": 82,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 85,
+      "attack": 76,
+      "defense": 64,
+      "special-attack": 45,
+      "special-defense": 55,
+      "speed": 90
+    },
+    "bst": 415
+  },
+  {
+    "id": 163,
+    "name": "hoothoot",
+    "family": 83,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 30,
+      "defense": 30,
+      "special-attack": 36,
+      "special-defense": 56,
+      "speed": 50
+    },
+    "bst": 262
+  },
+  {
+    "id": 164,
+    "name": "noctowl",
+    "family": 83,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 100,
+      "attack": 50,
+      "defense": 50,
+      "special-attack": 86,
+      "special-defense": 96,
+      "speed": 70
+    },
+    "bst": 452
+  },
+  {
+    "id": 165,
+    "name": "ledyba",
+    "family": 84,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 20,
+      "defense": 30,
+      "special-attack": 40,
+      "special-defense": 80,
+      "speed": 55
+    },
+    "bst": 265
+  },
+  {
+    "id": 166,
+    "name": "ledian",
+    "family": 84,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 55,
+      "attack": 35,
+      "defense": 50,
+      "special-attack": 55,
+      "special-defense": 110,
+      "speed": 85
+    },
+    "bst": 390
+  },
+  {
+    "id": 167,
+    "name": "spinarak",
+    "family": 85,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 40,
+      "attack": 60,
+      "defense": 40,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 30
+    },
+    "bst": 250
+  },
+  {
+    "id": 168,
+    "name": "ariados",
+    "family": 85,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 70,
+      "attack": 90,
+      "defense": 70,
+      "special-attack": 60,
+      "special-defense": 70,
+      "speed": 40
+    },
+    "bst": 400
+  },
+  {
+    "id": 169,
+    "name": "crobat",
+    "family": 17,
+    "baby": false,
+    "types": ["poison", "flying"],
+    "stats": {
+      "hp": 85,
+      "attack": 90,
+      "defense": 80,
+      "special-attack": 70,
+      "special-defense": 80,
+      "speed": 130
+    },
+    "bst": 535
+  },
+  {
+    "id": 170,
+    "name": "chinchou",
+    "family": 86,
+    "baby": false,
+    "types": ["water", "electric"],
+    "stats": {
+      "hp": 75,
+      "attack": 38,
+      "defense": 38,
+      "special-attack": 56,
+      "special-defense": 56,
+      "speed": 67
+    },
+    "bst": 330
+  },
+  {
+    "id": 171,
+    "name": "lanturn",
+    "family": 86,
+    "baby": false,
+    "types": ["water", "electric"],
+    "stats": {
+      "hp": 125,
+      "attack": 58,
+      "defense": 58,
+      "special-attack": 76,
+      "special-defense": 76,
+      "speed": 67
+    },
+    "bst": 460
+  },
+  {
+    "id": 172,
+    "name": "pichu",
+    "family": 10,
+    "baby": true,
+    "types": ["electric"],
+    "stats": {
+      "hp": 20,
+      "attack": 40,
+      "defense": 15,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 60
+    },
+    "bst": 205
+  },
+  {
+    "id": 173,
+    "name": "cleffa",
+    "family": 14,
+    "baby": true,
+    "types": ["fairy"],
+    "stats": {
+      "hp": 50,
+      "attack": 25,
+      "defense": 28,
+      "special-attack": 45,
+      "special-defense": 55,
+      "speed": 15
+    },
+    "bst": 218
+  },
+  {
+    "id": 174,
+    "name": "igglybuff",
+    "family": 16,
+    "baby": true,
+    "types": ["normal", "fairy"],
+    "stats": {
+      "hp": 90,
+      "attack": 30,
+      "defense": 15,
+      "special-attack": 40,
+      "special-defense": 20,
+      "speed": 15
+    },
+    "bst": 210
+  },
+  {
+    "id": 175,
+    "name": "togepi",
+    "family": 87,
+    "baby": true,
+    "types": ["fairy"],
+    "stats": {
+      "hp": 35,
+      "attack": 20,
+      "defense": 65,
+      "special-attack": 40,
+      "special-defense": 65,
+      "speed": 20
+    },
+    "bst": 245
+  },
+  {
+    "id": 176,
+    "name": "togetic",
+    "family": 87,
+    "baby": false,
+    "types": ["fairy", "flying"],
+    "stats": {
+      "hp": 55,
+      "attack": 40,
+      "defense": 85,
+      "special-attack": 80,
+      "special-defense": 105,
+      "speed": 40
+    },
+    "bst": 405
+  },
+  {
+    "id": 177,
+    "name": "natu",
+    "family": 88,
+    "baby": false,
+    "types": ["psychic", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 50,
+      "defense": 45,
+      "special-attack": 70,
+      "special-defense": 45,
+      "speed": 70
+    },
+    "bst": 320
+  },
+  {
+    "id": 178,
+    "name": "xatu",
+    "family": 88,
+    "baby": false,
+    "types": ["psychic", "flying"],
+    "stats": {
+      "hp": 65,
+      "attack": 75,
+      "defense": 70,
+      "special-attack": 95,
+      "special-defense": 70,
+      "speed": 95
+    },
+    "bst": 470
+  },
+  {
+    "id": 179,
+    "name": "mareep",
+    "family": 89,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 55,
+      "attack": 40,
+      "defense": 40,
+      "special-attack": 65,
+      "special-defense": 45,
+      "speed": 35
+    },
+    "bst": 280
+  },
+  {
+    "id": 180,
+    "name": "flaaffy",
+    "family": 89,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 70,
+      "attack": 55,
+      "defense": 55,
+      "special-attack": 80,
+      "special-defense": 60,
+      "speed": 45
+    },
+    "bst": 365
+  },
+  {
+    "id": 181,
+    "name": "ampharos",
+    "family": 89,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 90,
+      "attack": 75,
+      "defense": 85,
+      "special-attack": 115,
+      "special-defense": 90,
+      "speed": 55
+    },
+    "bst": 510
+  },
+  {
+    "id": 182,
+    "name": "bellossom",
+    "family": 18,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 75,
+      "attack": 80,
+      "defense": 95,
+      "special-attack": 90,
+      "special-defense": 100,
+      "speed": 50
+    },
+    "bst": 490
+  },
+  {
+    "id": 183,
+    "name": "marill",
+    "family": 90,
+    "baby": false,
+    "types": ["water", "fairy"],
+    "stats": {
+      "hp": 70,
+      "attack": 20,
+      "defense": 50,
+      "special-attack": 20,
+      "special-defense": 50,
+      "speed": 40
+    },
+    "bst": 250
+  },
+  {
+    "id": 184,
+    "name": "azumarill",
+    "family": 90,
+    "baby": false,
+    "types": ["water", "fairy"],
+    "stats": {
+      "hp": 100,
+      "attack": 50,
+      "defense": 80,
+      "special-attack": 60,
+      "special-defense": 80,
+      "speed": 50
+    },
+    "bst": 420
+  },
+  {
+    "id": 185,
+    "name": "sudowoodo",
+    "family": 91,
+    "baby": false,
+    "types": ["rock"],
+    "stats": {
+      "hp": 70,
+      "attack": 100,
+      "defense": 115,
+      "special-attack": 30,
+      "special-defense": 65,
+      "speed": 30
+    },
+    "bst": 410
+  },
+  {
+    "id": 186,
+    "name": "politoed",
+    "family": 26,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 90,
+      "attack": 75,
+      "defense": 75,
+      "special-attack": 90,
+      "special-defense": 100,
+      "speed": 70
+    },
+    "bst": 500
+  },
+  {
+    "id": 187,
+    "name": "hoppip",
+    "family": 92,
+    "baby": false,
+    "types": ["grass", "flying"],
+    "stats": {
+      "hp": 35,
+      "attack": 35,
+      "defense": 40,
+      "special-attack": 35,
+      "special-defense": 55,
+      "speed": 50
+    },
+    "bst": 250
+  },
+  {
+    "id": 188,
+    "name": "skiploom",
+    "family": 92,
+    "baby": false,
+    "types": ["grass", "flying"],
+    "stats": {
+      "hp": 55,
+      "attack": 45,
+      "defense": 50,
+      "special-attack": 45,
+      "special-defense": 65,
+      "speed": 80
+    },
+    "bst": 340
+  },
+  {
+    "id": 189,
+    "name": "jumpluff",
+    "family": 92,
+    "baby": false,
+    "types": ["grass", "flying"],
+    "stats": {
+      "hp": 75,
+      "attack": 55,
+      "defense": 70,
+      "special-attack": 55,
+      "special-defense": 95,
+      "speed": 110
+    },
+    "bst": 460
+  },
+  {
+    "id": 190,
+    "name": "aipom",
+    "family": 93,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 55,
+      "attack": 70,
+      "defense": 55,
+      "special-attack": 40,
+      "special-defense": 55,
+      "speed": 85
+    },
+    "bst": 360
+  },
+  {
+    "id": 191,
+    "name": "sunkern",
+    "family": 94,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 30,
+      "attack": 30,
+      "defense": 30,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 30
+    },
+    "bst": 180
+  },
+  {
+    "id": 192,
+    "name": "sunflora",
+    "family": 94,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 75,
+      "attack": 75,
+      "defense": 55,
+      "special-attack": 105,
+      "special-defense": 85,
+      "speed": 30
+    },
+    "bst": 425
+  },
+  {
+    "id": 193,
+    "name": "yanma",
+    "family": 95,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 65,
+      "attack": 65,
+      "defense": 45,
+      "special-attack": 75,
+      "special-defense": 45,
+      "speed": 95
+    },
+    "bst": 390
+  },
+  {
+    "id": 194,
+    "name": "wooper",
+    "family": 96,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 55,
+      "attack": 45,
+      "defense": 45,
+      "special-attack": 25,
+      "special-defense": 25,
+      "speed": 15
+    },
+    "bst": 210
+  },
+  {
+    "id": 195,
+    "name": "quagsire",
+    "family": 96,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 95,
+      "attack": 85,
+      "defense": 85,
+      "special-attack": 65,
+      "special-defense": 65,
+      "speed": 35
+    },
+    "bst": 430
+  },
+  {
+    "id": 196,
+    "name": "espeon",
+    "family": 67,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 65,
+      "attack": 65,
+      "defense": 60,
+      "special-attack": 130,
+      "special-defense": 95,
+      "speed": 110
+    },
+    "bst": 525
+  },
+  {
+    "id": 197,
+    "name": "umbreon",
+    "family": 67,
+    "baby": false,
+    "types": ["dark"],
+    "stats": {
+      "hp": 95,
+      "attack": 65,
+      "defense": 110,
+      "special-attack": 60,
+      "special-defense": 130,
+      "speed": 65
+    },
+    "bst": 525
+  },
+  {
+    "id": 198,
+    "name": "murkrow",
+    "family": 97,
+    "baby": false,
+    "types": ["dark", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 85,
+      "defense": 42,
+      "special-attack": 85,
+      "special-defense": 42,
+      "speed": 91
+    },
+    "bst": 405
+  },
+  {
+    "id": 199,
+    "name": "slowking",
+    "family": 33,
+    "baby": false,
+    "types": ["water", "psychic"],
+    "stats": {
+      "hp": 95,
+      "attack": 75,
+      "defense": 80,
+      "special-attack": 100,
+      "special-defense": 110,
+      "speed": 30
+    },
+    "bst": 490
+  },
+  {
+    "id": 200,
+    "name": "misdreavus",
+    "family": 98,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 60,
+      "attack": 60,
+      "defense": 60,
+      "special-attack": 85,
+      "special-defense": 85,
+      "speed": 85
+    },
+    "bst": 435
+  },
+  {
+    "id": 201,
+    "name": "unown",
+    "family": 99,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 48,
+      "attack": 72,
+      "defense": 48,
+      "special-attack": 72,
+      "special-defense": 48,
+      "speed": 48
+    },
+    "bst": 336
+  },
+  {
+    "id": 202,
+    "name": "wobbuffet",
+    "family": 100,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 190,
+      "attack": 33,
+      "defense": 58,
+      "special-attack": 33,
+      "special-defense": 58,
+      "speed": 33
+    },
+    "bst": 405
+  },
+  {
+    "id": 203,
+    "name": "girafarig",
+    "family": 101,
+    "baby": false,
+    "types": ["normal", "psychic"],
+    "stats": {
+      "hp": 70,
+      "attack": 80,
+      "defense": 65,
+      "special-attack": 90,
+      "special-defense": 65,
+      "speed": 85
+    },
+    "bst": 455
+  },
+  {
+    "id": 204,
+    "name": "pineco",
+    "family": 102,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 50,
+      "attack": 65,
+      "defense": 90,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 15
+    },
+    "bst": 290
+  },
+  {
+    "id": 205,
+    "name": "forretress",
+    "family": 102,
+    "baby": false,
+    "types": ["bug", "steel"],
+    "stats": {
+      "hp": 75,
+      "attack": 90,
+      "defense": 140,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 40
+    },
+    "bst": 465
+  },
+  {
+    "id": 206,
+    "name": "dunsparce",
+    "family": 103,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 100,
+      "attack": 70,
+      "defense": 70,
+      "special-attack": 65,
+      "special-defense": 65,
+      "speed": 45
+    },
+    "bst": 415
+  },
+  {
+    "id": 207,
+    "name": "gligar",
+    "family": 104,
+    "baby": false,
+    "types": ["ground", "flying"],
+    "stats": {
+      "hp": 65,
+      "attack": 75,
+      "defense": 105,
+      "special-attack": 35,
+      "special-defense": 65,
+      "speed": 85
+    },
+    "bst": 430
+  },
+  {
+    "id": 208,
+    "name": "steelix",
+    "family": 41,
+    "baby": false,
+    "types": ["steel", "ground"],
+    "stats": {
+      "hp": 75,
+      "attack": 85,
+      "defense": 200,
+      "special-attack": 55,
+      "special-defense": 65,
+      "speed": 30
+    },
+    "bst": 510
+  },
+  {
+    "id": 209,
+    "name": "snubbull",
+    "family": 105,
+    "baby": false,
+    "types": ["fairy"],
+    "stats": {
+      "hp": 60,
+      "attack": 80,
+      "defense": 50,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 30
+    },
+    "bst": 300
+  },
+  {
+    "id": 210,
+    "name": "granbull",
+    "family": 105,
+    "baby": false,
+    "types": ["fairy"],
+    "stats": {
+      "hp": 90,
+      "attack": 120,
+      "defense": 75,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 45
+    },
+    "bst": 450
+  },
+  {
+    "id": 211,
+    "name": "qwilfish",
+    "family": 106,
+    "baby": false,
+    "types": ["water", "poison"],
+    "stats": {
+      "hp": 65,
+      "attack": 95,
+      "defense": 85,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 85
+    },
+    "bst": 440
+  },
+  {
+    "id": 212,
+    "name": "scizor",
+    "family": 58,
+    "baby": false,
+    "types": ["bug", "steel"],
+    "stats": {
+      "hp": 70,
+      "attack": 130,
+      "defense": 100,
+      "special-attack": 55,
+      "special-defense": 80,
+      "speed": 65
+    },
+    "bst": 500
+  },
+  {
+    "id": 213,
+    "name": "shuckle",
+    "family": 107,
+    "baby": false,
+    "types": ["bug", "rock"],
+    "stats": {
+      "hp": 20,
+      "attack": 10,
+      "defense": 230,
+      "special-attack": 10,
+      "special-defense": 230,
+      "speed": 5
+    },
+    "bst": 505
+  },
+  {
+    "id": 214,
+    "name": "heracross",
+    "family": 108,
+    "baby": false,
+    "types": ["bug", "fighting"],
+    "stats": {
+      "hp": 80,
+      "attack": 125,
+      "defense": 75,
+      "special-attack": 40,
+      "special-defense": 95,
+      "speed": 85
+    },
+    "bst": 500
+  },
+  {
+    "id": 215,
+    "name": "sneasel",
+    "family": 109,
+    "baby": false,
+    "types": ["dark", "ice"],
+    "stats": {
+      "hp": 55,
+      "attack": 95,
+      "defense": 55,
+      "special-attack": 35,
+      "special-defense": 75,
+      "speed": 115
+    },
+    "bst": 430
+  },
+  {
+    "id": 216,
+    "name": "teddiursa",
+    "family": 110,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 60,
+      "attack": 80,
+      "defense": 50,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 40
+    },
+    "bst": 330
+  },
+  {
+    "id": 217,
+    "name": "ursaring",
+    "family": 110,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 90,
+      "attack": 130,
+      "defense": 75,
+      "special-attack": 75,
+      "special-defense": 75,
+      "speed": 55
+    },
+    "bst": 500
+  },
+  {
+    "id": 218,
+    "name": "slugma",
+    "family": 111,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 40,
+      "attack": 40,
+      "defense": 40,
+      "special-attack": 70,
+      "special-defense": 40,
+      "speed": 20
+    },
+    "bst": 250
+  },
+  {
+    "id": 219,
+    "name": "magcargo",
+    "family": 111,
+    "baby": false,
+    "types": ["fire", "rock"],
+    "stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 120,
+      "special-attack": 90,
+      "special-defense": 80,
+      "speed": 30
+    },
+    "bst": 430
+  },
+  {
+    "id": 220,
+    "name": "swinub",
+    "family": 112,
+    "baby": false,
+    "types": ["ice", "ground"],
+    "stats": {
+      "hp": 50,
+      "attack": 50,
+      "defense": 40,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 50
+    },
+    "bst": 250
+  },
+  {
+    "id": 221,
+    "name": "piloswine",
+    "family": 112,
+    "baby": false,
+    "types": ["ice", "ground"],
+    "stats": {
+      "hp": 100,
+      "attack": 100,
+      "defense": 80,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 50
+    },
+    "bst": 450
+  },
+  {
+    "id": 222,
+    "name": "corsola",
+    "family": 113,
+    "baby": false,
+    "types": ["water", "rock"],
+    "stats": {
+      "hp": 65,
+      "attack": 55,
+      "defense": 95,
+      "special-attack": 65,
+      "special-defense": 95,
+      "speed": 35
+    },
+    "bst": 410
+  },
+  {
+    "id": 223,
+    "name": "remoraid",
+    "family": 114,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 35,
+      "attack": 65,
+      "defense": 35,
+      "special-attack": 65,
+      "special-defense": 35,
+      "speed": 65
+    },
+    "bst": 300
+  },
+  {
+    "id": 224,
+    "name": "octillery",
+    "family": 114,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 75,
+      "attack": 105,
+      "defense": 75,
+      "special-attack": 105,
+      "special-defense": 75,
+      "speed": 45
+    },
+    "bst": 480
+  },
+  {
+    "id": 225,
+    "name": "delibird",
+    "family": 115,
+    "baby": false,
+    "types": ["ice", "flying"],
+    "stats": {
+      "hp": 45,
+      "attack": 55,
+      "defense": 45,
+      "special-attack": 65,
+      "special-defense": 45,
+      "speed": 75
+    },
+    "bst": 330
+  },
+  {
+    "id": 226,
+    "name": "mantine",
+    "family": 116,
+    "baby": false,
+    "types": ["water", "flying"],
+    "stats": {
+      "hp": 85,
+      "attack": 40,
+      "defense": 70,
+      "special-attack": 80,
+      "special-defense": 140,
+      "speed": 70
+    },
+    "bst": 485
+  },
+  {
+    "id": 227,
+    "name": "skarmory",
+    "family": 117,
+    "baby": false,
+    "types": ["steel", "flying"],
+    "stats": {
+      "hp": 65,
+      "attack": 80,
+      "defense": 140,
+      "special-attack": 40,
+      "special-defense": 70,
+      "speed": 70
+    },
+    "bst": 465
+  },
+  {
+    "id": 228,
+    "name": "houndour",
+    "family": 118,
+    "baby": false,
+    "types": ["dark", "fire"],
+    "stats": {
+      "hp": 45,
+      "attack": 60,
+      "defense": 30,
+      "special-attack": 80,
+      "special-defense": 50,
+      "speed": 65
+    },
+    "bst": 330
+  },
+  {
+    "id": 229,
+    "name": "houndoom",
+    "family": 118,
+    "baby": false,
+    "types": ["dark", "fire"],
+    "stats": {
+      "hp": 75,
+      "attack": 90,
+      "defense": 50,
+      "special-attack": 110,
+      "special-defense": 80,
+      "speed": 95
+    },
+    "bst": 500
+  },
+  {
+    "id": 230,
+    "name": "kingdra",
+    "family": 54,
+    "baby": false,
+    "types": ["water", "dragon"],
+    "stats": {
+      "hp": 75,
+      "attack": 95,
+      "defense": 95,
+      "special-attack": 95,
+      "special-defense": 95,
+      "speed": 85
+    },
+    "bst": 540
+  },
+  {
+    "id": 231,
+    "name": "phanpy",
+    "family": 119,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 90,
+      "attack": 60,
+      "defense": 60,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 40
+    },
+    "bst": 330
+  },
+  {
+    "id": 232,
+    "name": "donphan",
+    "family": 119,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 90,
+      "attack": 120,
+      "defense": 120,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 50
+    },
+    "bst": 500
+  },
+  {
+    "id": 233,
+    "name": "porygon2",
+    "family": 68,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 85,
+      "attack": 80,
+      "defense": 90,
+      "special-attack": 105,
+      "special-defense": 95,
+      "speed": 60
+    },
+    "bst": 515
+  },
+  {
+    "id": 234,
+    "name": "stantler",
+    "family": 120,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 73,
+      "attack": 95,
+      "defense": 62,
+      "special-attack": 85,
+      "special-defense": 65,
+      "speed": 85
+    },
+    "bst": 465
+  },
+  {
+    "id": 235,
+    "name": "smeargle",
+    "family": 121,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 55,
+      "attack": 20,
+      "defense": 35,
+      "special-attack": 20,
+      "special-defense": 45,
+      "speed": 75
+    },
+    "bst": 250
+  },
+  {
+    "id": 236,
+    "name": "tyrogue",
+    "family": 47,
+    "baby": true,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 35,
+      "attack": 35,
+      "defense": 35,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 35
+    },
+    "bst": 210
+  },
+  {
+    "id": 237,
+    "name": "hitmontop",
+    "family": 47,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 50,
+      "attack": 95,
+      "defense": 95,
+      "special-attack": 35,
+      "special-defense": 110,
+      "speed": 70
+    },
+    "bst": 455
+  },
+  {
+    "id": 238,
+    "name": "smoochum",
+    "family": 59,
+    "baby": true,
+    "types": ["ice", "psychic"],
+    "stats": {
+      "hp": 45,
+      "attack": 30,
+      "defense": 15,
+      "special-attack": 85,
+      "special-defense": 65,
+      "speed": 65
+    },
+    "bst": 305
+  },
+  {
+    "id": 239,
+    "name": "elekid",
+    "family": 60,
+    "baby": true,
+    "types": ["electric"],
+    "stats": {
+      "hp": 45,
+      "attack": 63,
+      "defense": 37,
+      "special-attack": 65,
+      "special-defense": 55,
+      "speed": 95
+    },
+    "bst": 360
+  },
+  {
+    "id": 240,
+    "name": "magby",
+    "family": 61,
+    "baby": true,
+    "types": ["fire"],
+    "stats": {
+      "hp": 45,
+      "attack": 75,
+      "defense": 37,
+      "special-attack": 70,
+      "special-defense": 55,
+      "speed": 83
+    },
+    "bst": 365
+  },
+  {
+    "id": 241,
+    "name": "miltank",
+    "family": 122,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 95,
+      "attack": 80,
+      "defense": 105,
+      "special-attack": 40,
+      "special-defense": 70,
+      "speed": 100
+    },
+    "bst": 490
+  },
+  {
+    "id": 242,
+    "name": "blissey",
+    "family": 51,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 255,
+      "attack": 10,
+      "defense": 10,
+      "special-attack": 75,
+      "special-defense": 135,
+      "speed": 55
+    },
+    "bst": 540
+  },
+  {
+    "id": 246,
+    "name": "larvitar",
+    "family": 126,
+    "baby": false,
+    "types": ["rock", "ground"],
+    "stats": {
+      "hp": 50,
+      "attack": 64,
+      "defense": 50,
+      "special-attack": 45,
+      "special-defense": 50,
+      "speed": 41
+    },
+    "bst": 300
+  },
+  {
+    "id": 247,
+    "name": "pupitar",
+    "family": 126,
+    "baby": false,
+    "types": ["rock", "ground"],
+    "stats": {
+      "hp": 70,
+      "attack": 84,
+      "defense": 70,
+      "special-attack": 65,
+      "special-defense": 70,
+      "speed": 51
+    },
+    "bst": 410
+  },
+  {
+    "id": 248,
+    "name": "tyranitar",
+    "family": 126,
+    "baby": false,
+    "types": ["rock", "dark"],
+    "stats": {
+      "hp": 100,
+      "attack": 134,
+      "defense": 110,
+      "special-attack": 95,
+      "special-defense": 100,
+      "speed": 61
+    },
+    "bst": 600
+  },
+  {
+    "id": 252,
+    "name": "treecko",
+    "family": 130,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 35,
+      "special-attack": 65,
+      "special-defense": 55,
+      "speed": 70
+    },
+    "bst": 310
+  },
+  {
+    "id": 253,
+    "name": "grovyle",
+    "family": 130,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 50,
+      "attack": 65,
+      "defense": 45,
+      "special-attack": 85,
+      "special-defense": 65,
+      "speed": 95
+    },
+    "bst": 405
+  },
+  {
+    "id": 254,
+    "name": "sceptile",
+    "family": 130,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 70,
+      "attack": 85,
+      "defense": 65,
+      "special-attack": 105,
+      "special-defense": 85,
+      "speed": 120
+    },
+    "bst": 530
+  },
+  {
+    "id": 255,
+    "name": "torchic",
+    "family": 131,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 45,
+      "attack": 60,
+      "defense": 40,
+      "special-attack": 70,
+      "special-defense": 50,
+      "speed": 45
+    },
+    "bst": 310
+  },
+  {
+    "id": 256,
+    "name": "combusken",
+    "family": 131,
+    "baby": false,
+    "types": ["fire", "fighting"],
+    "stats": {
+      "hp": 60,
+      "attack": 85,
+      "defense": 60,
+      "special-attack": 85,
+      "special-defense": 60,
+      "speed": 55
+    },
+    "bst": 405
+  },
+  {
+    "id": 257,
+    "name": "blaziken",
+    "family": 131,
+    "baby": false,
+    "types": ["fire", "fighting"],
+    "stats": {
+      "hp": 80,
+      "attack": 120,
+      "defense": 70,
+      "special-attack": 110,
+      "special-defense": 70,
+      "speed": 80
+    },
+    "bst": 530
+  },
+  {
+    "id": 258,
+    "name": "mudkip",
+    "family": 132,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 50,
+      "attack": 70,
+      "defense": 50,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 40
+    },
+    "bst": 310
+  },
+  {
+    "id": 259,
+    "name": "marshtomp",
+    "family": 132,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 70,
+      "attack": 85,
+      "defense": 70,
+      "special-attack": 60,
+      "special-defense": 70,
+      "speed": 50
+    },
+    "bst": 405
+  },
+  {
+    "id": 260,
+    "name": "swampert",
+    "family": 132,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 100,
+      "attack": 110,
+      "defense": 90,
+      "special-attack": 85,
+      "special-defense": 90,
+      "speed": 60
+    },
+    "bst": 535
+  },
+  {
+    "id": 261,
+    "name": "poochyena",
+    "family": 133,
+    "baby": false,
+    "types": ["dark"],
+    "stats": {
+      "hp": 35,
+      "attack": 55,
+      "defense": 35,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 35
+    },
+    "bst": 220
+  },
+  {
+    "id": 262,
+    "name": "mightyena",
+    "family": 133,
+    "baby": false,
+    "types": ["dark"],
+    "stats": {
+      "hp": 70,
+      "attack": 90,
+      "defense": 70,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 70
+    },
+    "bst": 420
+  },
+  {
+    "id": 263,
+    "name": "zigzagoon",
+    "family": 134,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 38,
+      "attack": 30,
+      "defense": 41,
+      "special-attack": 30,
+      "special-defense": 41,
+      "speed": 60
+    },
+    "bst": 240
+  },
+  {
+    "id": 264,
+    "name": "linoone",
+    "family": 134,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 78,
+      "attack": 70,
+      "defense": 61,
+      "special-attack": 50,
+      "special-defense": 61,
+      "speed": 100
+    },
+    "bst": 420
+  },
+  {
+    "id": 265,
+    "name": "wurmple",
+    "family": 135,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 45,
+      "attack": 45,
+      "defense": 35,
+      "special-attack": 20,
+      "special-defense": 30,
+      "speed": 20
+    },
+    "bst": 195
+  },
+  {
+    "id": 266,
+    "name": "silcoon",
+    "family": 135,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 50,
+      "attack": 35,
+      "defense": 55,
+      "special-attack": 25,
+      "special-defense": 25,
+      "speed": 15
+    },
+    "bst": 205
+  },
+  {
+    "id": 267,
+    "name": "beautifly",
+    "family": 135,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 70,
+      "defense": 50,
+      "special-attack": 100,
+      "special-defense": 50,
+      "speed": 65
+    },
+    "bst": 395
+  },
+  {
+    "id": 268,
+    "name": "cascoon",
+    "family": 135,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 50,
+      "attack": 35,
+      "defense": 55,
+      "special-attack": 25,
+      "special-defense": 25,
+      "speed": 15
+    },
+    "bst": 205
+  },
+  {
+    "id": 269,
+    "name": "dustox",
+    "family": 135,
+    "baby": false,
+    "types": ["bug", "poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 70,
+      "special-attack": 50,
+      "special-defense": 90,
+      "speed": 65
+    },
+    "bst": 385
+  },
+  {
+    "id": 270,
+    "name": "lotad",
+    "family": 136,
+    "baby": false,
+    "types": ["water", "grass"],
+    "stats": {
+      "hp": 40,
+      "attack": 30,
+      "defense": 30,
+      "special-attack": 40,
+      "special-defense": 50,
+      "speed": 30
+    },
+    "bst": 220
+  },
+  {
+    "id": 271,
+    "name": "lombre",
+    "family": 136,
+    "baby": false,
+    "types": ["water", "grass"],
+    "stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 50,
+      "special-attack": 60,
+      "special-defense": 70,
+      "speed": 50
+    },
+    "bst": 340
+  },
+  {
+    "id": 272,
+    "name": "ludicolo",
+    "family": 136,
+    "baby": false,
+    "types": ["water", "grass"],
+    "stats": {
+      "hp": 80,
+      "attack": 70,
+      "defense": 70,
+      "special-attack": 90,
+      "special-defense": 100,
+      "speed": 70
+    },
+    "bst": 480
+  },
+  {
+    "id": 273,
+    "name": "seedot",
+    "family": 137,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 40,
+      "attack": 40,
+      "defense": 50,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 30
+    },
+    "bst": 220
+  },
+  {
+    "id": 274,
+    "name": "nuzleaf",
+    "family": 137,
+    "baby": false,
+    "types": ["grass", "dark"],
+    "stats": {
+      "hp": 70,
+      "attack": 70,
+      "defense": 40,
+      "special-attack": 60,
+      "special-defense": 40,
+      "speed": 60
+    },
+    "bst": 340
+  },
+  {
+    "id": 275,
+    "name": "shiftry",
+    "family": 137,
+    "baby": false,
+    "types": ["grass", "dark"],
+    "stats": {
+      "hp": 90,
+      "attack": 100,
+      "defense": 60,
+      "special-attack": 90,
+      "special-defense": 60,
+      "speed": 80
+    },
+    "bst": 480
+  },
+  {
+    "id": 276,
+    "name": "taillow",
+    "family": 138,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 55,
+      "defense": 30,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 85
+    },
+    "bst": 270
+  },
+  {
+    "id": 277,
+    "name": "swellow",
+    "family": 138,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 85,
+      "defense": 60,
+      "special-attack": 75,
+      "special-defense": 50,
+      "speed": 125
+    },
+    "bst": 455
+  },
+  {
+    "id": 278,
+    "name": "wingull",
+    "family": 139,
+    "baby": false,
+    "types": ["water", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 30,
+      "defense": 30,
+      "special-attack": 55,
+      "special-defense": 30,
+      "speed": 85
+    },
+    "bst": 270
+  },
+  {
+    "id": 279,
+    "name": "pelipper",
+    "family": 139,
+    "baby": false,
+    "types": ["water", "flying"],
+    "stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 100,
+      "special-attack": 95,
+      "special-defense": 70,
+      "speed": 65
+    },
+    "bst": 440
+  },
+  {
+    "id": 280,
+    "name": "ralts",
+    "family": 140,
+    "baby": false,
+    "types": ["psychic", "fairy"],
+    "stats": {
+      "hp": 28,
+      "attack": 25,
+      "defense": 25,
+      "special-attack": 45,
+      "special-defense": 35,
+      "speed": 40
+    },
+    "bst": 198
+  },
+  {
+    "id": 281,
+    "name": "kirlia",
+    "family": 140,
+    "baby": false,
+    "types": ["psychic", "fairy"],
+    "stats": {
+      "hp": 38,
+      "attack": 35,
+      "defense": 35,
+      "special-attack": 65,
+      "special-defense": 55,
+      "speed": 50
+    },
+    "bst": 278
+  },
+  {
+    "id": 282,
+    "name": "gardevoir",
+    "family": 140,
+    "baby": false,
+    "types": ["psychic", "fairy"],
+    "stats": {
+      "hp": 68,
+      "attack": 65,
+      "defense": 65,
+      "special-attack": 125,
+      "special-defense": 115,
+      "speed": 80
+    },
+    "bst": 518
+  },
+  {
+    "id": 283,
+    "name": "surskit",
+    "family": 141,
+    "baby": false,
+    "types": ["bug", "water"],
+    "stats": {
+      "hp": 40,
+      "attack": 30,
+      "defense": 32,
+      "special-attack": 50,
+      "special-defense": 52,
+      "speed": 65
+    },
+    "bst": 269
+  },
+  {
+    "id": 284,
+    "name": "masquerain",
+    "family": 141,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 70,
+      "attack": 60,
+      "defense": 62,
+      "special-attack": 100,
+      "special-defense": 82,
+      "speed": 80
+    },
+    "bst": 454
+  },
+  {
+    "id": 285,
+    "name": "shroomish",
+    "family": 142,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 60,
+      "attack": 40,
+      "defense": 60,
+      "special-attack": 40,
+      "special-defense": 60,
+      "speed": 35
+    },
+    "bst": 295
+  },
+  {
+    "id": 286,
+    "name": "breloom",
+    "family": 142,
+    "baby": false,
+    "types": ["grass", "fighting"],
+    "stats": {
+      "hp": 60,
+      "attack": 130,
+      "defense": 80,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 70
+    },
+    "bst": 460
+  },
+  {
+    "id": 287,
+    "name": "slakoth",
+    "family": 143,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 60,
+      "attack": 60,
+      "defense": 60,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 30
+    },
+    "bst": 280
+  },
+  {
+    "id": 288,
+    "name": "vigoroth",
+    "family": 143,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 80,
+      "attack": 80,
+      "defense": 80,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 90
+    },
+    "bst": 440
+  },
+  {
+    "id": 289,
+    "name": "slaking",
+    "family": 143,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 150,
+      "attack": 160,
+      "defense": 100,
+      "special-attack": 95,
+      "special-defense": 65,
+      "speed": 100
+    },
+    "bst": 670
+  },
+  {
+    "id": 290,
+    "name": "nincada",
+    "family": 144,
+    "baby": false,
+    "types": ["bug", "ground"],
+    "stats": {
+      "hp": 31,
+      "attack": 45,
+      "defense": 90,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 40
+    },
+    "bst": 266
+  },
+  {
+    "id": 291,
+    "name": "ninjask",
+    "family": 144,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 61,
+      "attack": 90,
+      "defense": 45,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 160
+    },
+    "bst": 456
+  },
+  {
+    "id": 292,
+    "name": "shedinja",
+    "family": 144,
+    "baby": false,
+    "types": ["bug", "ghost"],
+    "stats": {
+      "hp": 1,
+      "attack": 90,
+      "defense": 45,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 40
+    },
+    "bst": 236
+  },
+  {
+    "id": 293,
+    "name": "whismur",
+    "family": 145,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 64,
+      "attack": 51,
+      "defense": 23,
+      "special-attack": 51,
+      "special-defense": 23,
+      "speed": 28
+    },
+    "bst": 240
+  },
+  {
+    "id": 294,
+    "name": "loudred",
+    "family": 145,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 84,
+      "attack": 71,
+      "defense": 43,
+      "special-attack": 71,
+      "special-defense": 43,
+      "speed": 48
+    },
+    "bst": 360
+  },
+  {
+    "id": 295,
+    "name": "exploud",
+    "family": 145,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 104,
+      "attack": 91,
+      "defense": 63,
+      "special-attack": 91,
+      "special-defense": 73,
+      "speed": 68
+    },
+    "bst": 490
+  },
+  {
+    "id": 296,
+    "name": "makuhita",
+    "family": 146,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 72,
+      "attack": 60,
+      "defense": 30,
+      "special-attack": 20,
+      "special-defense": 30,
+      "speed": 25
+    },
+    "bst": 237
+  },
+  {
+    "id": 297,
+    "name": "hariyama",
+    "family": 146,
+    "baby": false,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 144,
+      "attack": 120,
+      "defense": 60,
+      "special-attack": 40,
+      "special-defense": 60,
+      "speed": 50
+    },
+    "bst": 474
+  },
+  {
+    "id": 298,
+    "name": "azurill",
+    "family": 90,
+    "baby": true,
+    "types": ["normal", "fairy"],
+    "stats": {
+      "hp": 50,
+      "attack": 20,
+      "defense": 40,
+      "special-attack": 20,
+      "special-defense": 40,
+      "speed": 20
+    },
+    "bst": 190
+  },
+  {
+    "id": 299,
+    "name": "nosepass",
+    "family": 147,
+    "baby": false,
+    "types": ["rock"],
+    "stats": {
+      "hp": 30,
+      "attack": 45,
+      "defense": 135,
+      "special-attack": 45,
+      "special-defense": 90,
+      "speed": 30
+    },
+    "bst": 375
+  },
+  {
+    "id": 300,
+    "name": "skitty",
+    "family": 148,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 50,
+      "attack": 45,
+      "defense": 45,
+      "special-attack": 35,
+      "special-defense": 35,
+      "speed": 50
+    },
+    "bst": 260
+  },
+  {
+    "id": 301,
+    "name": "delcatty",
+    "family": 148,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 70,
+      "attack": 65,
+      "defense": 65,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 90
+    },
+    "bst": 400
+  },
+  {
+    "id": 302,
+    "name": "sableye",
+    "family": 149,
+    "baby": false,
+    "types": ["dark", "ghost"],
+    "stats": {
+      "hp": 50,
+      "attack": 75,
+      "defense": 75,
+      "special-attack": 65,
+      "special-defense": 65,
+      "speed": 50
+    },
+    "bst": 380
+  },
+  {
+    "id": 303,
+    "name": "mawile",
+    "family": 150,
+    "baby": false,
+    "types": ["steel", "fairy"],
+    "stats": {
+      "hp": 50,
+      "attack": 85,
+      "defense": 85,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 50
+    },
+    "bst": 380
+  },
+  {
+    "id": 304,
+    "name": "aron",
+    "family": 151,
+    "baby": false,
+    "types": ["steel", "rock"],
+    "stats": {
+      "hp": 50,
+      "attack": 70,
+      "defense": 100,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 30
+    },
+    "bst": 330
+  },
+  {
+    "id": 305,
+    "name": "lairon",
+    "family": 151,
+    "baby": false,
+    "types": ["steel", "rock"],
+    "stats": {
+      "hp": 60,
+      "attack": 90,
+      "defense": 140,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 40
+    },
+    "bst": 430
+  },
+  {
+    "id": 306,
+    "name": "aggron",
+    "family": 151,
+    "baby": false,
+    "types": ["steel", "rock"],
+    "stats": {
+      "hp": 70,
+      "attack": 110,
+      "defense": 180,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 50
+    },
+    "bst": 530
+  },
+  {
+    "id": 307,
+    "name": "meditite",
+    "family": 152,
+    "baby": false,
+    "types": ["fighting", "psychic"],
+    "stats": {
+      "hp": 30,
+      "attack": 40,
+      "defense": 55,
+      "special-attack": 40,
+      "special-defense": 55,
+      "speed": 60
+    },
+    "bst": 280
+  },
+  {
+    "id": 308,
+    "name": "medicham",
+    "family": 152,
+    "baby": false,
+    "types": ["fighting", "psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 60,
+      "defense": 75,
+      "special-attack": 60,
+      "special-defense": 75,
+      "speed": 80
+    },
+    "bst": 410
+  },
+  {
+    "id": 309,
+    "name": "electrike",
+    "family": 153,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 40,
+      "special-attack": 65,
+      "special-defense": 40,
+      "speed": 65
+    },
+    "bst": 295
+  },
+  {
+    "id": 310,
+    "name": "manectric",
+    "family": 153,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 70,
+      "attack": 75,
+      "defense": 60,
+      "special-attack": 105,
+      "special-defense": 60,
+      "speed": 105
+    },
+    "bst": 475
+  },
+  {
+    "id": 311,
+    "name": "plusle",
+    "family": 154,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 40,
+      "special-attack": 85,
+      "special-defense": 75,
+      "speed": 95
+    },
+    "bst": 405
+  },
+  {
+    "id": 312,
+    "name": "minun",
+    "family": 155,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 60,
+      "attack": 40,
+      "defense": 50,
+      "special-attack": 75,
+      "special-defense": 85,
+      "speed": 95
+    },
+    "bst": 405
+  },
+  {
+    "id": 313,
+    "name": "volbeat",
+    "family": 156,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 65,
+      "attack": 73,
+      "defense": 75,
+      "special-attack": 47,
+      "special-defense": 85,
+      "speed": 85
+    },
+    "bst": 430
+  },
+  {
+    "id": 314,
+    "name": "illumise",
+    "family": 157,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 65,
+      "attack": 47,
+      "defense": 75,
+      "special-attack": 73,
+      "special-defense": 85,
+      "speed": 85
+    },
+    "bst": 430
+  },
+  {
+    "id": 315,
+    "name": "roselia",
+    "family": 158,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 50,
+      "attack": 60,
+      "defense": 45,
+      "special-attack": 100,
+      "special-defense": 80,
+      "speed": 65
+    },
+    "bst": 400
+  },
+  {
+    "id": 316,
+    "name": "gulpin",
+    "family": 159,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 70,
+      "attack": 43,
+      "defense": 53,
+      "special-attack": 43,
+      "special-defense": 53,
+      "speed": 40
+    },
+    "bst": 302
+  },
+  {
+    "id": 317,
+    "name": "swalot",
+    "family": 159,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 100,
+      "attack": 73,
+      "defense": 83,
+      "special-attack": 73,
+      "special-defense": 83,
+      "speed": 55
+    },
+    "bst": 467
+  },
+  {
+    "id": 318,
+    "name": "carvanha",
+    "family": 160,
+    "baby": false,
+    "types": ["water", "dark"],
+    "stats": {
+      "hp": 45,
+      "attack": 90,
+      "defense": 20,
+      "special-attack": 65,
+      "special-defense": 20,
+      "speed": 65
+    },
+    "bst": 305
+  },
+  {
+    "id": 319,
+    "name": "sharpedo",
+    "family": 160,
+    "baby": false,
+    "types": ["water", "dark"],
+    "stats": {
+      "hp": 70,
+      "attack": 120,
+      "defense": 40,
+      "special-attack": 95,
+      "special-defense": 40,
+      "speed": 95
+    },
+    "bst": 460
+  },
+  {
+    "id": 320,
+    "name": "wailmer",
+    "family": 161,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 130,
+      "attack": 70,
+      "defense": 35,
+      "special-attack": 70,
+      "special-defense": 35,
+      "speed": 60
+    },
+    "bst": 400
+  },
+  {
+    "id": 321,
+    "name": "wailord",
+    "family": 161,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 170,
+      "attack": 90,
+      "defense": 45,
+      "special-attack": 90,
+      "special-defense": 45,
+      "speed": 60
+    },
+    "bst": 500
+  },
+  {
+    "id": 322,
+    "name": "numel",
+    "family": 162,
+    "baby": false,
+    "types": ["fire", "ground"],
+    "stats": {
+      "hp": 60,
+      "attack": 60,
+      "defense": 40,
+      "special-attack": 65,
+      "special-defense": 45,
+      "speed": 35
+    },
+    "bst": 305
+  },
+  {
+    "id": 323,
+    "name": "camerupt",
+    "family": 162,
+    "baby": false,
+    "types": ["fire", "ground"],
+    "stats": {
+      "hp": 70,
+      "attack": 100,
+      "defense": 70,
+      "special-attack": 105,
+      "special-defense": 75,
+      "speed": 40
+    },
+    "bst": 460
+  },
+  {
+    "id": 324,
+    "name": "torkoal",
+    "family": 163,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 70,
+      "attack": 85,
+      "defense": 140,
+      "special-attack": 85,
+      "special-defense": 70,
+      "speed": 20
+    },
+    "bst": 470
+  },
+  {
+    "id": 325,
+    "name": "spoink",
+    "family": 164,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 25,
+      "defense": 35,
+      "special-attack": 70,
+      "special-defense": 80,
+      "speed": 60
+    },
+    "bst": 330
+  },
+  {
+    "id": 326,
+    "name": "grumpig",
+    "family": 164,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 80,
+      "attack": 45,
+      "defense": 65,
+      "special-attack": 90,
+      "special-defense": 110,
+      "speed": 80
+    },
+    "bst": 470
+  },
+  {
+    "id": 327,
+    "name": "spinda",
+    "family": 165,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 60,
+      "attack": 60,
+      "defense": 60,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 60
+    },
+    "bst": 360
+  },
+  {
+    "id": 328,
+    "name": "trapinch",
+    "family": 166,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 45,
+      "attack": 100,
+      "defense": 45,
+      "special-attack": 45,
+      "special-defense": 45,
+      "speed": 10
+    },
+    "bst": 290
+  },
+  {
+    "id": 329,
+    "name": "vibrava",
+    "family": 166,
+    "baby": false,
+    "types": ["ground", "dragon"],
+    "stats": {
+      "hp": 50,
+      "attack": 70,
+      "defense": 50,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 70
+    },
+    "bst": 340
+  },
+  {
+    "id": 330,
+    "name": "flygon",
+    "family": 166,
+    "baby": false,
+    "types": ["ground", "dragon"],
+    "stats": {
+      "hp": 80,
+      "attack": 100,
+      "defense": 80,
+      "special-attack": 80,
+      "special-defense": 80,
+      "speed": 100
+    },
+    "bst": 520
+  },
+  {
+    "id": 331,
+    "name": "cacnea",
+    "family": 167,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 50,
+      "attack": 85,
+      "defense": 40,
+      "special-attack": 85,
+      "special-defense": 40,
+      "speed": 35
+    },
+    "bst": 335
+  },
+  {
+    "id": 332,
+    "name": "cacturne",
+    "family": 167,
+    "baby": false,
+    "types": ["grass", "dark"],
+    "stats": {
+      "hp": 70,
+      "attack": 115,
+      "defense": 60,
+      "special-attack": 115,
+      "special-defense": 60,
+      "speed": 55
+    },
+    "bst": 475
+  },
+  {
+    "id": 333,
+    "name": "swablu",
+    "family": 168,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 45,
+      "attack": 40,
+      "defense": 60,
+      "special-attack": 40,
+      "special-defense": 75,
+      "speed": 50
+    },
+    "bst": 310
+  },
+  {
+    "id": 334,
+    "name": "altaria",
+    "family": 168,
+    "baby": false,
+    "types": ["dragon", "flying"],
+    "stats": {
+      "hp": 75,
+      "attack": 70,
+      "defense": 90,
+      "special-attack": 70,
+      "special-defense": 105,
+      "speed": 80
+    },
+    "bst": 490
+  },
+  {
+    "id": 335,
+    "name": "zangoose",
+    "family": 169,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 73,
+      "attack": 115,
+      "defense": 60,
+      "special-attack": 60,
+      "special-defense": 60,
+      "speed": 90
+    },
+    "bst": 458
+  },
+  {
+    "id": 336,
+    "name": "seviper",
+    "family": 170,
+    "baby": false,
+    "types": ["poison"],
+    "stats": {
+      "hp": 73,
+      "attack": 100,
+      "defense": 60,
+      "special-attack": 100,
+      "special-defense": 60,
+      "speed": 65
+    },
+    "bst": 458
+  },
+  {
+    "id": 337,
+    "name": "lunatone",
+    "family": 171,
+    "baby": false,
+    "types": ["rock", "psychic"],
+    "stats": {
+      "hp": 90,
+      "attack": 55,
+      "defense": 65,
+      "special-attack": 95,
+      "special-defense": 85,
+      "speed": 70
+    },
+    "bst": 460
+  },
+  {
+    "id": 338,
+    "name": "solrock",
+    "family": 172,
+    "baby": false,
+    "types": ["rock", "psychic"],
+    "stats": {
+      "hp": 90,
+      "attack": 95,
+      "defense": 85,
+      "special-attack": 55,
+      "special-defense": 65,
+      "speed": 70
+    },
+    "bst": 460
+  },
+  {
+    "id": 339,
+    "name": "barboach",
+    "family": 173,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 50,
+      "attack": 48,
+      "defense": 43,
+      "special-attack": 46,
+      "special-defense": 41,
+      "speed": 60
+    },
+    "bst": 288
+  },
+  {
+    "id": 340,
+    "name": "whiscash",
+    "family": 173,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 110,
+      "attack": 78,
+      "defense": 73,
+      "special-attack": 76,
+      "special-defense": 71,
+      "speed": 60
+    },
+    "bst": 468
+  },
+  {
+    "id": 341,
+    "name": "corphish",
+    "family": 174,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 43,
+      "attack": 80,
+      "defense": 65,
+      "special-attack": 50,
+      "special-defense": 35,
+      "speed": 35
+    },
+    "bst": 308
+  },
+  {
+    "id": 342,
+    "name": "crawdaunt",
+    "family": 174,
+    "baby": false,
+    "types": ["water", "dark"],
+    "stats": {
+      "hp": 63,
+      "attack": 120,
+      "defense": 85,
+      "special-attack": 90,
+      "special-defense": 55,
+      "speed": 55
+    },
+    "bst": 468
+  },
+  {
+    "id": 343,
+    "name": "baltoy",
+    "family": 175,
+    "baby": false,
+    "types": ["ground", "psychic"],
+    "stats": {
+      "hp": 40,
+      "attack": 40,
+      "defense": 55,
+      "special-attack": 40,
+      "special-defense": 70,
+      "speed": 55
+    },
+    "bst": 300
+  },
+  {
+    "id": 344,
+    "name": "claydol",
+    "family": 175,
+    "baby": false,
+    "types": ["ground", "psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 70,
+      "defense": 105,
+      "special-attack": 70,
+      "special-defense": 120,
+      "speed": 75
+    },
+    "bst": 500
+  },
+  {
+    "id": 345,
+    "name": "lileep",
+    "family": 176,
+    "baby": false,
+    "types": ["rock", "grass"],
+    "stats": {
+      "hp": 66,
+      "attack": 41,
+      "defense": 77,
+      "special-attack": 61,
+      "special-defense": 87,
+      "speed": 23
+    },
+    "bst": 355
+  },
+  {
+    "id": 346,
+    "name": "cradily",
+    "family": 176,
+    "baby": false,
+    "types": ["rock", "grass"],
+    "stats": {
+      "hp": 86,
+      "attack": 81,
+      "defense": 97,
+      "special-attack": 81,
+      "special-defense": 107,
+      "speed": 43
+    },
+    "bst": 495
+  },
+  {
+    "id": 347,
+    "name": "anorith",
+    "family": 177,
+    "baby": false,
+    "types": ["rock", "bug"],
+    "stats": {
+      "hp": 45,
+      "attack": 95,
+      "defense": 50,
+      "special-attack": 40,
+      "special-defense": 50,
+      "speed": 75
+    },
+    "bst": 355
+  },
+  {
+    "id": 348,
+    "name": "armaldo",
+    "family": 177,
+    "baby": false,
+    "types": ["rock", "bug"],
+    "stats": {
+      "hp": 75,
+      "attack": 125,
+      "defense": 100,
+      "special-attack": 70,
+      "special-defense": 80,
+      "speed": 45
+    },
+    "bst": 495
+  },
+  {
+    "id": 349,
+    "name": "feebas",
+    "family": 178,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 20,
+      "attack": 15,
+      "defense": 20,
+      "special-attack": 10,
+      "special-defense": 55,
+      "speed": 80
+    },
+    "bst": 200
+  },
+  {
+    "id": 350,
+    "name": "milotic",
+    "family": 178,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 95,
+      "attack": 60,
+      "defense": 79,
+      "special-attack": 100,
+      "special-defense": 125,
+      "speed": 81
+    },
+    "bst": 540
+  },
+  {
+    "id": 351,
+    "name": "castform",
+    "family": 179,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 70,
+      "attack": 70,
+      "defense": 70,
+      "special-attack": 70,
+      "special-defense": 70,
+      "speed": 70
+    },
+    "bst": 420
+  },
+  {
+    "id": 352,
+    "name": "kecleon",
+    "family": 180,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 60,
+      "attack": 90,
+      "defense": 70,
+      "special-attack": 60,
+      "special-defense": 120,
+      "speed": 40
+    },
+    "bst": 440
+  },
+  {
+    "id": 353,
+    "name": "shuppet",
+    "family": 181,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 44,
+      "attack": 75,
+      "defense": 35,
+      "special-attack": 63,
+      "special-defense": 33,
+      "speed": 45
+    },
+    "bst": 295
+  },
+  {
+    "id": 354,
+    "name": "banette",
+    "family": 181,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 64,
+      "attack": 115,
+      "defense": 65,
+      "special-attack": 83,
+      "special-defense": 63,
+      "speed": 65
+    },
+    "bst": 455
+  },
+  {
+    "id": 355,
+    "name": "duskull",
+    "family": 182,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 20,
+      "attack": 40,
+      "defense": 90,
+      "special-attack": 30,
+      "special-defense": 90,
+      "speed": 25
+    },
+    "bst": 295
+  },
+  {
+    "id": 356,
+    "name": "dusclops",
+    "family": 182,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 40,
+      "attack": 70,
+      "defense": 130,
+      "special-attack": 60,
+      "special-defense": 130,
+      "speed": 25
+    },
+    "bst": 455
+  },
+  {
+    "id": 357,
+    "name": "tropius",
+    "family": 183,
+    "baby": false,
+    "types": ["grass", "flying"],
+    "stats": {
+      "hp": 99,
+      "attack": 68,
+      "defense": 83,
+      "special-attack": 72,
+      "special-defense": 87,
+      "speed": 51
+    },
+    "bst": 460
+  },
+  {
+    "id": 358,
+    "name": "chimecho",
+    "family": 184,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 75,
+      "attack": 50,
+      "defense": 80,
+      "special-attack": 95,
+      "special-defense": 90,
+      "speed": 65
+    },
+    "bst": 455
+  },
+  {
+    "id": 359,
+    "name": "absol",
+    "family": 185,
+    "baby": false,
+    "types": ["dark"],
+    "stats": {
+      "hp": 65,
+      "attack": 130,
+      "defense": 60,
+      "special-attack": 75,
+      "special-defense": 60,
+      "speed": 75
+    },
+    "bst": 465
+  },
+  {
+    "id": 360,
+    "name": "wynaut",
+    "family": 100,
+    "baby": true,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 95,
+      "attack": 23,
+      "defense": 48,
+      "special-attack": 23,
+      "special-defense": 48,
+      "speed": 23
+    },
+    "bst": 260
+  },
+  {
+    "id": 361,
+    "name": "snorunt",
+    "family": 186,
+    "baby": false,
+    "types": ["ice"],
+    "stats": {
+      "hp": 50,
+      "attack": 50,
+      "defense": 50,
+      "special-attack": 50,
+      "special-defense": 50,
+      "speed": 50
+    },
+    "bst": 300
+  },
+  {
+    "id": 362,
+    "name": "glalie",
+    "family": 186,
+    "baby": false,
+    "types": ["ice"],
+    "stats": {
+      "hp": 80,
+      "attack": 80,
+      "defense": 80,
+      "special-attack": 80,
+      "special-defense": 80,
+      "speed": 80
+    },
+    "bst": 480
+  },
+  {
+    "id": 363,
+    "name": "spheal",
+    "family": 187,
+    "baby": false,
+    "types": ["ice", "water"],
+    "stats": {
+      "hp": 70,
+      "attack": 40,
+      "defense": 50,
+      "special-attack": 55,
+      "special-defense": 50,
+      "speed": 25
+    },
+    "bst": 290
+  },
+  {
+    "id": 364,
+    "name": "sealeo",
+    "family": 187,
+    "baby": false,
+    "types": ["ice", "water"],
+    "stats": {
+      "hp": 90,
+      "attack": 60,
+      "defense": 70,
+      "special-attack": 75,
+      "special-defense": 70,
+      "speed": 45
+    },
+    "bst": 410
+  },
+  {
+    "id": 365,
+    "name": "walrein",
+    "family": 187,
+    "baby": false,
+    "types": ["ice", "water"],
+    "stats": {
+      "hp": 110,
+      "attack": 80,
+      "defense": 90,
+      "special-attack": 95,
+      "special-defense": 90,
+      "speed": 65
+    },
+    "bst": 530
+  },
+  {
+    "id": 366,
+    "name": "clamperl",
+    "family": 188,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 35,
+      "attack": 64,
+      "defense": 85,
+      "special-attack": 74,
+      "special-defense": 55,
+      "speed": 32
+    },
+    "bst": 345
+  },
+  {
+    "id": 367,
+    "name": "huntail",
+    "family": 188,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 55,
+      "attack": 104,
+      "defense": 105,
+      "special-attack": 94,
+      "special-defense": 75,
+      "speed": 52
+    },
+    "bst": 485
+  },
+  {
+    "id": 368,
+    "name": "gorebyss",
+    "family": 188,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 55,
+      "attack": 84,
+      "defense": 105,
+      "special-attack": 114,
+      "special-defense": 75,
+      "speed": 52
+    },
+    "bst": 485
+  },
+  {
+    "id": 369,
+    "name": "relicanth",
+    "family": 189,
+    "baby": false,
+    "types": ["water", "rock"],
+    "stats": {
+      "hp": 100,
+      "attack": 90,
+      "defense": 130,
+      "special-attack": 45,
+      "special-defense": 65,
+      "speed": 55
+    },
+    "bst": 485
+  },
+  {
+    "id": 370,
+    "name": "luvdisc",
+    "family": 190,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 43,
+      "attack": 30,
+      "defense": 55,
+      "special-attack": 40,
+      "special-defense": 65,
+      "speed": 97
+    },
+    "bst": 330
+  },
+  {
+    "id": 371,
+    "name": "bagon",
+    "family": 191,
+    "baby": false,
+    "types": ["dragon"],
+    "stats": {
+      "hp": 45,
+      "attack": 75,
+      "defense": 60,
+      "special-attack": 40,
+      "special-defense": 30,
+      "speed": 50
+    },
+    "bst": 300
+  },
+  {
+    "id": 372,
+    "name": "shelgon",
+    "family": 191,
+    "baby": false,
+    "types": ["dragon"],
+    "stats": {
+      "hp": 65,
+      "attack": 95,
+      "defense": 100,
+      "special-attack": 60,
+      "special-defense": 50,
+      "speed": 50
+    },
+    "bst": 420
+  },
+  {
+    "id": 373,
+    "name": "salamence",
+    "family": 191,
+    "baby": false,
+    "types": ["dragon", "flying"],
+    "stats": {
+      "hp": 95,
+      "attack": 135,
+      "defense": 80,
+      "special-attack": 110,
+      "special-defense": 80,
+      "speed": 100
+    },
+    "bst": 600
+  },
+  {
+    "id": 374,
+    "name": "beldum",
+    "family": 192,
+    "baby": false,
+    "types": ["steel", "psychic"],
+    "stats": {
+      "hp": 40,
+      "attack": 55,
+      "defense": 80,
+      "special-attack": 35,
+      "special-defense": 60,
+      "speed": 30
+    },
+    "bst": 300
+  },
+  {
+    "id": 375,
+    "name": "metang",
+    "family": 192,
+    "baby": false,
+    "types": ["steel", "psychic"],
+    "stats": {
+      "hp": 60,
+      "attack": 75,
+      "defense": 100,
+      "special-attack": 55,
+      "special-defense": 80,
+      "speed": 50
+    },
+    "bst": 420
+  },
+  {
+    "id": 376,
+    "name": "metagross",
+    "family": 192,
+    "baby": false,
+    "types": ["steel", "psychic"],
+    "stats": {
+      "hp": 80,
+      "attack": 135,
+      "defense": 130,
+      "special-attack": 95,
+      "special-defense": 90,
+      "speed": 70
+    },
+    "bst": 600
+  },
+  {
+    "id": 387,
+    "name": "turtwig",
+    "family": 203,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 55,
+      "attack": 68,
+      "defense": 64,
+      "special-attack": 45,
+      "special-defense": 55,
+      "speed": 31
+    },
+    "bst": 318
+  },
+  {
+    "id": 388,
+    "name": "grotle",
+    "family": 203,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 75,
+      "attack": 89,
+      "defense": 85,
+      "special-attack": 55,
+      "special-defense": 65,
+      "speed": 36
+    },
+    "bst": 405
+  },
+  {
+    "id": 389,
+    "name": "torterra",
+    "family": 203,
+    "baby": false,
+    "types": ["grass", "ground"],
+    "stats": {
+      "hp": 95,
+      "attack": 109,
+      "defense": 105,
+      "special-attack": 75,
+      "special-defense": 85,
+      "speed": 56
+    },
+    "bst": 525
+  },
+  {
+    "id": 390,
+    "name": "chimchar",
+    "family": 204,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 44,
+      "attack": 58,
+      "defense": 44,
+      "special-attack": 58,
+      "special-defense": 44,
+      "speed": 61
+    },
+    "bst": 309
+  },
+  {
+    "id": 391,
+    "name": "monferno",
+    "family": 204,
+    "baby": false,
+    "types": ["fire", "fighting"],
+    "stats": {
+      "hp": 64,
+      "attack": 78,
+      "defense": 52,
+      "special-attack": 78,
+      "special-defense": 52,
+      "speed": 81
+    },
+    "bst": 405
+  },
+  {
+    "id": 392,
+    "name": "infernape",
+    "family": 204,
+    "baby": false,
+    "types": ["fire", "fighting"],
+    "stats": {
+      "hp": 76,
+      "attack": 104,
+      "defense": 71,
+      "special-attack": 104,
+      "special-defense": 71,
+      "speed": 108
+    },
+    "bst": 534
+  },
+  {
+    "id": 393,
+    "name": "piplup",
+    "family": 205,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 53,
+      "attack": 51,
+      "defense": 53,
+      "special-attack": 61,
+      "special-defense": 56,
+      "speed": 40
+    },
+    "bst": 314
+  },
+  {
+    "id": 394,
+    "name": "prinplup",
+    "family": 205,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 64,
+      "attack": 66,
+      "defense": 68,
+      "special-attack": 81,
+      "special-defense": 76,
+      "speed": 50
+    },
+    "bst": 405
+  },
+  {
+    "id": 395,
+    "name": "empoleon",
+    "family": 205,
+    "baby": false,
+    "types": ["water", "steel"],
+    "stats": {
+      "hp": 84,
+      "attack": 86,
+      "defense": 88,
+      "special-attack": 111,
+      "special-defense": 101,
+      "speed": 60
+    },
+    "bst": 530
+  },
+  {
+    "id": 396,
+    "name": "starly",
+    "family": 206,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 40,
+      "attack": 55,
+      "defense": 30,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 60
+    },
+    "bst": 245
+  },
+  {
+    "id": 397,
+    "name": "staravia",
+    "family": 206,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 55,
+      "attack": 75,
+      "defense": 50,
+      "special-attack": 40,
+      "special-defense": 40,
+      "speed": 80
+    },
+    "bst": 340
+  },
+  {
+    "id": 398,
+    "name": "staraptor",
+    "family": 206,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 85,
+      "attack": 120,
+      "defense": 70,
+      "special-attack": 50,
+      "special-defense": 60,
+      "speed": 100
+    },
+    "bst": 485
+  },
+  {
+    "id": 399,
+    "name": "bidoof",
+    "family": 207,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 59,
+      "attack": 45,
+      "defense": 40,
+      "special-attack": 35,
+      "special-defense": 40,
+      "speed": 31
+    },
+    "bst": 250
+  },
+  {
+    "id": 400,
+    "name": "bibarel",
+    "family": 207,
+    "baby": false,
+    "types": ["normal", "water"],
+    "stats": {
+      "hp": 79,
+      "attack": 85,
+      "defense": 60,
+      "special-attack": 55,
+      "special-defense": 60,
+      "speed": 71
+    },
+    "bst": 410
+  },
+  {
+    "id": 401,
+    "name": "kricketot",
+    "family": 208,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 37,
+      "attack": 25,
+      "defense": 41,
+      "special-attack": 25,
+      "special-defense": 41,
+      "speed": 25
+    },
+    "bst": 194
+  },
+  {
+    "id": 402,
+    "name": "kricketune",
+    "family": 208,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 77,
+      "attack": 85,
+      "defense": 51,
+      "special-attack": 55,
+      "special-defense": 51,
+      "speed": 65
+    },
+    "bst": 384
+  },
+  {
+    "id": 403,
+    "name": "shinx",
+    "family": 209,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 45,
+      "attack": 65,
+      "defense": 34,
+      "special-attack": 40,
+      "special-defense": 34,
+      "speed": 45
+    },
+    "bst": 263
+  },
+  {
+    "id": 404,
+    "name": "luxio",
+    "family": 209,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 60,
+      "attack": 85,
+      "defense": 49,
+      "special-attack": 60,
+      "special-defense": 49,
+      "speed": 60
+    },
+    "bst": 363
+  },
+  {
+    "id": 405,
+    "name": "luxray",
+    "family": 209,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 80,
+      "attack": 120,
+      "defense": 79,
+      "special-attack": 95,
+      "special-defense": 79,
+      "speed": 70
+    },
+    "bst": 523
+  },
+  {
+    "id": 406,
+    "name": "budew",
+    "family": 158,
+    "baby": true,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 40,
+      "attack": 30,
+      "defense": 35,
+      "special-attack": 50,
+      "special-defense": 70,
+      "speed": 55
+    },
+    "bst": 280
+  },
+  {
+    "id": 407,
+    "name": "roserade",
+    "family": 158,
+    "baby": false,
+    "types": ["grass", "poison"],
+    "stats": {
+      "hp": 60,
+      "attack": 70,
+      "defense": 65,
+      "special-attack": 125,
+      "special-defense": 105,
+      "speed": 90
+    },
+    "bst": 515
+  },
+  {
+    "id": 408,
+    "name": "cranidos",
+    "family": 211,
+    "baby": false,
+    "types": ["rock"],
+    "stats": {
+      "hp": 67,
+      "attack": 125,
+      "defense": 40,
+      "special-attack": 30,
+      "special-defense": 30,
+      "speed": 58
+    },
+    "bst": 350
+  },
+  {
+    "id": 409,
+    "name": "rampardos",
+    "family": 211,
+    "baby": false,
+    "types": ["rock"],
+    "stats": {
+      "hp": 97,
+      "attack": 165,
+      "defense": 60,
+      "special-attack": 65,
+      "special-defense": 50,
+      "speed": 58
+    },
+    "bst": 495
+  },
+  {
+    "id": 410,
+    "name": "shieldon",
+    "family": 212,
+    "baby": false,
+    "types": ["rock", "steel"],
+    "stats": {
+      "hp": 30,
+      "attack": 42,
+      "defense": 118,
+      "special-attack": 42,
+      "special-defense": 88,
+      "speed": 30
+    },
+    "bst": 350
+  },
+  {
+    "id": 411,
+    "name": "bastiodon",
+    "family": 212,
+    "baby": false,
+    "types": ["rock", "steel"],
+    "stats": {
+      "hp": 60,
+      "attack": 52,
+      "defense": 168,
+      "special-attack": 47,
+      "special-defense": 138,
+      "speed": 30
+    },
+    "bst": 495
+  },
+  {
+    "id": 412,
+    "name": "burmy",
+    "family": 213,
+    "baby": false,
+    "types": ["bug"],
+    "stats": {
+      "hp": 40,
+      "attack": 29,
+      "defense": 45,
+      "special-attack": 29,
+      "special-defense": 45,
+      "speed": 36
+    },
+    "bst": 224
+  },
+  {
+    "id": 413,
+    "name": "wormadam",
+    "family": 213,
+    "baby": false,
+    "types": ["bug", "grass"],
+    "stats": {
+      "hp": 60,
+      "attack": 59,
+      "defense": 85,
+      "special-attack": 79,
+      "special-defense": 105,
+      "speed": 36
+    },
+    "bst": 424
+  },
+  {
+    "id": 414,
+    "name": "mothim",
+    "family": 213,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 70,
+      "attack": 94,
+      "defense": 50,
+      "special-attack": 94,
+      "special-defense": 50,
+      "speed": 66
+    },
+    "bst": 424
+  },
+  {
+    "id": 415,
+    "name": "combee",
+    "family": 214,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 30,
+      "attack": 30,
+      "defense": 42,
+      "special-attack": 30,
+      "special-defense": 42,
+      "speed": 70
+    },
+    "bst": 244
+  },
+  {
+    "id": 416,
+    "name": "vespiquen",
+    "family": 214,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 70,
+      "attack": 80,
+      "defense": 102,
+      "special-attack": 80,
+      "special-defense": 102,
+      "speed": 40
+    },
+    "bst": 474
+  },
+  {
+    "id": 417,
+    "name": "pachirisu",
+    "family": 215,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 60,
+      "attack": 45,
+      "defense": 70,
+      "special-attack": 45,
+      "special-defense": 90,
+      "speed": 95
+    },
+    "bst": 405
+  },
+  {
+    "id": 418,
+    "name": "buizel",
+    "family": 216,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 55,
+      "attack": 65,
+      "defense": 35,
+      "special-attack": 60,
+      "special-defense": 30,
+      "speed": 85
+    },
+    "bst": 330
+  },
+  {
+    "id": 419,
+    "name": "floatzel",
+    "family": 216,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 85,
+      "attack": 105,
+      "defense": 55,
+      "special-attack": 85,
+      "special-defense": 50,
+      "speed": 115
+    },
+    "bst": 495
+  },
+  {
+    "id": 420,
+    "name": "cherubi",
+    "family": 217,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 45,
+      "attack": 35,
+      "defense": 45,
+      "special-attack": 62,
+      "special-defense": 53,
+      "speed": 35
+    },
+    "bst": 275
+  },
+  {
+    "id": 421,
+    "name": "cherrim",
+    "family": 217,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 70,
+      "attack": 60,
+      "defense": 70,
+      "special-attack": 87,
+      "special-defense": 78,
+      "speed": 85
+    },
+    "bst": 450
+  },
+  {
+    "id": 422,
+    "name": "shellos",
+    "family": 218,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 76,
+      "attack": 48,
+      "defense": 48,
+      "special-attack": 57,
+      "special-defense": 62,
+      "speed": 34
+    },
+    "bst": 325
+  },
+  {
+    "id": 423,
+    "name": "gastrodon",
+    "family": 218,
+    "baby": false,
+    "types": ["water", "ground"],
+    "stats": {
+      "hp": 111,
+      "attack": 83,
+      "defense": 68,
+      "special-attack": 92,
+      "special-defense": 82,
+      "speed": 39
+    },
+    "bst": 475
+  },
+  {
+    "id": 424,
+    "name": "ambipom",
+    "family": 93,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 75,
+      "attack": 100,
+      "defense": 66,
+      "special-attack": 60,
+      "special-defense": 66,
+      "speed": 115
+    },
+    "bst": 482
+  },
+  {
+    "id": 425,
+    "name": "drifloon",
+    "family": 219,
+    "baby": false,
+    "types": ["ghost", "flying"],
+    "stats": {
+      "hp": 90,
+      "attack": 50,
+      "defense": 34,
+      "special-attack": 60,
+      "special-defense": 44,
+      "speed": 70
+    },
+    "bst": 348
+  },
+  {
+    "id": 426,
+    "name": "drifblim",
+    "family": 219,
+    "baby": false,
+    "types": ["ghost", "flying"],
+    "stats": {
+      "hp": 150,
+      "attack": 80,
+      "defense": 44,
+      "special-attack": 90,
+      "special-defense": 54,
+      "speed": 80
+    },
+    "bst": 498
+  },
+  {
+    "id": 427,
+    "name": "buneary",
+    "family": 220,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 55,
+      "attack": 66,
+      "defense": 44,
+      "special-attack": 44,
+      "special-defense": 56,
+      "speed": 85
+    },
+    "bst": 350
+  },
+  {
+    "id": 428,
+    "name": "lopunny",
+    "family": 220,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 65,
+      "attack": 76,
+      "defense": 84,
+      "special-attack": 54,
+      "special-defense": 96,
+      "speed": 105
+    },
+    "bst": 480
+  },
+  {
+    "id": 429,
+    "name": "mismagius",
+    "family": 98,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 60,
+      "attack": 60,
+      "defense": 60,
+      "special-attack": 105,
+      "special-defense": 105,
+      "speed": 105
+    },
+    "bst": 495
+  },
+  {
+    "id": 430,
+    "name": "honchkrow",
+    "family": 97,
+    "baby": false,
+    "types": ["dark", "flying"],
+    "stats": {
+      "hp": 100,
+      "attack": 125,
+      "defense": 52,
+      "special-attack": 105,
+      "special-defense": 52,
+      "speed": 71
+    },
+    "bst": 505
+  },
+  {
+    "id": 431,
+    "name": "glameow",
+    "family": 221,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 49,
+      "attack": 55,
+      "defense": 42,
+      "special-attack": 42,
+      "special-defense": 37,
+      "speed": 85
+    },
+    "bst": 310
+  },
+  {
+    "id": 432,
+    "name": "purugly",
+    "family": 221,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 71,
+      "attack": 82,
+      "defense": 64,
+      "special-attack": 64,
+      "special-defense": 59,
+      "speed": 112
+    },
+    "bst": 452
+  },
+  {
+    "id": 433,
+    "name": "chingling",
+    "family": 184,
+    "baby": true,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 45,
+      "attack": 30,
+      "defense": 50,
+      "special-attack": 65,
+      "special-defense": 50,
+      "speed": 45
+    },
+    "bst": 285
+  },
+  {
+    "id": 434,
+    "name": "stunky",
+    "family": 223,
+    "baby": false,
+    "types": ["poison", "dark"],
+    "stats": {
+      "hp": 63,
+      "attack": 63,
+      "defense": 47,
+      "special-attack": 41,
+      "special-defense": 41,
+      "speed": 74
+    },
+    "bst": 329
+  },
+  {
+    "id": 435,
+    "name": "skuntank",
+    "family": 223,
+    "baby": false,
+    "types": ["poison", "dark"],
+    "stats": {
+      "hp": 103,
+      "attack": 93,
+      "defense": 67,
+      "special-attack": 71,
+      "special-defense": 61,
+      "speed": 84
+    },
+    "bst": 479
+  },
+  {
+    "id": 436,
+    "name": "bronzor",
+    "family": 224,
+    "baby": false,
+    "types": ["steel", "psychic"],
+    "stats": {
+      "hp": 57,
+      "attack": 24,
+      "defense": 86,
+      "special-attack": 24,
+      "special-defense": 86,
+      "speed": 23
+    },
+    "bst": 300
+  },
+  {
+    "id": 437,
+    "name": "bronzong",
+    "family": 224,
+    "baby": false,
+    "types": ["steel", "psychic"],
+    "stats": {
+      "hp": 67,
+      "attack": 89,
+      "defense": 116,
+      "special-attack": 79,
+      "special-defense": 116,
+      "speed": 33
+    },
+    "bst": 500
+  },
+  {
+    "id": 438,
+    "name": "bonsly",
+    "family": 91,
+    "baby": true,
+    "types": ["rock"],
+    "stats": {
+      "hp": 50,
+      "attack": 80,
+      "defense": 95,
+      "special-attack": 10,
+      "special-defense": 45,
+      "speed": 10
+    },
+    "bst": 290
+  },
+  {
+    "id": 439,
+    "name": "mime-jr",
+    "family": 57,
+    "baby": true,
+    "types": ["psychic", "fairy"],
+    "stats": {
+      "hp": 20,
+      "attack": 25,
+      "defense": 45,
+      "special-attack": 70,
+      "special-defense": 90,
+      "speed": 60
+    },
+    "bst": 310
+  },
+  {
+    "id": 440,
+    "name": "happiny",
+    "family": 51,
+    "baby": true,
+    "types": ["normal"],
+    "stats": {
+      "hp": 100,
+      "attack": 5,
+      "defense": 5,
+      "special-attack": 15,
+      "special-defense": 65,
+      "speed": 30
+    },
+    "bst": 220
+  },
+  {
+    "id": 441,
+    "name": "chatot",
+    "family": 228,
+    "baby": false,
+    "types": ["normal", "flying"],
+    "stats": {
+      "hp": 76,
+      "attack": 65,
+      "defense": 45,
+      "special-attack": 92,
+      "special-defense": 42,
+      "speed": 91
+    },
+    "bst": 411
+  },
+  {
+    "id": 442,
+    "name": "spiritomb",
+    "family": 229,
+    "baby": false,
+    "types": ["ghost", "dark"],
+    "stats": {
+      "hp": 50,
+      "attack": 92,
+      "defense": 108,
+      "special-attack": 92,
+      "special-defense": 108,
+      "speed": 35
+    },
+    "bst": 485
+  },
+  {
+    "id": 443,
+    "name": "gible",
+    "family": 230,
+    "baby": false,
+    "types": ["dragon", "ground"],
+    "stats": {
+      "hp": 58,
+      "attack": 70,
+      "defense": 45,
+      "special-attack": 40,
+      "special-defense": 45,
+      "speed": 42
+    },
+    "bst": 300
+  },
+  {
+    "id": 444,
+    "name": "gabite",
+    "family": 230,
+    "baby": false,
+    "types": ["dragon", "ground"],
+    "stats": {
+      "hp": 68,
+      "attack": 90,
+      "defense": 65,
+      "special-attack": 50,
+      "special-defense": 55,
+      "speed": 82
+    },
+    "bst": 410
+  },
+  {
+    "id": 445,
+    "name": "garchomp",
+    "family": 230,
+    "baby": false,
+    "types": ["dragon", "ground"],
+    "stats": {
+      "hp": 108,
+      "attack": 130,
+      "defense": 95,
+      "special-attack": 80,
+      "special-defense": 85,
+      "speed": 102
+    },
+    "bst": 600
+  },
+  {
+    "id": 446,
+    "name": "munchlax",
+    "family": 72,
+    "baby": true,
+    "types": ["normal"],
+    "stats": {
+      "hp": 135,
+      "attack": 85,
+      "defense": 40,
+      "special-attack": 40,
+      "special-defense": 85,
+      "speed": 5
+    },
+    "bst": 390
+  },
+  {
+    "id": 447,
+    "name": "riolu",
+    "family": 232,
+    "baby": true,
+    "types": ["fighting"],
+    "stats": {
+      "hp": 40,
+      "attack": 70,
+      "defense": 40,
+      "special-attack": 35,
+      "special-defense": 40,
+      "speed": 60
+    },
+    "bst": 285
+  },
+  {
+    "id": 448,
+    "name": "lucario",
+    "family": 232,
+    "baby": false,
+    "types": ["fighting", "steel"],
+    "stats": {
+      "hp": 70,
+      "attack": 110,
+      "defense": 70,
+      "special-attack": 115,
+      "special-defense": 70,
+      "speed": 90
+    },
+    "bst": 525
+  },
+  {
+    "id": 449,
+    "name": "hippopotas",
+    "family": 233,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 68,
+      "attack": 72,
+      "defense": 78,
+      "special-attack": 38,
+      "special-defense": 42,
+      "speed": 32
+    },
+    "bst": 330
+  },
+  {
+    "id": 450,
+    "name": "hippowdon",
+    "family": 233,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 108,
+      "attack": 112,
+      "defense": 118,
+      "special-attack": 68,
+      "special-defense": 72,
+      "speed": 47
+    },
+    "bst": 525
+  },
+  {
+    "id": 451,
+    "name": "skorupi",
+    "family": 234,
+    "baby": false,
+    "types": ["poison", "bug"],
+    "stats": {
+      "hp": 40,
+      "attack": 50,
+      "defense": 90,
+      "special-attack": 30,
+      "special-defense": 55,
+      "speed": 65
+    },
+    "bst": 330
+  },
+  {
+    "id": 452,
+    "name": "drapion",
+    "family": 234,
+    "baby": false,
+    "types": ["poison", "dark"],
+    "stats": {
+      "hp": 70,
+      "attack": 90,
+      "defense": 110,
+      "special-attack": 60,
+      "special-defense": 75,
+      "speed": 95
+    },
+    "bst": 500
+  },
+  {
+    "id": 453,
+    "name": "croagunk",
+    "family": 235,
+    "baby": false,
+    "types": ["poison", "fighting"],
+    "stats": {
+      "hp": 48,
+      "attack": 61,
+      "defense": 40,
+      "special-attack": 61,
+      "special-defense": 40,
+      "speed": 50
+    },
+    "bst": 300
+  },
+  {
+    "id": 454,
+    "name": "toxicroak",
+    "family": 235,
+    "baby": false,
+    "types": ["poison", "fighting"],
+    "stats": {
+      "hp": 83,
+      "attack": 106,
+      "defense": 65,
+      "special-attack": 86,
+      "special-defense": 65,
+      "speed": 85
+    },
+    "bst": 490
+  },
+  {
+    "id": 455,
+    "name": "carnivine",
+    "family": 236,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 74,
+      "attack": 100,
+      "defense": 72,
+      "special-attack": 90,
+      "special-defense": 72,
+      "speed": 46
+    },
+    "bst": 454
+  },
+  {
+    "id": 456,
+    "name": "finneon",
+    "family": 237,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 49,
+      "attack": 49,
+      "defense": 56,
+      "special-attack": 49,
+      "special-defense": 61,
+      "speed": 66
+    },
+    "bst": 330
+  },
+  {
+    "id": 457,
+    "name": "lumineon",
+    "family": 237,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 69,
+      "attack": 69,
+      "defense": 76,
+      "special-attack": 69,
+      "special-defense": 86,
+      "speed": 91
+    },
+    "bst": 460
+  },
+  {
+    "id": 458,
+    "name": "mantyke",
+    "family": 116,
+    "baby": true,
+    "types": ["water", "flying"],
+    "stats": {
+      "hp": 45,
+      "attack": 20,
+      "defense": 50,
+      "special-attack": 60,
+      "special-defense": 120,
+      "speed": 50
+    },
+    "bst": 345
+  },
+  {
+    "id": 459,
+    "name": "snover",
+    "family": 239,
+    "baby": false,
+    "types": ["grass", "ice"],
+    "stats": {
+      "hp": 60,
+      "attack": 62,
+      "defense": 50,
+      "special-attack": 62,
+      "special-defense": 60,
+      "speed": 40
+    },
+    "bst": 334
+  },
+  {
+    "id": 460,
+    "name": "abomasnow",
+    "family": 239,
+    "baby": false,
+    "types": ["grass", "ice"],
+    "stats": {
+      "hp": 90,
+      "attack": 92,
+      "defense": 75,
+      "special-attack": 92,
+      "special-defense": 85,
+      "speed": 60
+    },
+    "bst": 494
+  },
+  {
+    "id": 461,
+    "name": "weavile",
+    "family": 109,
+    "baby": false,
+    "types": ["dark", "ice"],
+    "stats": {
+      "hp": 70,
+      "attack": 120,
+      "defense": 65,
+      "special-attack": 45,
+      "special-defense": 85,
+      "speed": 125
+    },
+    "bst": 510
+  },
+  {
+    "id": 462,
+    "name": "magnezone",
+    "family": 34,
+    "baby": false,
+    "types": ["electric", "steel"],
+    "stats": {
+      "hp": 70,
+      "attack": 70,
+      "defense": 115,
+      "special-attack": 130,
+      "special-defense": 90,
+      "speed": 60
+    },
+    "bst": 535
+  },
+  {
+    "id": 463,
+    "name": "lickilicky",
+    "family": 48,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 110,
+      "attack": 85,
+      "defense": 95,
+      "special-attack": 80,
+      "special-defense": 95,
+      "speed": 50
+    },
+    "bst": 515
+  },
+  {
+    "id": 464,
+    "name": "rhyperior",
+    "family": 50,
+    "baby": false,
+    "types": ["ground", "rock"],
+    "stats": {
+      "hp": 115,
+      "attack": 140,
+      "defense": 130,
+      "special-attack": 55,
+      "special-defense": 55,
+      "speed": 40
+    },
+    "bst": 535
+  },
+  {
+    "id": 465,
+    "name": "tangrowth",
+    "family": 52,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 100,
+      "attack": 100,
+      "defense": 125,
+      "special-attack": 110,
+      "special-defense": 50,
+      "speed": 50
+    },
+    "bst": 535
+  },
+  {
+    "id": 466,
+    "name": "electivire",
+    "family": 60,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 75,
+      "attack": 123,
+      "defense": 67,
+      "special-attack": 95,
+      "special-defense": 85,
+      "speed": 95
+    },
+    "bst": 540
+  },
+  {
+    "id": 467,
+    "name": "magmortar",
+    "family": 61,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 75,
+      "attack": 95,
+      "defense": 67,
+      "special-attack": 125,
+      "special-defense": 95,
+      "speed": 83
+    },
+    "bst": 540
+  },
+  {
+    "id": 468,
+    "name": "togekiss",
+    "family": 87,
+    "baby": false,
+    "types": ["fairy", "flying"],
+    "stats": {
+      "hp": 85,
+      "attack": 50,
+      "defense": 95,
+      "special-attack": 120,
+      "special-defense": 115,
+      "speed": 80
+    },
+    "bst": 545
+  },
+  {
+    "id": 469,
+    "name": "yanmega",
+    "family": 95,
+    "baby": false,
+    "types": ["bug", "flying"],
+    "stats": {
+      "hp": 86,
+      "attack": 76,
+      "defense": 86,
+      "special-attack": 116,
+      "special-defense": 56,
+      "speed": 95
+    },
+    "bst": 515
+  },
+  {
+    "id": 470,
+    "name": "leafeon",
+    "family": 67,
+    "baby": false,
+    "types": ["grass"],
+    "stats": {
+      "hp": 65,
+      "attack": 110,
+      "defense": 130,
+      "special-attack": 60,
+      "special-defense": 65,
+      "speed": 95
+    },
+    "bst": 525
+  },
+  {
+    "id": 471,
+    "name": "glaceon",
+    "family": 67,
+    "baby": false,
+    "types": ["ice"],
+    "stats": {
+      "hp": 65,
+      "attack": 60,
+      "defense": 110,
+      "special-attack": 130,
+      "special-defense": 95,
+      "speed": 65
+    },
+    "bst": 525
+  },
+  {
+    "id": 472,
+    "name": "gliscor",
+    "family": 104,
+    "baby": false,
+    "types": ["ground", "flying"],
+    "stats": {
+      "hp": 75,
+      "attack": 95,
+      "defense": 125,
+      "special-attack": 45,
+      "special-defense": 75,
+      "speed": 95
+    },
+    "bst": 510
+  },
+  {
+    "id": 473,
+    "name": "mamoswine",
+    "family": 112,
+    "baby": false,
+    "types": ["ice", "ground"],
+    "stats": {
+      "hp": 110,
+      "attack": 130,
+      "defense": 80,
+      "special-attack": 70,
+      "special-defense": 60,
+      "speed": 80
+    },
+    "bst": 530
+  },
+  {
+    "id": 474,
+    "name": "porygon-z",
+    "family": 68,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 85,
+      "attack": 80,
+      "defense": 70,
+      "special-attack": 135,
+      "special-defense": 75,
+      "speed": 90
+    },
+    "bst": 535
+  },
+  {
+    "id": 475,
+    "name": "gallade",
+    "family": 140,
+    "baby": false,
+    "types": ["psychic", "fighting"],
+    "stats": {
+      "hp": 68,
+      "attack": 125,
+      "defense": 65,
+      "special-attack": 65,
+      "special-defense": 115,
+      "speed": 80
+    },
+    "bst": 518
+  },
+  {
+    "id": 476,
+    "name": "probopass",
+    "family": 147,
+    "baby": false,
+    "types": ["rock", "steel"],
+    "stats": {
+      "hp": 60,
+      "attack": 55,
+      "defense": 145,
+      "special-attack": 75,
+      "special-defense": 150,
+      "speed": 40
+    },
+    "bst": 525
+  },
+  {
+    "id": 477,
+    "name": "dusknoir",
+    "family": 182,
+    "baby": false,
+    "types": ["ghost"],
+    "stats": {
+      "hp": 45,
+      "attack": 100,
+      "defense": 135,
+      "special-attack": 65,
+      "special-defense": 135,
+      "speed": 45
+    },
+    "bst": 525
+  },
+  {
+    "id": 478,
+    "name": "froslass",
+    "family": 186,
+    "baby": false,
+    "types": ["ice", "ghost"],
+    "stats": {
+      "hp": 70,
+      "attack": 80,
+      "defense": 70,
+      "special-attack": 80,
+      "special-defense": 70,
+      "speed": 110
+    },
+    "bst": 480
+  },
+  {
+    "id": 479,
+    "name": "rotom",
+    "family": 240,
+    "baby": false,
+    "types": ["electric", "ghost"],
+    "stats": {
+      "hp": 50,
+      "attack": 50,
+      "defense": 77,
+      "special-attack": 95,
+      "special-defense": 77,
+      "speed": 91
+    },
+    "bst": 440
+  }
+]

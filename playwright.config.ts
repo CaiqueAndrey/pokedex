@@ -25,6 +25,8 @@ export default defineConfig({
       env: {
         POKEAPI_BASE_URL: `http://localhost:${API_PORT}/api/v2`,
         NEXT_DIST_DIR: ".next-e2e",
+        // No GraphQL fixture: the gym falls back to the recorded pool snapshot.
+        POKEAPI_GRAPHQL_URL: `http://localhost:${API_PORT}/graphql`,
       },
     },
   ],

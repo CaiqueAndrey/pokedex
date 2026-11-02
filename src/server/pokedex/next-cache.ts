@@ -2,6 +2,7 @@ import "server-only";
 import { CACHE_TTL_SECONDS } from "@/config/pokedex";
 import { MemoryCache } from "../pokeapi/cache";
 import { createPokeApiClient } from "../pokeapi/client";
+import { createBattlePoolLoader } from "./battle-pool";
 import { createPokedexService, type PokedexService } from "./service";
 
 /**
@@ -9,7 +10,10 @@ import { createPokedexService, type PokedexService } from "./service";
  * so we opt in with `next.revalidate` (the Data Cache survives restarts and dev reloads) and
  * keep a process-wide in-memory cache on top to skip repeated requests and JSON parsing.
  */
-const globalForPokedex = globalThis as unknown as { __pokedexService?: PokedexService };
+const globalForPokedex = globalThis as unknown as {
+  __pokedexService?: PokedexService;
+  __battlePool?: ReturnType<typeof createBattlePoolLoader>;
+};
 
 export function getPokedex(): PokedexService {
   globalForPokedex.__pokedexService ??= createPokedexService(
@@ -19,4 +23,10 @@ export function getPokedex(): PokedexService {
     }),
   );
   return globalForPokedex.__pokedexService;
+}
+
+/** Gym draft pool (GraphQL, memoized for a day, snapshot fallback). */
+export function getBattlePool() {
+  globalForPokedex.__battlePool ??= createBattlePoolLoader();
+  return globalForPokedex.__battlePool();
 }

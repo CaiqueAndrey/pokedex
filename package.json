@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "prepare": "husky",
-    "fixtures": "tsx scripts/record-fixtures.ts"
+    "fixtures": "tsx scripts/record-fixtures.ts",
+    "battle-pool:record": "tsx scripts/record-battle-pool.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,mjs,js}": [
