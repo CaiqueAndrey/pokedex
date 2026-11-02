@@ -52,6 +52,15 @@ PokeAPI → fetch (cached 24 h) → Zod → mappers → domain types → Server 
 Screenshots are produced from the running app and are not committed yet; run `yarn dev` to see the
 list (`/`), detail (`/pokemon/charizard`), team (`/team`) and comparison (`/compare`) pages.
 
+## Deploy (Vercel)
+
+Pushes to `main` deploy to production; every pull request gets a preview URL. CI (GitHub Actions)
+runs lint, format, types, tests and build; Vercel only builds and hosts.
+
+Project settings on Vercel: framework **Next.js**, default build command, and the environment
+variable `ENABLE_EXPERIMENTAL_COREPACK=1` so the host uses Yarn 4 from `packageManager`. All other
+variables in `.env.example` are optional. Details and trade-offs: [docs/phases/10-deploy.md](docs/phases/10-deploy.md).
+
 ## Credits
 
 Data from [PokeAPI](https://pokeapi.co/). Pokémon and related names are trademarks of Nintendo,
