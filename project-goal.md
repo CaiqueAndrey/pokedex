@@ -5,7 +5,7 @@
 > português de propósito. O resto do repositório (código, commits, `AGENTS.md`, `PHASES.md`,
 > `docs/`) é escrito em inglês. A **interface do app é em português** (ver §3.7).
 >
-> **Fora de escopo deste plano:** deploy na Vercel. Ele entra como fase própria depois que a Fase 8
+> **Fora de escopo deste plano:** deploy na Vercel. Ele entra como fase própria depois que a Fase 9
 > estiver concluída (ver §12).
 
 ---
@@ -19,8 +19,9 @@ nome e para por aí.
 A reestruturação tem dois objetivos ao mesmo tempo:
 
 1. **Produto:** uma Pokédex completa (todas as gerações), rápida, mobile-first, com busca e filtros
-   compartilháveis pela URL, página de detalhes rica (stats, evoluções, fraquezas), favoritos e
-   montador de time.
+   compartilháveis pela URL, página de detalhes rica (stats, evoluções, fraquezas), favoritos,
+   montador de time e um **modo de jogo**: draftar um time e batalhar pela insígnia do Ginásio de
+   Pewter (§8.8).
 2. **Aprendizado:** praticar a stack e as práticas do polyglot-lab num domínio menor — Next.js App
    Router, Server Components, cache de dados, validação com Zod, Tailwind com design tokens, testes
    (Vitest + Playwright), CI e documentação por fase.
@@ -150,7 +151,7 @@ botão "voltar" funciona e a página pode ser renderizada no servidor.
 | Testes E2E        | Playwright (viewport de celular primeiro)               |                                                         |
 | Qualidade         | ESLint 9 (flat config) + Prettier + Husky + lint-staged | mesma config do polyglot-lab                            |
 | CI                | GitHub Actions: lint, format, typecheck, test, build    | **sem** etapa de deploy                                 |
-| MCP               | `@modelcontextprotocol/sdk` (TypeScript) + transporte stdio, executado com `tsx` | Fase 8; reaproveita o núcleo de dados (§5) |
+| MCP               | `@modelcontextprotocol/sdk` (TypeScript) + transporte stdio, executado com `tsx` | Fase 9; reaproveita o núcleo de dados (§5) |
 
 > Antes de escrever código de cache, rotas ou `next/image`, ler a documentação da versão instalada
 > em `node_modules/next/dist/docs/` (regra herdada do `AGENTS.md` do polyglot-lab: o Next 16 tem
@@ -182,7 +183,7 @@ Next.js (Server Components)              Servidor MCP (Node puro, src/mcp)
 
 ### Núcleo independente do framework
 
-O mesmo núcleo atende **dois consumidores**: o app Next.js e o servidor MCP (Fase 8), que roda em
+O mesmo núcleo atende **dois consumidores**: o app Next.js e o servidor MCP (Fase 9), que roda em
 Node puro, fora do Next. Por isso, desde a Fase 1:
 
 - `server/pokeapi`, `server/pokedex` e `lib/` **não importam nada de `next/*`** — nem
@@ -258,6 +259,8 @@ src/
     favorites/page.tsx
     team/page.tsx
     compare/page.tsx
+    gym/
+      page.tsx                 # Ginásio de Pewter: início, draft, batalhas, insígnia (§8.8)
   components/
     ui/                        # button, input, select, badge, card, skeleton, empty-state, page-header
     layout/                    # site-header, site-footer, theme-toggle
@@ -267,6 +270,7 @@ src/
     favorites/                 # favorite-button, use-favorites
     team/                      # team-slots, team-coverage
     compare/
+    gym/                       # draft-board, dice, battle-view (barras de HP, log), badge, use-gym-run
   server/
     pokeapi/
       client.ts                # fetch tipado: base URL, timeout, erros, cache injetado
@@ -277,6 +281,7 @@ src/
     pokedex/
       index.ts                 # monta o índice (§5)
       service.ts               # listPokemon, getPokemonDetail, getEvolutionChain...
+      battle-pool.ts           # stats + tipos + flags de lendário do pool do draft (§8.8)
       next-cache.ts            # adaptador de cache do Next (único arquivo do servidor que importa next/*)
   mcp/
     server.ts                  # cria o McpServer, registra tudo e conecta o transporte stdio
@@ -290,7 +295,9 @@ src/
     type-effectiveness.ts      # multiplicadores de dano, fraquezas/resistências/imunidades
     format.ts                  # #0025, dm → m, hg → kg, nomes com hífen
     storage.ts                 # localStorage versionado + Zod
+    battle/                    # rng (seed), stats no nível 50, dano, simulação, draft, oponentes
   config/
+    gym.ts                     # Ginásio de Pewter: líder, treinadores, tema de tipos, regras
     pokemon-types.ts           # 18 tipos: cor, cor de texto, rótulo
     messages.ts                # textos da UI em português + traduções de tipos/stats/gerações
     pokedex.ts                 # PAGE_SIZE, gerações, TTL de cache, base URL
@@ -444,6 +451,7 @@ Todas são somente leitura (`readOnlyHint: true`) e validam a entrada com Zod.
 | `get_type_matchups`   | `types` (1 ou 2)                                                | fraquezas 4×/2×, resistências, imunidades              |
 | `get_evolution_chain` | `name`                                                          | árvore de evolução com gatilhos                        |
 | `analyze_team`        | `names` (1 a 6)                                                 | cobertura do time e fraquezas compartilhadas           |
+| `simulate_battle`     | `team`, `opponent` (1 a 6 nomes cada), `seed?`                  | vencedor + resumo turno a turno (motor da §8.8)        |
 
 ### Regras de design das tools
 
@@ -467,6 +475,157 @@ claude mcp add pokedex --scope project -- yarn mcp   # gera/atualiza o .mcp.json
 Depois, no Claude Code: `/mcp` mostra o status do servidor e suas tools, e é possível pedir, por
 exemplo, "quais as fraquezas de um time com Charizard, Gyarados e Pikachu?". No Windows, se o
 comando não for encontrado, envolver com `cmd /c` (ver a documentação do Claude Code sobre MCP).
+
+## 8.8 Modo Ginásio: draft e batalhas (gamificação)
+
+**Ideia:** num estilo parecido com o [7a0](https://7a0.com.br/) (rola um dado, escolhe um jogador
+daquela seleção/Copa, repete até fechar 11 e simula a partida), o jogador **drafta** um time de 6
+Pokémon e enfrenta **5 batalhas simuladas** no Ginásio de Pewter. Vencer as 5 dá a **Insígnia da
+Rocha** (Boulder Badge). O objetivo é diversão e aprendizado, não um simulador fiel dos jogos.
+
+### Viabilidade: o que a PokeAPI oferece
+
+Analisado em 02/11/2026 contra a API real (REST `/api/v2` e GraphQL `graphql.pokeapi.co/v1beta2`):
+
+| Precisamos de                         | Na PokeAPI?  | Onde / observação                                                                 |
+| ------------------------------------- | ------------ | --------------------------------------------------------------------------------- |
+| Fraquezas e pontos fortes por tipo    | Sim          | `/type/{name}` → `damage_relations` (já usado em `type-effectiveness.ts`)          |
+| Base stats (PS, Ataque, Defesa…)      | Sim          | `/pokemon/{name}` → `stats`                                                        |
+| Lendários / míticos (para balancear)  | Sim          | `/pokemon-species/{id}` → `is_legendary`, `is_mythical`                            |
+| Golpes (poder, tipo, físico/especial) | Sim          | `/move/{name}` (ex.: Thunderbolt: 90, 100%, elétrico, especial). Cada Pokémon lista ~80 golpes: caro de usar |
+| Naturezas                             | Sim          | `/nature/{name}` (+10% / −10% em um stat). Opcional                                |
+| Cidade de Pewter                      | Sim, parcial | `/location/pewter-city` existe, mas só traz áreas e encontros                       |
+| **Treinadores, líderes, times de NPC**| **Não**      | Não existe endpoint de treinador (`/trainer` → 400). Brock e os treinadores são **curadoria nossa** em `config/gym.ts` |
+| **Insígnias**                         | **Não**      | Também é curadoria nossa (nome, imagem/ícone, tipo do ginásio)                       |
+| **Fórmula de batalha**                | **Não**      | A API só tem dados. O motor de batalha é **nosso** (`lib/battle/`)                   |
+
+**Ponto de atenção (performance e fair use):** o índice atual (§5) não tem stats nem família
+evolutiva. Buscar `/pokemon/{id}` para cada candidato custa ~280 KB por Pokémon (o JSON traz a
+lista de golpes inteira), e a família exige ainda `/pokemon-species/{id}`. Para as gerações 1 e 2
+seriam ~500 requisições e ~70 MB num servidor frio. Alternativas:
+
+1. **GraphQL da PokeAPI (recomendado):** uma única consulta devolve, para todo o pool, id, nome,
+   tipos, stats, `evolution_chain_id` (família), `is_baby` e permite filtrar lendários/míticos.
+   **Testado em 02/11/2026** no endpoint `https://beta.pokeapi.co/graphql/v1beta`: gerações 1+2 sem
+   lendários = **240 Pokémon em 118 famílias, ~74 KB numa única resposta**. (O endpoint
+   `graphql.pokeapi.co/v1beta2` existe, mas tem outro schema; fixar a versão usada.) Validada com
+   Zod e cacheada por 24 h pelo mesmo `PokeApiCache`. Risco: endpoint *beta* com limite de
+   requisições, o que o cache resolve.
+2. **Base local (snapshot) gerada por script**, no mesmo padrão de `yarn fixtures`: um
+   `yarn battle-pool:record` grava o resultado da consulta num JSON versionado e validado. Serve de
+   **fallback** se o GraphQL estiver fora e de fixture para os testes. Não é um banco de dados: é um
+   arquivo de ~74 KB, regenerado quando quisermos (os dados só mudam com jogos novos).
+3. **REST:** só como último recurso (volume alto, ver acima).
+
+### Complexidade de incluir a 2ª geração
+
+**Baixa.** Com o GraphQL, Kanto (151) ou Kanto + Johto (251) é a mesma consulta mudando o filtro de
+id; o tamanho da resposta continua pequeno. O que muda de verdade é o jogo, e tudo é tratável:
+
+| Impacto da 2ª geração                                   | Tratamento                                                      |
+| ------------------------------------------------------- | --------------------------------------------------------------- |
+| Evoluções entre gerações (Pichu→Pikachu, Onix→Steelix, Scyther→Scizor, Zubat→Crobat) | A regra de família usa `evolution_chain_id`, então já sai certo |
+| Tipos Aço e Sombrio passam a existir no pool            | Mais variedade no dado; nada a fazer no motor                   |
+| Tipos com poucas famílias (ex.: Dragão = só Dratini; Fantasma = Gastly e Misdreavus) | Se a face sorteada não tiver 3 ofertas válidas, completar com outro tipo sorteado |
+| Novos Pokémon fortes (Tyranitar 600, junto com Dragonite 600) e bebês fracos (Pichu, Igglybuff) | O teto de orçamento e as faixas de BST equilibram; bebês ficam na faixa "fraca" |
+
+Por isso o pool padrão passa a ser **gerações 1 e 2, sem lendários e míticos** (240 Pokémon). O
+filtro de gerações fica em `config/gym.ts` para crescer depois sem mudar código.
+
+**Conclusão:** **viável**, com esforço médio (uma fase). A API cobre o que importa para o equilíbrio
+(tipos, efetividade, stats, lendários). O que falta (treinadores, líder, insígnia e as regras da
+batalha) é pequeno, temático e fica bem como configuração e funções puras nossas. O maior risco não é
+técnico: é **calibrar o equilíbrio** para ser divertido. Por isso a simulação deve ser determinística
+(com seed) e testável, para ajustar os números com testes e não no olho.
+
+### Fluxo do jogo
+
+```text
+/gym  →  Começar desafio  →  Draft (6 rodadas)  →  Batalha 1 … Batalha 5  →  Insígnia da Rocha
+                                                     └─ derrota → fim da corrida (tentar de novo)
+```
+
+**Regras de composição de time** (valem para o jogador **e** para todos os oponentes):
+
+- **Sem Pokémon repetidos** no mesmo time.
+- **No máximo um Pokémon por família evolutiva** (`evolution_chain_id`): Squirtle e Blastoise não
+  podem estar juntos, nem Pichu e Raichu, nem Onix e Steelix.
+- No draft, as ofertas já **excluem** as famílias escolhidas; a regra é validada de novo ao montar o
+  time (função pura `validateTeam`, testada).
+
+1. **Draft (6 rodadas), no espírito do dado do 7a0:**
+   - A cada rodada o jogador **rola o dado**, que sorteia um **tipo** (das 18 faces possíveis) e
+     oferece **3 Pokémon** daquele tipo, um de cada faixa de poder (fraco / médio / forte, pelo total
+     de base stats, o BST). O jogador escolhe 1.
+   - **Orçamento de time:** a soma de BST tem um teto (ex.: 2.700 para 6 Pokémon). Escolher três
+     "fortes" cedo obriga a escolher fracos depois, o que força um time **equilibrado** (como um teto
+     salarial).
+   - **1 nova rolagem** por corrida, para fugir de um dado ruim.
+   - Durante o draft, a tabela de **cobertura do time** (já existe em `/team`) mostra as fraquezas
+     compartilhadas: é a dica do que falta.
+   - Pool padrão: gerações 1 e 2, **sem lendários e míticos** (Mewtwo ou Lugia desequilibrariam
+     tudo). Formas alternativas ficam fora na primeira versão.
+2. **Oponentes balizados:**
+   - Batalhas 1–4: treinadores do ginásio (nomes curados: "Campista", "Montanhista"…), com times
+     **totalmente aleatórios** (sem preferência de tipo), gerados pelo **mesmo algoritmo, orçamento e
+     regras de composição** do jogador.
+   - Dificuldade crescente: orçamento do oponente de ~85% do time do jogador na 1ª batalha até ~105%
+     na 5ª.
+   - Batalha 5: **Brock**, também com time aleatório no orçamento da batalha final. O único toque
+     temático é o nome, a apresentação e a insígnia (sem viés de Pedra/Terra).
+3. **Batalha:** simulada automaticamente e exibida turno a turno (barras de PS, "É super efetivo!",
+   troca de Pokémon), com botão "pular animação". Antes de cada batalha o jogador vê o time adversário
+   e pode **reordenar** o seu (escolher quem abre é a principal decisão tática).
+4. **Entre batalhas** o time é curado por completo.
+5. **Recompensa:** ao vencer a 5ª, ganha a Insígnia da Rocha (fica salva) e pode compartilhar o time
+   campeão pela URL (seed + escolhas).
+
+### Regras da batalha (simples, explicáveis e testáveis)
+
+Tudo em `lib/battle/` como **funções puras** (sem Next, sem React): o app usa, os testes usam, e a
+tool `simulate_battle` do MCP (§8.7) reaproveita.
+
+- **Nível 50 para todos.** Stats calculados pela fórmula dos jogos com IV fixo 31 e sem EV:
+  `PS = ⌊(2·base + 31)·50/100⌋ + 60` e `outro = ⌊(2·base + 31)·50/100⌋ + 5`.
+- **1 contra 1 em sequência** (como nos jogos): os titulares lutam; quem desmaia é substituído pelo
+  próximo. Vence quem ainda tiver Pokémon de pé.
+- **Ordem do turno:** maior Velocidade ataca primeiro (empate: decidido pela seed).
+- **Ataque sem lista de golpes:** cada Pokémon ataca com o **seu tipo mais efetivo** contra o
+  defensor (STAB), poder fixo 60, usando o **maior** entre Ataque e Ataque Especial contra a defesa
+  correspondente. Isso evita buscar golpes e ainda faz as fraquezas importarem de verdade.
+- **Dano** (fórmula dos jogos, simplificada):
+  `dano = ⌊(⌊22·60·A/D⌋/50 + 2) × 1,5 (STAB) × efetividade (0 a 4) × aleatório(0,85–1,00)⌋`,
+  com **crítico** de 1/24 de chance (×1,5) para dar emoção.
+- **Imunidade:** se nenhum tipo do atacante causa dano (efetividade 0), ele "luta" com dano mínimo
+  de 1 (Struggle), para a batalha nunca travar.
+- **Troca automática** quando um Pokémon desmaia: entra o reserva com o melhor confronto contra o
+  adversário atual (mesma heurística para jogador e oponente).
+- **Aleatoriedade com seed** (`mulberry32`): a mesma seed reproduz a mesma batalha, o que permite
+  testes determinísticos, replays e times compartilháveis.
+- **Fora da v1** (ideias futuras): golpes reais do learnset, habilidades, naturezas, itens, status
+  (paralisia, sono) e outros ginásios (Cerulean, Vermilion…). O motor deve deixar espaço para elas,
+  sem implementá-las.
+
+### Balanceamento e testes
+
+- Vitest com seeds fixas: Pokémon com vantagem de tipo e stats parecidos vence a maioria das
+  batalhas; contra oponentes aleatórios, um time sem fraquezas compartilhadas vence com mais
+  frequência que um time "mono-tipo" com o mesmo orçamento.
+- `validateTeam`: rejeita repetidos e famílias duplicadas (Squirtle + Blastoise, Pichu + Raichu,
+  Onix + Steelix); os geradores de draft e de oponentes nunca produzem um time inválido (testado com
+  muitas seeds).
+- **Teste de equilíbrio estatístico:** simular ~1.000 corridas com drafts aleatórios e conferir que a
+  taxa de vitória da batalha 1 é alta (~80%) e a de conquistar a insígnia fica numa faixa divertida
+  (ex.: 20–40%). Se sair disso, ajustar orçamentos, não o código da batalha.
+- E2E: draftar 6 (com seed fixa), vencer/perder uma batalha, ver a insígnia salva.
+
+### Estado e persistência
+
+- Corrida em andamento: `localStorage` (`pokedex:gym-run:v1`, validado com Zod): seed, escolhas,
+  ordem do time, batalha atual. Recarregar a página continua de onde parou.
+- Insígnias conquistadas: `pokedex:badges:v1`, exibidas no cabeçalho/`/gym`.
+- Nenhum dado da PokeAPI é buscado no navegador: o pool vem do servidor (Server Component passa
+  para o componente cliente do jogo), e o motor roda no cliente porque é só matemática.
 
 ---
 
@@ -525,7 +684,7 @@ acessibilidade básica, documentado, commit em inglês.
 ```text
 00 Setup → 01 Camada PokeAPI → 02 Shell & Design → 03 Pokédex (lista) →
 04 Busca & Filtros → 05 Detalhes → 06 Favoritos & Time → 07 Comparação & Polimento →
-08 Servidor MCP
+08 Modo Ginásio → 09 Servidor MCP
 ```
 
 Cada fase termina com a nota de aprendizado `docs/phases/NN-nome.md` (template do polyglot-lab).
@@ -555,7 +714,7 @@ Cada fase termina com a nota de aprendizado `docs/phases/NN-nome.md` (template d
   `server/pokeapi`, `server/pokedex` e `lib/`; regra `no-restricted-imports` no ESLint
 - Interface `PokeApiCache` + implementação em memória (testada) + adaptador `next-cache.ts` com a
   estratégia de cache do Next 16 (ler a doc local; `fetch` com revalidate ou `"use cache"`)
-- Teste que importa os serviços num processo Node puro (sem Next), garantindo que o MCP da Fase 8
+- Teste que importa os serviços num processo Node puro (sem Next), garantindo que o MCP da Fase 9
   vai conseguir usá-los
 - Schemas Zod de `pokemon`, `pokemon-species`, `type`, `generation`, `evolution-chain`
 - Mappers para os tipos de domínio (§7), incluindo a classificação das formas (§5)
@@ -625,7 +784,41 @@ Cada fase termina com a nota de aprendizado `docs/phases/NN-nome.md` (template d
 
 **Resultado:** Pokédex completa rodando localmente.
 
-## Fase 8 — Servidor MCP
+## Fase 8 — Modo Ginásio (draft e batalhas)
+
+**Objetivo:** gamificar a Pokédex (§8.8) e praticar lógica de domínio pura, aleatoriedade
+determinística (seed), máquina de estados no cliente e testes de balanceamento.
+
+1. **Dados do pool:** `server/pokedex/battle-pool.ts` com id, nome, tipos, stats, BST, família
+   (`evolution_chain_id`) e `is_baby`, para as gerações 1 e 2 sem lendários/míticos. Consulta
+   GraphQL (schema Zod, cache 24 h) + script `yarn battle-pool:record` que grava o snapshot JSON
+   usado como fallback e como fixture dos testes.
+2. **Motor (`lib/battle/`, puro e testado):** `rng.ts` (mulberry32), `stats.ts` (nível 50),
+   `damage.ts` (fórmula, STAB, efetividade via `type-effectiveness.ts`, crítico), `simulate.ts`
+   (batalha 6×6 → vencedor + log de eventos), `team.ts` (`validateTeam`: sem repetidos e uma
+   família por time), `draft.ts` (rolagem de tipo, 3 ofertas por faixa excluindo famílias já
+   escolhidas, orçamento, 1 nova rolagem), `opponents.ts` (times aleatórios no orçamento, mesmas
+   regras de composição, sem viés de tipo).
+3. **Conteúdo curado:** `config/gym.ts` com Brock, nomes dos treinadores, gerações do pool,
+   orçamentos por batalha e a insígnia; textos da UI em `config/messages.ts`.
+4. **Interface `/gym`:** tela inicial (regras + insígnias conquistadas), draft com dado animado e
+   cobertura do time ao vivo, pré-batalha (time adversário + reordenar o seu), batalha animada (barras
+   de PS, mensagens de efetividade, "pular"), vitória/derrota e tela da insígnia. Animações respeitam
+   `prefers-reduced-motion`.
+5. **Estado:** corrida e insígnias no `localStorage` (versionado + Zod) com `useSyncExternalStore`;
+   link compartilhável do time campeão (seed + escolhas na URL).
+6. **Testes:** Vitest para cada módulo do motor com seeds fixas + teste estatístico de equilíbrio
+   (§8.8); Playwright: draft completo com seed fixa, uma batalha, insígnia salva após recarregar;
+   axe na tela do jogo nos dois temas.
+7. Nota: `docs/phases/08-gym-mode.md` (incluindo as taxas de vitória medidas e os ajustes feitos).
+
+**Resultado:** dá para draftar um time, batalhar 5 vezes e conquistar a Insígnia da Rocha, com
+batalhas reproduzíveis e balanceamento verificado por testes.
+
+> Fora de escopo nesta fase: golpes reais, habilidades, naturezas, itens, status, multiplayer e
+> outros ginásios (ver §12).
+
+## Fase 9 — Servidor MCP
 
 **Objetivo:** aprender MCP de ponta a ponta — da fundação do servidor até o uso no Claude Code —
 reaproveitando o núcleo, sem duplicar regra de negócio (§8.7).
@@ -640,7 +833,8 @@ reaproveitando o núcleo, sem duplicar regra de negócio (§8.7).
    - Scripts `mcp` (`tsx src/mcp/server.ts`) e `mcp:inspect` (MCP Inspector)
    - Logs só em `stderr` + regra de ESLint em `src/mcp/`
    - Primeira tool (`get_type_matchups`, que é função pura) testada no Inspector
-3. **Tools:** `search_pokemon`, `get_pokemon`, `get_evolution_chain`, `analyze_team`, com schemas
+3. **Tools:** `search_pokemon`, `get_pokemon`, `get_evolution_chain`, `analyze_team`,
+   `simulate_battle` (reaproveita o motor da Fase 8), com schemas
    Zod, `readOnlyHint`, respostas compactas e erros com `isError`
 4. **Resources:** `pokemon://{name}` (template de URI) e `pokedex://types` (tabela de tipos)
 5. **Prompts:** `build-team` (argumentos: estilo, geração) e `explain-matchup` (dois Pokémon)
@@ -653,7 +847,7 @@ reaproveitando o núcleo, sem duplicar regra de negócio (§8.7).
    - Observar como o modelo escolhe as tools e ajustar nomes/descrições quando ele errar
 8. **Documentação:** `docs/guides/mcp.md` (rodar, inspecionar, registrar, exemplos de perguntas) +
    seção no README
-9. Nota: `docs/phases/08-mcp-server.md`
+9. Nota: `docs/phases/09-mcp-server.md`
 
 **Resultado:** o Claude Code consulta a Pokédex por MCP usando exatamente a mesma lógica da
 interface web.
@@ -665,11 +859,14 @@ interface web.
 
 # 12. Depois deste plano (não implementar agora)
 
-- **Fase 9 — Deploy na Vercel** (CI → Vercel, previews, verificação no celular). Fica para depois,
+- **Fase 10 — Deploy na Vercel** (CI → Vercel, previews, verificação no celular). Fica para depois,
   conforme combinado. Junto com ele, opcionalmente: expor o servidor MCP também por **Streamable
   HTTP** numa rota `/api/mcp` do Next, para ser usado sem clonar o repositório.
 - Ideias futuras, só se houver motivo real: conta de usuário + banco para sincronizar favoritos/times
   entre dispositivos; quiz "Quem é esse Pokémon?"; filtros por stats; i18n (inglês além do português).
+- Evoluções do Modo Ginásio (§8.8): os outros 7 ginásios de Kanto e a Liga; golpes reais, habilidades
+  e status na batalha; desafio diário com seed única para todos (como o "Desafio do dia" do 7a0);
+  ranking de corridas (exigiria backend, então só com motivo real).
 
 ---
 
@@ -681,4 +878,10 @@ interface web.
 | Paginação               | Páginas numeradas na URL (§8.1)                             | Decidido                        |
 | Escopo de Pokémon       | 1025 espécies + formas alternativas (regionais, Mega, Gigantamax, outras), cosméticas fora (§5) | Decidido |
 | Gerenciador de pacotes  | Yarn 4 (igual ao polyglot-lab)                              | Recomendado                     |
-| Servidor MCP            | Fase 8, transporte stdio, núcleo compartilhado com o app (§5, §8.7) | Decidido                |
+| Servidor MCP            | Fase 9, transporte stdio, núcleo compartilhado com o app (§5, §8.7) | Decidido                |
+| Modo Ginásio            | Fase 8: draft + batalhas simuladas pelo Ginásio de Pewter (§8.8)   | Proposto                        |
+| Fonte dos stats do jogo | GraphQL `beta.pokeapi.co/graphql/v1beta` (1 requisição, cache 24 h) + snapshot JSON gerado por script como fallback/fixture (§8.8) | Recomendado (testado) |
+| Pool do draft           | Gerações 1 e 2 (240), sem lendários/míticos; configurável em `config/gym.ts` | Decidido               |
+| Derrota no desafio      | Encerra a corrida (estilo roguelike, como o "7 a 0")                | Decidido                        |
+| Oponentes               | Times aleatórios, sem viés de tipo (inclusive o Brock), mesmo orçamento e regras | Decidido           |
+| Composição de time      | Sem repetidos e no máximo um Pokémon por família evolutiva (jogador e oponentes) | Decidido           |
