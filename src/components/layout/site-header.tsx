@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SearchBar } from "@/features/pokedex/search-bar";
 import { messages } from "@/config/messages";
+import { HideOnFocusRoutes } from "./hide-on-routes";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
@@ -50,11 +51,14 @@ export function SiteHeader() {
           </ul>
           <ThemeToggle />
         </nav>
-        <div className="order-3 w-full sm:order-2 sm:w-auto sm:flex-1">
-          <Suspense fallback={<div className="h-11" />}>
-            <SearchBar />
-          </Suspense>
-        </div>
+        {/* The search row is the tallest part of the header on phones: focus routes skip it. */}
+        <HideOnFocusRoutes>
+          <div className="order-3 w-full sm:order-2 sm:w-auto sm:flex-1">
+            <Suspense fallback={<div className="h-11" />}>
+              <SearchBar />
+            </Suspense>
+          </div>
+        </HideOnFocusRoutes>
       </div>
       <div
         aria-hidden

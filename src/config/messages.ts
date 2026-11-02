@@ -175,8 +175,8 @@ export const messages = {
       "Drafte um time de 6 Pokémon e vença 5 batalhas seguidas para conquistar a Insígnia da Rocha.",
     rulesTitle: "Como funciona",
     rules: [
-      "A cada rodada, role o dado: ele sorteia um tipo e oferece 3 Pokémon (fraco, médio e forte). Escolha 1.",
-      "O time tem um limite de força (soma dos atributos base). Fortes que estourariam o limite aparecem bloqueados: escolher fortes cedo custa vagas mais fracas depois.",
+      "A cada rodada, role o dado: ele sorteia um tipo, de preferência um que o seu time ainda não tem, e oferece 3 Pokémon (fraco, médio e forte). Escolha 1.",
+      "No modo Difícil o time tem um limite de força (soma dos atributos base): fortes que estourariam o limite aparecem bloqueados. No Fácil não há limite.",
       "Os oponentes têm força fixa, que cresce a cada batalha: montar bem o time é uma vantagem de verdade.",
       "Sem repetidos e só um Pokémon por família de evolução (nada de Squirtle e Blastoise juntos).",
       "Você pode rolar o dado de novo uma vez por desafio.",
@@ -235,7 +235,7 @@ export const messages = {
       easy: {
         label: "Fácil",
         description:
-          "Limite de força 2.700 e oponentes mais fracos. Você vê o time adversário e a ordem dele, e os atributos dos seus Pokémon.",
+          "Sem limite de força: escolha por gosto e tipo. Você vê o time adversário e a ordem dele, e os atributos dos seus Pokémon.",
       },
       hard: {
         label: "Difícil",
@@ -259,6 +259,9 @@ export const messages = {
       "O dado oferece um Pokémon fraco, um médio e um forte. Os que estourariam o limite aparecem bloqueados: escolher fortes agora deixa menos força para as próximas vagas. Pelo menos uma oferta sempre cabe.",
     overBudget: (excess: number) => `Não cabe: passa ${excess} do limite`,
     blocked: "Não cabe",
+    easyDraftHint:
+      "Modo Fácil: sem limite de força. Escolha por gosto e por tipo; o dado prefere tipos que o seu time ainda não tem.",
+    newType: "Tipo novo no time",
     chooseBlocked: (name: string) => `${name} não cabe no limite`,
     budgetLegendUsed: "Usado",
     budgetLegendReserved: "Reservado para as próximas vagas",

@@ -4,6 +4,7 @@ import { RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { messages } from "@/config/messages";
 import { GYM } from "@/config/gym";
@@ -72,6 +73,7 @@ export function GymGame({
     // The outcome is saved before the animation: reloading can't re-roll a lost battle.
     setRun(next);
     if (next.phase === "won") addBadge(GYM.id);
+    window.scrollTo({ top: 0 });
     setBattle({
       result,
       team: playerTeam(current, pool),
@@ -100,63 +102,70 @@ export function GymGame({
 
   if (!valid) {
     return (
-      <div className="grid gap-6 md:grid-cols-[1fr_auto]">
-        <Card className="animate-fade-up grid gap-4">
-          <h2 className="text-xs sm:text-sm">{m.rulesTitle}</h2>
-          <ol className="grid list-decimal gap-2 pl-5 text-base">
-            {m.rules.map((rule) => (
-              <li key={rule}>{rule}</li>
-            ))}
-          </ol>
-          <h2 className="text-xs">{m.modeTitle}</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(["easy", "hard"] as const).map((mode) => (
-              <div key={mode} className="border-border grid gap-2 rounded-2xl border-2 p-3">
-                <p className="font-display text-[0.65rem]">{m.modes[mode].label}</p>
-                <p className="text-muted text-sm">{m.modes[mode].description}</p>
-                <Button
-                  variant={mode === "easy" ? "primary" : "secondary"}
-                  onClick={() => start(mode)}
-                  aria-label={`${m.start}: ${m.modes[mode].label}`}
-                >
-                  {m.start}
-                </Button>
-              </div>
-            ))}
+      <>
+        <PageHeader title={m.title} description={m.description} />
+        <div className="grid gap-6 md:grid-cols-[1fr_auto]">
+          <Card className="animate-fade-up grid gap-4">
+            <h2 className="text-xs sm:text-sm">{m.rulesTitle}</h2>
+            <ol className="grid list-decimal gap-2 pl-5 text-base">
+              {m.rules.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ol>
+            <h2 className="text-xs">{m.modeTitle}</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(["easy", "hard"] as const).map((mode) => (
+                <div key={mode} className="border-border grid gap-2 rounded-2xl border-2 p-3">
+                  <p className="font-display text-[0.65rem]">{m.modes[mode].label}</p>
+                  <p className="text-muted text-sm">{m.modes[mode].description}</p>
+                  <Button
+                    variant={mode === "easy" ? "primary" : "secondary"}
+                    onClick={() => start(mode)}
+                    aria-label={`${m.start}: ${m.modes[mode].label}`}
+                  >
+                    {m.start}
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <SpeedToggle />
+          </Card>
+          <div className="grid gap-4 md:w-56">
+            <Card className="flex items-end justify-center gap-3 overflow-hidden pb-0">
+              <Image
+                src="/img/Brock.png"
+                alt={GYM.leader}
+                width={244}
+                height={478}
+                priority
+                className="animate-fade-up h-44 w-auto"
+              />
+              <p className="font-display mb-4 text-[0.6rem] leading-relaxed">
+                {GYM.leader}
+                <br />
+                <span className="text-muted">{m.leader}</span>
+              </p>
+            </Card>
+            <Card className="flex flex-col items-center gap-2 text-center">
+              <h2 className="text-[0.65rem]">{m.badges}</h2>
+              <BoulderBadge earned={hasBadge} label={GYM.badge} className="size-24" />
+              <p className="text-sm">{hasBadge ? GYM.badge : m.noBadges}</p>
+            </Card>
           </div>
-          <SpeedToggle />
-        </Card>
-        <div className="grid gap-4 md:w-56">
-          <Card className="flex items-end justify-center gap-3 overflow-hidden pb-0">
-            <Image
-              src="/img/Brock.png"
-              alt={GYM.leader}
-              width={244}
-              height={478}
-              priority
-              className="animate-fade-up h-44 w-auto"
-            />
-            <p className="font-display mb-4 text-[0.6rem] leading-relaxed">
-              {GYM.leader}
-              <br />
-              <span className="text-muted">{m.leader}</span>
-            </p>
-          </Card>
-          <Card className="flex flex-col items-center gap-2 text-center">
-            <h2 className="text-[0.65rem]">{m.badges}</h2>
-            <BoulderBadge earned={hasBadge} label={GYM.badge} className="size-24" />
-            <p className="text-sm">{hasBadge ? GYM.badge : m.noBadges}</p>
-          </Card>
         </div>
-      </div>
+      </>
     );
   }
 
-  const footer = (
-    <div className="text-muted mt-8 flex flex-wrap items-center justify-between gap-2 text-sm">
-      <span>
-        {m.modeBadge(m.modes[valid.mode].label)} · {m.seed(valid.seed)}
-      </span>
+  // During a run a one-line bar replaces the page header, leaving the screen to the game.
+  const runBar = (
+    <div className="text-muted -mt-2 mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <h1 className="font-display text-foreground text-[0.65rem]">{m.title}</h1>
+        <span>
+          {m.modeBadge(m.modes[valid.mode].label)} · {m.seed(valid.seed)}
+        </span>
+      </div>
       <Button variant="ghost" onClick={() => setRun(null)}>
         <RotateCcw aria-hidden className="size-4" />
         {valid.phase === "won" || valid.phase === "lost" ? m.newRun : m.abandon}
@@ -167,6 +176,7 @@ export function GymGame({
   if (valid.phase === "draft") {
     return (
       <>
+        {runBar}
         <DraftBoard
           run={valid}
           pool={pool}
@@ -175,7 +185,6 @@ export function GymGame({
           onPick={(name) => setRun(pickPokemon(valid, name, pool))}
           onReroll={() => setRun(reroll(valid))}
         />
-        {footer}
       </>
     );
   }
@@ -183,6 +192,7 @@ export function GymGame({
   if (valid.phase === "ready") {
     return (
       <>
+        {runBar}
         <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
           <PreBattle
             battle={valid.battle}
@@ -194,7 +204,6 @@ export function GymGame({
           />
           <RunPath run={valid} pool={pool} />
         </div>
-        {footer}
       </>
     );
   }
@@ -202,6 +211,7 @@ export function GymGame({
   const won = valid.phase === "won";
   return (
     <>
+      {runBar}
       <Card
         className="animate-fade-up flex flex-col items-center gap-4 py-10 text-center"
         data-testid="run-result"
@@ -244,7 +254,6 @@ export function GymGame({
       <div className="mt-6">
         <RunPath run={valid} pool={pool} />
       </div>
-      {footer}
     </>
   );
 }

@@ -61,8 +61,8 @@ describe("battle pool", () => {
     ]);
   });
 
-  it("asks for generations 1–2", () => {
-    expect(poolMaxSpeciesId()).toBe(251);
+  it("asks for generations 1–4", () => {
+    expect(poolMaxSpeciesId()).toBe(493);
   });
 
   it("posts the query and validates the response", async () => {
@@ -71,7 +71,7 @@ describe("battle pool", () => {
     expect(pool[0]?.name).toBe("charizard");
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(init.method).toBe("POST");
-    expect(JSON.parse(String(init.body)).variables).toEqual({ maxId: 251 });
+    expect(JSON.parse(String(init.body)).variables).toEqual({ maxId: 493 });
 
     const bad = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: {} })));
     await expect(fetchBattlePool({ fetch: bad })).rejects.toThrow(/Unexpected GraphQL shape/);

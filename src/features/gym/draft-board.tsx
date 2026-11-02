@@ -32,9 +32,11 @@ export function DraftBoard({
   onReroll: () => void;
 }) {
   const round = currentDraft(run, pool);
+  // Easy mode has no cap (budget null): the panel and the per-offer budget lines are hidden.
   const budget = MODE_BUDGETS[run.mode].player;
-  const plan = budgetPlan(team, pool, budget);
-  const pct = (value: number) => `${(value / budget) * 100}%`;
+  const plan = budget === null ? null : budgetPlan(team, pool, budget);
+  const pct = (value: number) => `${(value / (budget ?? 1)) * 100}%`;
+  const typesCovered = new Set(team.flatMap((p) => p.types));
   const rerollsLeft = REROLLS_PER_RUN - run.rerollsUsed;
   const die = TYPE_STYLES[round.type];
   const shared =
@@ -74,48 +76,54 @@ export function DraftBoard({
           </p>
         </div>
 
-        <div
-          className="border-border bg-surface grid gap-2 rounded-2xl border-2 p-3"
-          data-testid="budget-panel"
-        >
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="font-display text-[0.6rem]" data-testid="budget">
-              {m.budget(plan.used, budget)}
-            </span>
-            <span className="text-sm">{m.budgetMaxNext(plan.free)}</span>
-          </div>
-          <div className="bg-border flex h-4 overflow-hidden rounded-full" aria-hidden>
-            <div
-              className="from-primary-600 h-full bg-linear-to-r to-amber-500 transition-all duration-500"
-              style={{ width: pct(plan.used) }}
-            />
-            <div
-              className="h-full bg-[repeating-linear-gradient(45deg,var(--muted)_0_6px,transparent_6px_12px)] opacity-60 transition-all duration-500"
-              style={{ width: pct(plan.reserved) }}
-            />
-          </div>
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            <li className="flex items-center gap-1">
-              <span
-                aria-hidden
-                className="from-primary-600 size-3 rounded-sm bg-linear-to-r to-amber-500"
+        {plan && budget !== null ? (
+          <div
+            className="border-border bg-surface grid gap-2 rounded-2xl border-2 p-3"
+            data-testid="budget-panel"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="font-display text-[0.6rem]" data-testid="budget">
+                {m.budget(plan.used, budget)}
+              </span>
+              <span className="text-sm">{m.budgetMaxNext(plan.free)}</span>
+            </div>
+            <div className="bg-border flex h-4 overflow-hidden rounded-full" aria-hidden>
+              <div
+                className="from-primary-600 h-full bg-linear-to-r to-amber-500 transition-all duration-500"
+                style={{ width: pct(plan.used) }}
               />
-              {m.budgetLegendUsed}: {plan.used}
-            </li>
-            <li className="flex items-center gap-1">
-              <span
-                aria-hidden
-                className="size-3 rounded-sm bg-[repeating-linear-gradient(45deg,var(--muted)_0_3px,transparent_3px_6px)]"
+              <div
+                className="h-full bg-[repeating-linear-gradient(45deg,var(--muted)_0_6px,transparent_6px_12px)] opacity-60 transition-all duration-500"
+                style={{ width: pct(plan.reserved) }}
               />
-              {m.budgetLegendReserved}: {plan.reserved}
-            </li>
-            <li className="flex items-center gap-1">
-              <span aria-hidden className="bg-border size-3 rounded-sm" />
-              {m.budgetLegendFree}: {plan.free}
-            </li>
-          </ul>
-          <p className="text-muted text-sm">{m.budgetHelp}</p>
-        </div>
+            </div>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+              <li className="flex items-center gap-1">
+                <span
+                  aria-hidden
+                  className="from-primary-600 size-3 rounded-sm bg-linear-to-r to-amber-500"
+                />
+                {m.budgetLegendUsed}: {plan.used}
+              </li>
+              <li className="flex items-center gap-1">
+                <span
+                  aria-hidden
+                  className="size-3 rounded-sm bg-[repeating-linear-gradient(45deg,var(--muted)_0_3px,transparent_3px_6px)]"
+                />
+                {m.budgetLegendReserved}: {plan.reserved}
+              </li>
+              <li className="flex items-center gap-1">
+                <span aria-hidden className="bg-border size-3 rounded-sm" />
+                {m.budgetLegendFree}: {plan.free}
+              </li>
+            </ul>
+            <p className="text-muted text-sm">{m.budgetHelp}</p>
+          </div>
+        ) : (
+          <p className="text-muted text-sm" data-testid="easy-hint">
+            {m.easyDraftHint}
+          </p>
+        )}
 
         <ul className="grid gap-3 sm:grid-cols-3">
           {round.offers.map((offer, index) => {
@@ -131,14 +139,21 @@ export function DraftBoard({
                   showStats={run.mode === "easy"}
                   className={cn("h-full", blocked && "opacity-60 grayscale")}
                 >
-                  <span
-                    className={cn("text-xs", blocked ? "font-bold" : "text-muted")}
-                    data-testid="budget-after"
-                  >
-                    {blocked
-                      ? m.overBudget(offer.bst - plan.free)
-                      : m.budgetAfter(budget - plan.used - offer.bst)}
-                  </span>
+                  {plan && budget !== null && (
+                    <span
+                      className={cn("text-xs", blocked ? "font-bold" : "text-muted")}
+                      data-testid="budget-after"
+                    >
+                      {blocked
+                        ? m.overBudget(offer.bst - plan.free)
+                        : m.budgetAfter(budget - plan.used - offer.bst)}
+                    </span>
+                  )}
+                  {!offer.types.some((t) => typesCovered.has(t)) && team.length > 0 && (
+                    <span className="text-xs font-bold" data-testid="new-type">
+                      {m.newType}
+                    </span>
+                  )}
                   <Button
                     className="mt-3 w-full"
                     disabled={blocked}

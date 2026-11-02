@@ -1,14 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Seeds found with the engine: picking the strongest offer every round, `e2e0` wins all five
-// battles and `e2e6` loses the first one. Battles are deterministic, so these never flake.
+// Seeds found with the engine (easy mode): drafting the strongest offer every round, `e2e0` wins
+// all five battles; drafting the weakest, `e2e0` loses the first one. In hard mode, `e2e5` shows a
+// blocked offer. Battles are deterministic, so these never flake.
 
-async function draftStrongest(page: Page) {
+async function draftStrongest(page: Page, pick: "first" | "last" = "last") {
   for (let round = 1; round <= 6; round++) {
     await expect(page.getByRole("heading", { name: `Draft · rodada ${round} de 6` })).toBeVisible();
     await page
       .getByRole("button", { name: /^Escolher / })
-      .last()
+      [pick]()
       .click();
   }
   await expect(page.getByRole("button", { name: "Batalhar!" })).toBeVisible();
@@ -35,14 +36,14 @@ test("drafts a team, wins five battles and keeps the badge after reload", async 
 
   await page.reload();
   await expect(page.getByRole("heading", { name: "Insígnia da Rocha conquistada!" })).toBeVisible();
-  await page.getByRole("button", { name: "Novo desafio" }).last().click();
+  await page.getByRole("button", { name: "Novo desafio" }).first().click();
   await expect(page.getByRole("img", { name: "Insígnia da Rocha" })).toBeVisible();
 });
 
 test("a defeat ends the run", async ({ page }) => {
-  await page.goto("/gym?seed=e2e6");
+  await page.goto("/gym?seed=e2e0");
   await page.getByRole("button", { name: "Começar desafio: Fácil" }).click();
-  await draftStrongest(page);
+  await draftStrongest(page, "first");
   await fightAndSkip(page);
   await expect(page.getByTestId("battle-log")).toContainText("Derrota…");
   await page.getByRole("button", { name: "Derrota…" }).click();
@@ -50,7 +51,7 @@ test("a defeat ends the run", async ({ page }) => {
 });
 
 test("the draft survives a reload and the reroll can be used once", async ({ page }) => {
-  await page.goto("/gym?seed=e2e1");
+  await page.goto("/gym?seed=e2e2");
   await page.getByRole("button", { name: "Começar desafio: Fácil" }).click();
   await page
     .getByRole("button", { name: /^Escolher / })
@@ -117,9 +118,9 @@ test.describe("modes, history and controls", () => {
   });
 
   test("a defeat shows game over and the path of battles", async ({ page }) => {
-    await page.goto("/gym?seed=e2e6");
+    await page.goto("/gym?seed=e2e0");
     await page.getByRole("button", { name: "Começar desafio: Fácil" }).click();
-    await draftStrongest(page);
+    await draftStrongest(page, "first");
     await fightAndSkip(page);
     await page.getByRole("button", { name: "Derrota…" }).click();
     await expect(page.getByRole("img", { name: /Game over/ })).toBeVisible();
@@ -170,4 +171,48 @@ test.describe("drag and drop (desktop mouse)", () => {
     await items.nth(1).dragTo(items.nth(0), { sourcePosition: { x: 12, y: 30 } });
     await expect(items.nth(0)).toContainText(second);
   });
+});
+
+test.describe("focus layout and battle details", () => {
+  test("the gym hides the footer and the search bar", async ({ page }) => {
+    await page.goto("/gym");
+    await expect(page.getByRole("contentinfo")).toHaveCount(0);
+    await expect(page.getByRole("searchbox")).toHaveCount(0);
+    await page.goto("/");
+    await expect(page.getByRole("contentinfo")).toBeVisible();
+  });
+
+  test("hard mode: strong offers that don't fit show up blocked", async ({ page }) => {
+    await page.goto("/gym?seed=e2e5");
+    await page.getByRole("button", { name: "Começar desafio: Difícil" }).click();
+    let blockedSeen = 0;
+    for (let round = 1; round <= 6; round++) {
+      await expect(
+        page.getByRole("heading", { name: `Draft · rodada ${round} de 6` }),
+      ).toBeVisible();
+      blockedSeen += await page.getByRole("button", { name: /não cabe no limite/ }).count();
+      await page
+        .getByRole("button", { name: /^Escolher / })
+        .last()
+        .click();
+    }
+    expect(blockedSeen).toBeGreaterThan(0);
+  });
+
+  test("the battle shows both fighters' types", async ({ page }) => {
+    await page.goto("/gym?seed=e2e0");
+    await page.getByRole("button", { name: "Começar desafio: Fácil" }).click();
+    await draftStrongest(page);
+    await page.getByRole("button", { name: "Batalhar!" }).click();
+    await expect(page.getByTestId("fighter-types-player")).not.toBeEmpty();
+    await expect(page.getByTestId("fighter-types-opponent")).not.toBeEmpty();
+  });
+});
+
+test("easy mode has no strength cap and nothing is blocked", async ({ page }) => {
+  await page.goto("/gym?seed=e2e0");
+  await page.getByRole("button", { name: "Começar desafio: Fácil" }).click();
+  await expect(page.getByTestId("easy-hint")).toBeVisible();
+  await expect(page.getByTestId("budget-panel")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /não cabe no limite/ })).toHaveCount(0);
 });

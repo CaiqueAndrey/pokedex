@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/ui/page-header";
 import { messages } from "@/config/messages";
 import { GymGame } from "@/features/gym/gym-game";
 import { getBattlePool, getPokedex } from "@/server/pokedex/next-cache";
@@ -20,10 +19,5 @@ export default async function GymPage({
   const { seed } = await searchParams;
   const fixedSeed = typeof seed === "string" && /^[\w-]{1,40}$/.test(seed) ? seed : undefined;
   const [pool, relations] = await Promise.all([getBattlePool(), getPokedex().getTypeRelations()]);
-  return (
-    <>
-      <PageHeader title={messages.gym.title} description={messages.gym.description} />
-      <GymGame pool={pool} relations={relations} seed={fixedSeed} />
-    </>
-  );
+  return <GymGame pool={pool} relations={relations} seed={fixedSeed} />;
 }

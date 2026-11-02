@@ -21,7 +21,7 @@ import {
   type GymRun,
 } from "./run";
 import { simulateBattle } from "./simulate";
-import { budgetPlan, teamBst, validateTeam } from "./team";
+import { budgetPlan, fitsBudget, teamBst, validateTeam } from "./team";
 
 const pool = snapshotPool();
 const get = (name: string) => {
@@ -53,9 +53,15 @@ describe("rng", () => {
 });
 
 describe("pool snapshot", () => {
-  it("covers generations 1 and 2 without legendaries", () => {
-    expect(pool).toHaveLength(240);
-    expect(pool.some((p) => p.name === "mewtwo" || p.name === "lugia")).toBe(false);
+  it("covers generations 1 to 4 without legendaries", () => {
+    expect(pool).toHaveLength(458);
+    expect(Math.max(...pool.map((p) => p.id))).toBeLessThanOrEqual(493);
+    expect(pool.some((p) => ["mewtwo", "lugia", "rayquaza", "dialga"].includes(p.name))).toBe(
+      false,
+    );
+    // Cross-generation families stay together (Gen 4 evolutions of older Pokémon).
+    expect(get("magmortar").family).toBe(get("magby").family);
+    expect(get("garchomp").bst).toBe(600);
     expect(get("pichu").family).toBe(get("raichu").family);
     expect(get("onix").family).toBe(get("steelix").family);
     expect(get("pichu").baby).toBe(true);
@@ -163,10 +169,50 @@ describe("draft", () => {
         for (const offer of round.offers) {
           expect(team.some((t) => t.family === offer.family)).toBe(false);
         }
-        team.push(round.offers[Math.floor(rng() * round.offers.length)] as BattlePokemon);
+        const legal = round.offers.filter((o) => !round.blocked.includes(o.name));
+        // At least one offer always fits, and blocked ones really don't.
+        expect(legal.length).toBeGreaterThan(0);
+        for (const name of round.blocked) {
+          const offer = round.offers.find((o) => o.name === name) as BattlePokemon;
+          expect(fitsBudget(offer, team, pool)).toBe(false);
+        }
+        team.push(legal[Math.floor(rng() * legal.length)] as BattlePokemon);
       }
       expect(validateTeam(team)).toEqual([]);
       expect(teamBst(team)).toBeLessThanOrEqual(TEAM_BUDGET);
+    }
+  });
+
+  it("shows strong offers that don't fit instead of hiding them", () => {
+    // Two 600s already: most strong offers can no longer fit, and some round must show one blocked.
+    const team = ["dragonite", "tyranitar", "metagross"].map(get);
+    const blocked = Array.from({ length: 30 }, (_, seed) =>
+      draftRound(pool, team, rngFrom("blk", seed)),
+    ).flatMap((round) => round.blocked);
+    expect(blocked.length).toBeGreaterThan(0);
+  });
+
+  it("easy mode (no cap) never blocks an offer", () => {
+    const team = ["dragonite", "tyranitar", "metagross", "garchomp", "salamence"].map(get);
+    for (let seed = 0; seed < 30; seed++) {
+      expect(draftRound(pool, team, rngFrom("easy", seed), null).blocked).toEqual([]);
+    }
+  });
+
+  it("the die prefers types the team doesn't have and always lands on a viable type", () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const team: BattlePokemon[] = [];
+      for (let r = 0; r < TEAM_SIZE; r++) {
+        const round = draftRound(pool, team, rngFrom("die", seed, r), null);
+        const covered = new Set(team.flatMap((p) => p.types));
+        // With so many types available, the die never repeats one the team already has.
+        expect(covered.has(round.type)).toBe(false);
+        // A viable face: three offers, and at least one is mid or strong.
+        expect(round.offers).toHaveLength(3);
+        expect(round.offers.some((o) => o.types.includes(round.type))).toBe(true);
+        team.push(round.offers.at(-1) as BattlePokemon);
+      }
+      expect(validateTeam(team)).toEqual([]);
     }
   });
 
@@ -195,7 +241,9 @@ describe("gym run", () => {
   function draftAll(run: GymRun, choose: (offers: BattlePokemon[]) => BattlePokemon) {
     let current = run;
     while (current.phase === "draft") {
-      current = pickPokemon(current, choose(currentDraft(current, pool).offers).name, pool);
+      const round = currentDraft(current, pool);
+      const legal = round.offers.filter((o) => !round.blocked.includes(o.name));
+      current = pickPokemon(current, choose(legal).name, pool);
     }
     return current;
   }
@@ -228,30 +276,43 @@ describe("gym run", () => {
     expect(reorder(run, ["pikachu"])).toBe(run);
   });
 
-  it("is balanced: battle 1 is usually won, the badge is a challenge", () => {
-    const runs = 400;
+  function badgeRate(mode: "easy" | "hard", strategy: "random" | "strongest", runs = 150) {
     let firstWins = 0;
     let badges = 0;
     for (let i = 0; i < runs; i++) {
-      const rng = rngFrom("balance", i);
-      let run = draftAll(
-        startRun(`balance-${i}`),
-        (offers) => offers[Math.floor(rng() * offers.length)] as BattlePokemon,
+      const rng = rngFrom("balance", mode, strategy, i);
+      let run = draftAll(startRun(`balance-${i}`, mode), (offers) =>
+        strategy === "strongest"
+          ? (offers.at(-1) as BattlePokemon)
+          : (offers[Math.floor(rng() * offers.length)] as BattlePokemon),
       );
       run = applyResult(run, battleFor(run, pool, relations), pool);
       if (run.battle >= 1) firstWins++;
       while (run.phase === "ready") run = applyResult(run, battleFor(run, pool, relations), pool);
       if (run.phase === "won") badges++;
     }
-    const firstRate = firstWins / runs;
-    const badgeRate = badges / runs;
+    return { first: firstWins / runs, badge: badges / runs };
+  }
+
+  it("is balanced per mode, and drafting well beats random picks", () => {
+    const easyRandom = badgeRate("easy", "random");
+    const easyStrong = badgeRate("easy", "strongest");
+    const hardRandom = badgeRate("hard", "random");
+    const hardStrong = badgeRate("hard", "strongest");
     console.error(
-      `balance: battle 1 won ${(firstRate * 100).toFixed(1)}%, badge ${(badgeRate * 100).toFixed(1)}%`,
+      `balance: easy ${easyRandom.badge} random / ${easyStrong.badge} strongest; ` +
+        `hard ${hardRandom.badge} random / ${hardStrong.badge} strongest`,
     );
-    expect(firstRate).toBeGreaterThanOrEqual(0.6);
-    expect(badgeRate).toBeGreaterThanOrEqual(0.1);
-    expect(badgeRate).toBeLessThanOrEqual(0.5);
-  }, 60_000);
+    expect(easyRandom.first).toBeGreaterThanOrEqual(0.7);
+    expect(easyRandom.badge).toBeGreaterThanOrEqual(0.15);
+    expect(easyRandom.badge).toBeLessThanOrEqual(0.55);
+    expect(hardStrong.badge).toBeGreaterThanOrEqual(0.08);
+    expect(hardStrong.badge).toBeLessThan(easyStrong.badge);
+    expect(hardRandom.badge).toBeLessThan(easyRandom.badge);
+    // The budget is a real trade-off: using it well (strongest that fits) pays off.
+    expect(easyStrong.badge).toBeGreaterThan(easyRandom.badge);
+    expect(hardStrong.badge).toBeGreaterThan(hardRandom.badge);
+  }, 180_000);
 
   it("uses the five configured battles, Brock last", () => {
     expect(GYM.battles).toHaveLength(5);

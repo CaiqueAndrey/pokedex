@@ -7,8 +7,8 @@ Pewter Gym to earn the Boulder Badge. Fun first; not a faithful battle simulator
 
 ## What was built
 
-- `server/pokedex/battle-pool.ts`: the draft pool (generations 1–2, no legendaries/mythicals: 240
-  Pokémon, 118 evolution families) from **one GraphQL request**, Zod-validated, memoized for a day,
+- `server/pokedex/battle-pool.ts`: the draft pool (generations 1–4, no legendaries/mythicals: 458
+  Pokémon, 212 evolution families) from **one GraphQL request**, Zod-validated, memoized for a day,
   with a recorded snapshot (`data/battle-pool.json`, `yarn battle-pool:record`) as fallback.
 - `lib/battle/` (pure, framework-free, reusable by the phase 9 MCP server):
   - `rng.ts`: mulberry32 + FNV-1a string hashing; every random choice derives from the run seed.
@@ -44,9 +44,29 @@ Offers and opponents are recomputed from them. Less to persist, nothing to get o
 
 ### Budget as a balancing tool
 
-The team BST cap (2700) plays the role of a salary cap: the draft only offers Pokémon that still
-leave room to fill the remaining slots with the cheapest unused families (`fitsBudget`).
-Opponents use the same function with a budget relative to the player's team.
+The team BST cap plays the role of a salary cap. The first version got it wrong in two ways that
+cancelled the cap out: it only _offered_ Pokémon that fit, and opponents were scaled from the
+player's own team BST. Always taking the strongest offer cost nothing and gained nothing.
+
+Now the cap only exists in **hard mode**: offers ignore it and the ones that don't fit come back as
+`blocked` (shown, disabled), with at least one legal offer guaranteed; `fitsBudget` still reserves
+the cheapest unused families for the remaining slots. **Easy mode has no cap** (`budget: null`):
+the player drafts by taste and type. Opponents get a **fixed** per-mode budget.
+
+The die is "friendly" (`rollType`): it only lands on types with at least three available families
+and one mid-or-strong option that fits, and it prefers types the team doesn't have yet. Teams end
+up covering ~9 types on average, and no round is a dead end.
+
+Tuned with 200 simulated runs per row:
+
+| Mode (player cap / opponents) | Random picks: badge | Strongest each round: badge |
+| ----------------------------- | ------------------- | --------------------------- |
+| Easy (none / 2500)            | ~25%                | ~85%                        |
+| Hard (2500 / 2600)            | ~8%                 | ~18%                        |
+
+A unit test keeps the ordering (hard < easy, drafting well > random) from regressing. Slaking
+(670 BST) is a trap in the real games (Truant), but the engine has no abilities, so here it is
+simply the most expensive pick.
 
 ### GraphQL vs REST for bulk data
 
@@ -68,7 +88,7 @@ No tuning was needed. If a future change moves these numbers, adjust `config/gym
 
 ## Gotchas
 
-- The API uses **modern typings**, so Fairy exists in gens 1–2 data (Clefairy is pure Fairy).
+- The API uses **modern typings**, so Fairy exists in the pool data (Clefairy is pure Fairy).
 - Cross-generation families (Pichu→Pikachu→Raichu, Onix→Steelix) are handled by `evolution_chain_id`.
 - Infinite scroll bug found while running the suite: a stale observer callback could request the
   same page twice. Fixed by tracking the loaded page in a ref.

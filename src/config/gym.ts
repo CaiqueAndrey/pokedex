@@ -14,21 +14,20 @@ export const OFFERS_PER_ROUND = 3;
 export const REROLLS_PER_RUN = 1;
 
 /**
- * Per-mode budgets (base stat totals). The player's cap sits well below "six strong picks", so
- * every strong pick early costs a weaker one later. Opponents get a fixed budget (scaled per
- * battle, not relative to the player's team), so drafting well is a real advantage.
+ * Per-mode budgets (base stat totals). A null player budget means no cap: in easy mode you draft by
+ * taste and type. In hard mode the cap sits well below "six strong picks", so every strong pick
+ * early costs a weaker one later. Opponents get a fixed budget (scaled per battle, not relative to
+ * the player's team), so drafting well is a real advantage.
  *
- * Tuned with 250 simulated runs per row (docs/phases/08-gym-mode.md):
- *   easy: random picks ~34% badge, always-strongest-that-fits ~76%
- *   hard: random picks ~4% badge, always-strongest-that-fits ~22%
+ * Tuning (simulated runs) is in docs/phases/08-gym-mode.md.
  */
-export const MODE_BUDGETS = {
-  easy: { player: 2700, opponents: 2400 },
+export const MODE_BUDGETS: Record<"easy" | "hard", { player: number | null; opponents: number }> = {
+  easy: { player: null, opponents: 2500 },
   hard: { player: 2500, opponents: 2600 },
-} as const;
+};
 
-/** Default player budget (easy). */
-export const TEAM_BUDGET = MODE_BUDGETS.easy.player;
+/** Default player cap when one applies (hard mode). */
+export const TEAM_BUDGET = 2500;
 
 export const BATTLE_LEVEL = 50;
 export const MOVE_POWER = 60;

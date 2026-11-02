@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Pixelify_Sans, Press_Start_2P } from "next/font/google";
 import localFont from "next/font/local";
+import { HideOnFocusRoutes } from "@/components/layout/hide-on-routes";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { messages } from "@/config/messages";
@@ -75,7 +76,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="conteudo" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
           {children}
         </main>
-        <SiteFooter />
+        <HideOnFocusRoutes>
+          <SiteFooter />
+        </HideOnFocusRoutes>
       </body>
     </html>
   );

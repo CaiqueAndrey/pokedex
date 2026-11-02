@@ -21,6 +21,8 @@ for (const theme of ["light", "dark"] as const) {
         localStorage.setItem("pokedex:team:v1", names);
         localStorage.setItem("pokedex:favorites:v1", names);
       }, theme);
+      // Animations off: axe would otherwise measure contrast on cards mid fade-in.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(path);
       await expect(page.getByRole("main")).toBeVisible();
       const results = await new AxeBuilder({ page })

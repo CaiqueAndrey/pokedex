@@ -27,26 +27,56 @@ export interface DraftRound {
 }
 
 /**
+ * The die only lands on "friendly" faces: types with at least `OFFERS_PER_ROUND` families still
+ * available and at least one mid-or-strong Pokémon that fits, so a round always has real choices.
+ * Among those it prefers types the team doesn't have yet, nudging every run towards a varied team
+ * (water, fire, electric…) instead of several rolls of the same type.
+ */
+export function rollType(
+  available: readonly BattlePokemon[],
+  team: readonly BattlePokemon[],
+  fits: (p: BattlePokemon) => boolean,
+  thresholds: [number, number],
+  rng: Rng,
+): PokemonTypeName {
+  const viable = POKEMON_TYPES.filter((type) => {
+    const ofType = available.filter((p) => p.types.includes(type));
+    return (
+      new Set(ofType.map((p) => p.family)).size >= OFFERS_PER_ROUND &&
+      ofType.some((p) => fits(p) && tierOf(p, thresholds) !== "weak")
+    );
+  });
+  const covered = new Set(team.flatMap((p) => p.types));
+  const fresh = viable.filter((type) => !covered.has(type));
+  // Last resort (never expected with real pools): any type with something that fits.
+  const anyFit = POKEMON_TYPES.filter((type) =>
+    available.some((p) => p.types.includes(type) && fits(p)),
+  );
+  return pick(rng, fresh.length > 0 ? fresh : viable.length > 0 ? viable : anyFit) ?? "normal";
+}
+
+/**
  * One draft round, in the spirit of 7a0's die: roll a type, then offer one weak, one mid and one
- * strong Pokémon of that type. Offers ignore the budget on purpose, so the player *sees* what the
- * cap costs: the ones that don't fit come back in `blocked`. At least one offer always fits, and
- * offers never repeat a family already on the team (or each other).
+ * strong Pokémon of that type. Offers never repeat a family already on the team (or each other).
+ *
+ * With a `budget` (hard mode) offers ignore it on purpose, so the player *sees* what the cap costs:
+ * the ones that don't fit come back in `blocked`, and at least one always fits. With no budget
+ * (`null`, easy mode) every offer can be picked: choose by taste and type.
  */
 export function draftRound(
   pool: readonly BattlePokemon[],
   team: readonly BattlePokemon[],
   rng: Rng,
-  budget = TEAM_BUDGET,
+  budget: number | null = TEAM_BUDGET,
 ): DraftRound {
   const teamFamilies = new Set(team.map((p) => p.family));
   const available = pool.filter((p) => !teamFamilies.has(p.family));
-  const fits = (p: BattlePokemon) => fitsBudget(p, team, pool, budget);
-  // Only types with at least one affordable Pokémon can come up, so a round is never a dead end.
-  const types = POKEMON_TYPES.filter((type) =>
-    available.some((p) => p.types.includes(type) && fits(p)),
+  const affordable = new Set(
+    budget === null ? available : available.filter((p) => fitsBudget(p, team, pool, budget)),
   );
-  const type = pick(rng, types) ?? "normal";
+  const fits = (p: BattlePokemon) => affordable.has(p);
   const thresholds = tierThresholds(pool);
+  const type = rollType(available, team, fits, thresholds, rng);
 
   const offers: BattlePokemon[] = [];
   const families = new Set<number>();

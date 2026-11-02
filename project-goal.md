@@ -557,20 +557,26 @@ técnico: é **calibrar o equilíbrio** para ser divertido. Por isso a simulaç�
    - A cada rodada o jogador **rola o dado**, que sorteia um **tipo** (das 18 faces possíveis) e
      oferece **3 Pokémon** daquele tipo, um de cada faixa de poder (fraco / médio / forte, pelo total
      de base stats, o BST). O jogador escolhe 1.
-   - **Orçamento de time:** a soma de BST tem um teto (ex.: 2.700 para 6 Pokémon). Escolher três
-     "fortes" cedo obriga a escolher fracos depois, o que força um time **equilibrado** (como um teto
-     salarial).
+   - **Limite de força do time (só no Difícil):** a soma de BST tem um teto de 2.500. No Fácil não
+     há limite: o jogador escolhe por gosto e tipo. No Difícil as 3 ofertas ignoram o limite de propósito: as que estourariam aparecem **bloqueadas** ("Não
+     cabe: passa X do limite"), e pelo menos uma sempre cabe. Assim o custo de escolher fortes cedo
+     fica visível: as próximas vagas ficam com menos força (como um teto salarial).
+     _Revisado em 02/11/2026:_ a primeira versão só oferecia o que cabia e escalava os oponentes pelo
+     time do jogador, então escolher sempre o mais forte não tinha custo nem vantagem.
+   - **Dado amigável:** só cai em tipos com pelo menos 3 famílias disponíveis e uma opção média ou
+     forte, e prefere tipos que o time ainda não tem. Isso leva a times variados (em média ~9 tipos
+     cobertos) e evita rodadas sem boa escolha.
    - **1 nova rolagem** por corrida, para fugir de um dado ruim.
    - Durante o draft, a tabela de **cobertura do time** (já existe em `/team`) mostra as fraquezas
      compartilhadas: é a dica do que falta.
-   - Pool padrão: gerações 1 e 2, **sem lendários e míticos** (Mewtwo ou Lugia desequilibrariam
-     tudo). Formas alternativas ficam fora na primeira versão.
+   - Pool padrão: gerações 1 a 4, **sem lendários e míticos** (458 Pokémon em 212 famílias; Mewtwo
+     ou Lugia desequilibrariam tudo). Formas alternativas ficam fora na primeira versão.
 2. **Oponentes balizados:**
    - Batalhas 1–4: treinadores do ginásio (nomes curados: "Campista", "Montanhista"…), com times
      **totalmente aleatórios** (sem preferência de tipo), gerados pelo **mesmo algoritmo, orçamento e
      regras de composição** do jogador.
-   - Dificuldade crescente: orçamento do oponente de ~85% do time do jogador na 1ª batalha até ~105%
-     na 5ª.
+   - Força **fixa** por modo (Fácil 2.500, Difícil 2.600), crescente de 85% na 1ª batalha até 105% na
+     5ª. Não depende do time do jogador: montar um time mais forte é uma vantagem real.
    - Batalha 5: **Brock**, também com time aleatório no orçamento da batalha final. O único toque
      temático é o nome, a apresentação e a insígnia (sem viés de Pedra/Terra).
 3. **Batalha:** simulada automaticamente e exibida turno a turno (barras de PS, "É super efetivo!",
@@ -898,7 +904,7 @@ interface web.
 | Servidor MCP            | Fase 9, transporte stdio, núcleo compartilhado com o app (§5, §8.7) | Decidido                |
 | Modo Ginásio            | Fase 8: draft + batalhas simuladas pelo Ginásio de Pewter (§8.8)   | Proposto                        |
 | Fonte dos stats do jogo | GraphQL `beta.pokeapi.co/graphql/v1beta` (1 requisição, cache 24 h) + snapshot JSON gerado por script como fallback/fixture (§8.8) | Recomendado (testado) |
-| Pool do draft           | Gerações 1 e 2 (240), sem lendários/míticos; configurável em `config/gym.ts` | Decidido               |
+| Pool do draft           | Gerações 1 a 4 (458), sem lendários/míticos; configurável em `config/gym.ts` | Decidido               |
 | Derrota no desafio      | Encerra a corrida (estilo roguelike, como o "7 a 0")                | Decidido                        |
 | Oponentes               | Times aleatórios, sem viés de tipo (inclusive o Brock), mesmo orçamento e regras | Decidido           |
 | Composição de time      | Sem repetidos e no máximo um Pokémon por família evolutiva (jogador e oponentes) | Decidido           |

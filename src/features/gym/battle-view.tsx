@@ -2,6 +2,7 @@
 
 import { FastForward } from "lucide-react";
 import { useEffect, useState } from "react";
+import { TypeBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { TYPE_LABELS, messages } from "@/config/messages";
@@ -103,7 +104,7 @@ function Fighter({
       <div
         key={hits}
         className={cn(
-          "relative size-28 shrink-0 sm:size-36",
+          "relative size-24 shrink-0 sm:size-36",
           hits > 0 && "motion-safe:animate-pop",
           hp === 0 && "opacity-30 grayscale transition-all duration-500",
         )}
@@ -117,11 +118,21 @@ function Fighter({
           />
         )}
       </div>
-      <div className="border-border bg-surface min-w-0 flex-1 rounded-xl border-2 p-3 shadow-[3px_3px_0_0_var(--border)]">
+      <div className="border-border bg-surface min-w-0 flex-1 rounded-xl border-2 p-2 shadow-[3px_3px_0_0_var(--border)] sm:p-3">
         <p className="text-muted text-xs">{label}</p>
         <p className="font-display truncate text-[0.65rem] leading-relaxed">
           {pokemon ? formatName(pokemon.name) : ""}
         </p>
+        {pokemon && (
+          <div
+            className={cn("my-1 flex flex-wrap gap-1", side === "opponent" && "justify-end")}
+            data-testid={`fighter-types-${side}`}
+          >
+            {pokemon.types.map((type) => (
+              <TypeBadge key={type} type={type} className="px-2 py-0 text-[0.7rem]" />
+            ))}
+          </div>
+        )}
         <div
           className="bg-border mt-1 h-3 overflow-hidden rounded-full"
           role="meter"
@@ -135,7 +146,7 @@ function Fighter({
             style={{ width: `${ratio * 100}%` }}
           />
         </div>
-        <p className="mt-1 text-sm tabular-nums">
+        <p className="mt-0.5 text-sm tabular-nums">
           {hp} / {maxHp}
         </p>
         <div className={cn("mt-1 flex gap-1", side === "opponent" && "justify-end")} aria-hidden>
@@ -189,8 +200,8 @@ export function BattleView({
   });
 
   return (
-    <div className="grid gap-4">
-      <div className="from-surface border-border relative grid gap-6 overflow-hidden rounded-3xl border-2 bg-linear-to-b to-green-500/20 p-4 shadow-[4px_4px_0_0_var(--border)]">
+    <div className="grid gap-3 sm:gap-4">
+      <div className="from-surface border-border relative grid gap-3 overflow-hidden rounded-3xl border-2 bg-linear-to-b to-green-500/20 p-3 shadow-[4px_4px_0_0_var(--border)]">
         <Fighter
           side="opponent"
           label={trainer}
@@ -210,7 +221,7 @@ export function BattleView({
       </div>
 
       <div
-        className="border-border bg-background font-display min-h-28 rounded-2xl border-4 p-3 text-[0.6rem] leading-loose"
+        className="border-border bg-background font-display min-h-20 rounded-2xl border-4 p-2 text-[0.6rem] leading-loose sm:min-h-28 sm:p-3"
         aria-live="polite"
         data-testid="battle-log"
       >
