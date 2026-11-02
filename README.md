@@ -1,34 +1,57 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pokédex
 
-## Getting Started
+A Pokédex built with the [PokeAPI](https://pokeapi.co/): all 1025 species plus alternative forms
+(regional, Mega, Gigantamax), with search and filters in the URL, a rich detail page (stats,
+evolutions, weaknesses), favorites, a team builder with coverage analysis, and a side-by-side
+comparison. The UI is in Portuguese; code and docs are in English.
 
-First, run the development server:
+This is a study project. The plan lives in [`project-goal.md`](project-goal.md) (Portuguese), the
+per-phase learning notes in [`docs/phases/`](docs/phases/) and the status in [`PHASES.md`](PHASES.md).
+
+## Stack
+
+Next.js 16 (App Router, Server Components) · React 19 · TypeScript strict · Tailwind CSS 4 · Zod 4 ·
+Vitest · Playwright (+ axe) · ESLint 9 · Prettier · Husky · Yarn 4.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
+corepack enable
+yarn install
+cp .env.example .env.local   # optional: POKEAPI_BASE_URL
+yarn dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+| Script                | What it does                                             |
+| --------------------- | -------------------------------------------------------- |
+| `yarn dev` / `build`  | Run / build the app                                      |
+| `yarn lint`           | ESLint                                                   |
+| `yarn format[:check]` | Prettier                                                 |
+| `yarn typecheck`      | `tsc --noEmit`                                           |
+| `yarn test`           | Vitest unit tests (use recorded fixtures, never the API) |
+| `yarn test:e2e`       | Playwright against a local fixtures server               |
+| `yarn fixtures`       | Re-record `src/server/pokeapi/fixtures/pokeapi.json`     |
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## How it works
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```text
+PokeAPI → fetch (cached 24 h) → Zod → mappers → domain types → Server Components
+```
 
-## Learn More
+- The browser never calls the PokeAPI (fair use): the server builds a light index (~30 cached
+  requests) and search, filters, sorting and pagination are pure functions over it.
+- The data core (`src/server/pokeapi`, `src/server/pokedex`, `src/lib`) does not depend on Next.js,
+  so it can be reused by other consumers (a future MCP server).
+- Favorites, team and theme live in `localStorage` (versioned keys, Zod-validated).
 
-To learn more about Next.js, take a look at the following resources:
+## Screenshots
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Screenshots are produced from the running app and are not committed yet; run `yarn dev` to see the
+list (`/`), detail (`/pokemon/charizard`), team (`/team`) and comparison (`/compare`) pages.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Credits
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Data from [PokeAPI](https://pokeapi.co/). Pokémon and related names are trademarks of Nintendo,
+Game Freak and The Pokémon Company. Non-profit study project.
