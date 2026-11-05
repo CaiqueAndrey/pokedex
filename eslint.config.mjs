@@ -22,8 +22,15 @@ export default defineConfig([
     "next-env.d.ts",
   ]),
   {
-    files: ["src/server/pokeapi/**", "src/server/pokedex/**", "src/lib/**"],
+    files: ["src/server/pokeapi/**", "src/server/pokedex/**", "src/lib/**", "src/mcp/**"],
     ignores: ["src/server/pokedex/next-cache.ts"],
     rules: { "no-restricted-imports": ["error", { patterns: nextImports }] },
+  },
+  {
+    // The MCP server speaks JSON-RPC over stdout: anything else printed there corrupts it.
+    // The core runs inside it too. Logs go to stderr (console.error / console.warn).
+    files: ["src/server/pokeapi/**", "src/server/pokedex/**", "src/lib/**", "src/mcp/**"],
+    ignores: ["**/*.test.ts"],
+    rules: { "no-console": ["error", { allow: ["error", "warn"] }] },
   },
 ]);

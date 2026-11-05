@@ -284,7 +284,9 @@ src/
       battle-pool.ts           # stats + tipos + flags de lendário do pool do draft (§8.8)
       next-cache.ts            # adaptador de cache do Next (único arquivo do servidor que importa next/*)
   mcp/
-    server.ts                  # cria o McpServer, registra tudo e conecta o transporte stdio
+    server.ts                  # ponto de entrada: conecta o transporte stdio, encerramento limpo
+    create-server.ts           # cria o McpServer (dependências injetadas) e registra tudo
+    context.ts                 # resolve nomes → detalhes, com sugestões ("did you mean …?")
     tools/                     # search-pokemon, get-pokemon, get-type-matchups, get-evolution-chain, analyze-team
     resources.ts               # pokemon://{name}, pokedex://types
     prompts.ts                 # build-team, explain-matchup
@@ -469,12 +471,15 @@ Todas são somente leitura (`readOnlyHint: true`) e validam a entrada com Zod.
 ```bash
 yarn mcp                       # roda o servidor (tsx src/mcp/server.ts)
 yarn mcp:inspect               # abre o MCP Inspector para testar as tools à mão
-claude mcp add pokedex --scope project -- yarn mcp   # gera/atualiza o .mcp.json
+claude mcp add pokedex --scope project -- node --import tsx src/mcp/server.ts   # gera/atualiza o .mcp.json
 ```
 
 Depois, no Claude Code: `/mcp` mostra o status do servidor e suas tools, e é possível pedir, por
-exemplo, "quais as fraquezas de um time com Charizard, Gyarados e Pikachu?". No Windows, se o
-comando não for encontrado, envolver com `cmd /c` (ver a documentação do Claude Code sobre MCP).
+exemplo, "quais as fraquezas de um time com Charizard, Gyarados e Pikachu?".
+
+> **Implementado (Fase 11):** o `.mcp.json` chama `node --import tsx src/mcp/server.ts` em vez de
+> `yarn mcp`. No Windows o `yarn` é um shim `.cmd` que exigiria `cmd /c`, e isso quebra no
+> macOS/Linux; o `node` funciona em todo sistema. Detalhes em `docs/guides/mcp.md`.
 
 ## 8.8 Modo Ginásio: draft e batalhas (gamificação)
 

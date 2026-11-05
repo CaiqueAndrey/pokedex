@@ -34,6 +34,8 @@ yarn dev                     # http://localhost:3000
 | `yarn test:e2e`           | Playwright against a local fixtures server               |
 | `yarn fixtures`           | Re-record `src/server/pokeapi/fixtures/pokeapi.json`     |
 | `yarn battle-pool:record` | Re-record the gym draft pool snapshot (GraphQL)          |
+| `yarn mcp`                | Run the MCP server over stdio                            |
+| `yarn mcp:inspect`        | Open the MCP Inspector connected to the server           |
 
 ## How it works
 
@@ -44,8 +46,17 @@ PokeAPI → fetch (cached 24 h) → Zod → mappers → domain types → Server 
 - The browser never calls the PokeAPI (fair use): the server builds a light index (~30 cached
   requests) and search, filters, sorting and pagination are pure functions over it.
 - The data core (`src/server/pokeapi`, `src/server/pokedex`, `src/lib`) does not depend on Next.js,
-  so it can be reused by other consumers (a future MCP server).
+  so the MCP server reuses it as is.
 - Favorites, team and theme live in `localStorage` (versioned keys, Zod-validated).
+
+## MCP server
+
+The Pokédex is also an [MCP](https://modelcontextprotocol.io) server, so Claude Code can search
+Pokémon, check type matchups, analyze teams and simulate gym battles with the same code as the app.
+It is registered for this project in [`.mcp.json`](.mcp.json): open Claude Code at the repository
+root, approve the `pokedex` server and run `/mcp`. Then ask, for example, "Quais as fraquezas de
+um time com Charizard, Gyarados e Pikachu?". Tools, resources, prompts and how to inspect them:
+[docs/guides/mcp.md](docs/guides/mcp.md).
 
 ## Screenshots
 

@@ -36,7 +36,7 @@ import {
 } from "./run";
 import { simulateBattle } from "./simulate";
 import { sharedWeaknesses, teamCoverage } from "../type-effectiveness";
-import { budgetPlan, fitsBudget, teamBst, validateTeam } from "./team";
+import { budgetPlan, fitsBudget, teamBst, toBattlePokemon, validateTeam } from "./team";
 
 const pool = snapshotPool();
 const get = (name: string) => {
@@ -179,6 +179,16 @@ describe("team rules", () => {
     );
     expect(validateTeam([...base.slice(0, 4), get("onix"), get("steelix")])).toContain("family");
     expect(validateTeam([...base.slice(0, 5), get("pichu")])).toContain("family");
+  });
+});
+
+describe("toBattlePokemon", () => {
+  it("matches the recorded pool entry for the same Pokémon", async () => {
+    const detail = await createPokedexService(createFixtureClient()).getPokemonDetail("charizard");
+    if (!detail) throw new Error("charizard missing from fixtures");
+    const { legendary, ...expected } = get("charizard");
+    expect(legendary).toBeUndefined();
+    expect(toBattlePokemon(detail)).toEqual(expected);
   });
 });
 

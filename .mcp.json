@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "pokedex": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--import", "tsx", "src/mcp/server.ts"],
+      "env": {}
+    }
+  }
+}
