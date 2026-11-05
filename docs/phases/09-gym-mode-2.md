@@ -212,3 +212,87 @@ earlier build, and nothing said so). The layout now follows 7a0's structure.
   background with `text-on-primary` instead.
 - A daily result recorded by an earlier build still counts for that day: that is why the Rocket
   battle couldn't be started on the day it was tested. The hub now says so and offers practice.
+
+## Fourth pass: Struggle fix, a trainer, the gym's own sections, and a different daily
+
+### Struggle (the Normal vs Ghost bug)
+
+Pure Normal vs pure Ghost is the only **mutual** immunity in the pool (672 of 234,256 pairs): both
+sides fell back to a 1-damage Struggle, and Snorlax vs Misdreavus took 270 attacks. One-sided
+immunities (6,952 pairs, e.g. Electric vs Ground) ended, but the immune side was dead weight. Struggle
+now works like the games since Gen 4: **typeless** (neutral, no STAB, no crit), power 50, with
+**recoil of 1/4 of the attacker's max HP**. The same matchup now ends in 5 attacks. A recoil faint
+resolves after the defender's, and the next Pokémon comes in as usual.
+
+### The gym's own navigation, a trainer and XP
+
+- **Header**: "Ginásio" is a highlighted button with its label on every screen size; the Pokédex home
+  has a **banner** (Brock, Misty, Jessie) while no filter is active.
+- **Gym tabs** (`app/gym/layout.tsx` + `GymTabs`): Jogar · Recompensas · Histórico · Treinador, plus
+  your level. Rewards, history and the Trainer Card are their own routes.
+- **Trainer** (`pokedex:trainer:v1`): a name typed once (no login), a five-digit ID and a "since"
+  date. The name shows in every battle.
+- **XP and levels** (pure, derived from the stats, nothing new stored): 10 XP per battle won, 50/100
+  per cleared gym, 100 per cleared gauntlet, 30 per legendary; level n needs `50·n·(n−1)` XP; ranks
+  from Novato to Mestre Pokémon. The result dialog shows the XP gained and level-ups.
+- **History** (`pokedex:gym-history:v1`): the last 10 finished runs (practice included, flagged),
+  each with the score, the reward, the MVP, the team and the battles on demand. The latest one is
+  also shown on the hub.
+- **Battles**: a header with "Gym · Battle n of m" and "You × Trainer", and a short "VS" card at the
+  start ("Recruta Rocket Lia quer batalhar!"), with the leader's art when there is one.
+- **Trophies** per challenge: Pewter, Cerulean (new) and Team Rocket defeated (new).
+
+### The daily challenge is now a different game: the Team Rocket hideout (gauntlet)
+
+|          | Gyms (easy, hard) | Daily gauntlet                                              |
+| -------- | ----------------- | ----------------------------------------------------------- |
+| Draft    | 6 die rounds      | **The same hand of 12 for everyone**, pick 6 on one screen  |
+| Battles  | 5, fully healed   | **Up to 10**, HP carries over, survivors recover 40%        |
+| Trainers | 6 Pokémon         | Grunts 2–3, executives 4, James 3, Jessie 5 (`teamSize`)    |
+| Goal     | Clear 5           | How far you get (score 0–10)                                |
+| Rewards  | 3/4/5 wins        | 3: Poké · 5: Great + the day's item · 7: Ultra · 10: Master |
+
+Tuning (strongest-pick and "expert" bots, 80 runs): the first try (6-Pokémon trainers, 20% heal)
+averaged 2 trainers and nobody reached 5; Team Rocket grunts carrying fewer Pokémon (true to the
+show) fixed the attrition. Final: expert averages **5.8**, 80% reach James, 31% the Ultra Ball,
+~1% clear Jessie. The test keeps the strongest-pick mean between 3 and 7.
+
+### Gotchas (fourth pass)
+
+- `getByRole("link", { name: "Recompensas" })` also matches "Ver recompensas": E2E uses `exact`.
+- A stats fixture missing a new field (`dailyBest`) is rejected by Zod and the store falls back to
+  empty: seeded test data must follow the schema.
+- `.next-e2e/dev/types` keeps route types from the last E2E dev server; after adding a layout they
+  go stale and fail `tsc`. They're build output: delete and let Next regenerate them.
+
+## Fifth pass: varied trainers and a short, daily-friendly gauntlet
+
+### Bug: every trainer brought the same counters
+
+Scouting always took **the single best** counter to your team, and every trainer studies the same
+team, so the best answer showed up in all five battles (measured: one Pokémon in every trainer of a
+run). Now trainers pick among the **three best** counters, and each one **avoids the families earlier
+trainers fielded** in the run (signature Pokémon aside). `opponentRosters` builds the run's rosters
+in order and caches them (pure inputs: seed, mode, picks). Measured repetition between consecutive
+trainers: 0%. A test keeps every family to one trainer per run.
+
+Variety made easy mode a bit easier (expert 30% → 43%); the opponent budget went from 2 450 to 2 500.
+Now 5% / 23% / 38% (random / strongest / expert) in easy, 5% / 12% / 10% in hard.
+
+### The daily was too long and too hard
+
+Ten battles while losing HP took too long and felt out of reach for a game meant to be played every
+day. The gauntlet is now **5 quick battles** (Recruta 2 · Recruta/Cientista 2 · Cientista/Executivo
+3 · James 3 · Jessie 4 Pokémon) with **50%** recovery between them, and it **always pays**:
+
+| Trainers beaten                                       | Reward                      |
+| ----------------------------------------------------- | --------------------------- |
+| 1                                                     | Poké Ball                   |
+| 3                                                     | Great Ball + the day's item |
+| 5                                                     | Ultra Ball                  |
+| **3 days in a row** (any result, abandoning included) | **Master Ball**             |
+
+Measured (100 runs): random 11% clear, strongest 32%, expert 59%; everyone beats at least one, and
+84–100% reach the item. The streak (`dailyStreak`, `playsToStreakBonus`, `streakBonus`) is derived
+from the stored daily results; the hub shows "🔥 Sequência: N dias" and how many plays the next
+Master Ball needs.

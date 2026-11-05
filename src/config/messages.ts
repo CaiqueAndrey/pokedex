@@ -182,7 +182,8 @@ export const messages = {
       "Sem repetidos e só um Pokémon por família de evolução (nada de Squirtle e Blastoise juntos).",
       "Você pode rolar o dado de novo uma vez por desafio.",
       "Batalhas no nível 50: o mais rápido ataca primeiro e cada Pokémon usa o seu tipo mais efetivo.",
-      "Uma derrota encerra o desafio. 3 vitórias valem uma Poké Bola, 4 uma Grande Bola, e vencer as 5 dá a insígnia e uma Ultra Bola (ou Master Ball no Difícil e no desafio do dia).",
+      "Uma derrota encerra o desafio. 3 vitórias valem uma Poké Bola, 4 uma Grande Bola, e vencer as 5 dá a insígnia e uma Ultra Bola (Master Ball no Difícil).",
+      "Desafio do dia, no Esconderijo da Equipe Rocket: todo mundo recebe a mesma mão de 12 Pokémon e escolhe 6. Depois, 5 batalhas rápidas sem cura completa (quem sobrevive recupera 50% do PS). Jogue 3 dias seguidos para ganhar uma Master Ball.",
     ],
     start: "Começar desafio",
     resume: "Continuar desafio",
@@ -218,7 +219,9 @@ export const messages = {
     sends: (trainer: string, name: string) => `${trainer} enviou ${name}!`,
     youSend: (name: string) => `Vai, ${name}!`,
     attack: (name: string, type: string) => `${name} atacou com um golpe de ${type}.`,
-    struggle: (name: string) => `${name} não tem como causar dano e se debate.`,
+    struggle: (name: string) =>
+      `${name} não tem golpe que funcione e usa Desespero, um ataque sem tipo!`,
+    recoil: (name: string) => `${name} se machucou com o recuo.`,
     superEffective: "É super efetivo!",
     notVeryEffective: "Não é muito efetivo…",
     critical: "Acerto crítico!",
@@ -298,7 +301,6 @@ export const messages = {
     daily: "Desafio do dia",
     dailyHint:
       "A Equipe Rocket está à solta: enfrente recrutas, James e Jessie. Mesma semente para todo mundo hoje; só a primeira tentativa conta.",
-    dailyDone: (date: string, won: number) => `Desafio do dia ${date} concluído: ${won} de 5.`,
     dailyBadge: "Desafio do dia",
     outdatedRun: "As regras do ginásio mudaram e o seu desafio anterior foi encerrado.",
     abandonTitle: "Abandonar o desafio?",
@@ -307,9 +309,13 @@ export const messages = {
     abandonConfirm: "Abandonar",
     keepPlaying: "Continuar jogando",
     wonNext: (trainer: string) => `Vitória! Próximo: ${trainer}`,
-    resultLost: (won: number) => `Você venceu ${won} de 5 batalhas.`,
+    resultLost: (won: number, total = 5) => `Você venceu ${won} de ${total} batalhas.`,
     resultWon: (gym: string) => `Você venceu as 5 batalhas do ${gym}!`,
-    resultRocket: "Você derrotou Jessie, James e os recrutas da Equipe Rocket!",
+    resultRocket: "Você limpou o esconderijo: recrutas, James e Jessie derrotados!",
+    resultGauntlet: (won: number) =>
+      won === 1
+        ? "Você derrotou 1 membro da Equipe Rocket."
+        : `Você derrotou ${won} membros da Equipe Rocket.`,
     rocketAlt: "Jessie e James, da Equipe Rocket",
     defeatedBy: (trainer: string, name: string) =>
       `${trainer} te derrotou com ${name} em destaque.`,
@@ -326,7 +332,7 @@ export const messages = {
     shareTitle: "Modo Ginásio · Pokédex",
     shareHeader: (gym: string, label: string) => `${gym} · ${label}`,
     shareSeed: (seed: string) => `Semente ${seed}`,
-    shareScore: (won: number) => `${won}/5`,
+    shareScore: (won: number, total = 5) => `${won}/${total}`,
     newAchievements: "Novas conquistas",
     soundOn: "Som ligado",
     soundOff: "Som desligado",
@@ -335,14 +341,15 @@ export const messages = {
     stats: {
       runs: "Desafios",
       badges: "Insígnias",
-      rocket: "Equipe Rocket derrotada",
+      rocket: "Esconderijo completo",
+      dailyBest: "Recorde no esconderijo",
       battlesWon: "Batalhas vencidas",
       best: "Melhor resultado",
       streak: "Sequência atual",
       bestStreak: "Melhor sequência",
       favorite: "Mais escolhido",
     },
-    bestOf: (n: number) => `${n} de 5`,
+    bestOf: (n: number, total = 5) => `${n} de ${total}`,
     achievementsTitle: "Conquistas",
     achievementCount: (n: number, total: number) => `${n} de ${total}`,
     achievementLocked: "Bloqueada",
@@ -394,6 +401,8 @@ export const messages = {
       master: "Master Ball",
     },
     ballsTitle: "Suas Pokébolas",
+    ballsHintModes:
+      "Fácil: 3, 4 e 5 vitórias dão Poké, Grande e Ultra Bola. Difícil: a 5ª vitória dá Master Ball. Esconderijo Rocket: 1, 3 e 5 derrotados, e uma Master Ball a cada 3 dias seguidos.",
     ballsHint:
       "3 vitórias: Poké Bola · 4: Grande Bola · Fácil completo: Ultra Bola · Difícil ou desafio do dia completo: Master Ball.",
     ballWon: (ball: string) => `Você ganhou uma ${ball}!`,
@@ -426,14 +435,28 @@ export const messages = {
       face: {
         easy: "4 treinadores do ginásio e o Brock, com o Onix.",
         hard: "4 treinadores, com o time escondido, e a Misty, com a Starmie.",
-        daily: "3 recrutas, o James (Weezing) e a Jessie (Arbok).",
+        daily:
+          "5 batalhas rápidas: recrutas, James (Weezing) e Jessie (Arbok). O PS não volta todo entre as batalhas: quantos você derrota?",
       },
       play: { easy: "Jogar no Fácil", hard: "Jogar no Difícil", daily: "Jogar o desafio de hoje" },
       practice: "Treinar (não vale)",
       badgeEarned: "Insígnia conquistada",
       badgeMissing: "Ainda sem a insígnia",
       clears: (n: number) => (n === 1 ? "Vencido 1 vez" : `Vencido ${n} vezes`),
-      dailyPlayed: (won: number) => `Você já enfrentou a Equipe Rocket hoje: ${won} de 5.`,
+      dailyPlayed: (won: number) =>
+        `Você já enfrentou a Equipe Rocket hoje: ${won} de 5 derrotados.`,
+      dailyLadder: "1 derrotado: Poké Bola · 3: Grande Bola e o item do dia · 5: Ultra Bola",
+      streak: (days: number) =>
+        days === 1 ? "🔥 Sequência: 1 dia" : `🔥 Sequência: ${days} dias seguidos`,
+      streakHint: (plays: number, playedToday: boolean) =>
+        plays === 1 && !playedToday
+          ? "Jogue hoje e complete 3 dias seguidos: Master Ball garantida!"
+          : `Faltam ${plays} ${plays === 1 ? "dia seguido" : "dias seguidos"} para a próxima Master Ball.`,
+      lastRun: "Seu último desafio",
+      seeHistory: "Ver histórico",
+      seeRewards: "Ver recompensas",
+      trainerChip: (name: string, level: number) => `${name} · Nível ${level}`,
+      chooseName: "Escolha seu nome de treinador",
       dailyOnce:
         "Só a primeira tentativa do dia vale. Treinos usam a mesma semente, mas não dão recompensas.",
       nextDaily: (time: string) => `Novo desafio em ${time}`,
@@ -465,6 +488,74 @@ export const messages = {
       settingsTitle: "Ajustes",
     },
     practiceBadge: "Treino",
+    tabs: {
+      label: "Seções do Modo Ginásio",
+      play: "Jogar",
+      rewards: "Recompensas",
+      history: "Histórico",
+      trainer: "Treinador",
+    },
+    trainer: {
+      title: "Cartão de Treinador",
+      description:
+        "Seu nome aparece nas batalhas e no cartão. Fica só neste navegador: sem login, sem conta.",
+      nameLabel: "Nome de treinador",
+      namePlaceholder: "Ex.: Ash",
+      save: "Salvar nome",
+      saved: "Nome salvo!",
+      id: (id: string) => `ID nº ${id}`,
+      since: (date: string) => `Desde ${date}`,
+      level: (n: number) => `Nível ${n}`,
+      xp: (into: number, needed: number) => `${into} / ${needed} XP`,
+      xpTotal: (n: number) => `${n} XP no total`,
+      xpHow:
+        "XP: 10 por batalha vencida, 50 a 100 por desafio completo e 30 por lendário capturado.",
+      ranks: {
+        rookie: "Novato",
+        trainer: "Treinador",
+        ace: "Ás",
+        veteran: "Veterano",
+        master: "Mestre Pokémon",
+      },
+      anonymous: "Você",
+      badges: "Insígnias",
+      balls: "Pokébolas",
+      legends: "Lendários",
+      achievements: "Conquistas",
+      favorite: "Parceiro",
+    },
+    xpGained: (n: number) => `+${n} XP`,
+    streakBonus: (days: number) => `🔥 ${days} dias seguidos: você ganhou uma Master Ball!`,
+    levelUp: (n: number) => `Subiu para o nível ${n}!`,
+    vsTitle: (trainer: string) => `${trainer} quer batalhar!`,
+    history: {
+      title: "Histórico",
+      description: "Seus últimos 10 desafios terminados (treinos inclusos).",
+      empty: "Nenhum desafio terminado ainda.",
+      play: "Jogar agora",
+      details: "Ver batalhas",
+      won: "Completo",
+      lost: "Derrota",
+    },
+    gauntlet: {
+      handTitle: "A mão do dia",
+      handHint:
+        "Os mesmos 12 Pokémon para todo mundo hoje. Escolha 6 sem passar do limite de força.",
+      selected: (n: number) => `${n} de 6 escolhidos`,
+      confirm: "Enfrentar a Equipe Rocket",
+      select: (name: string) => `Escolher ${name}`,
+      unselect: (name: string) => `Tirar ${name}`,
+      noFit: "Não cabe",
+      defeated: (n: number) => `Derrotados: ${n} de 5`,
+      hpCarry:
+        "O PS não volta todo entre as batalhas: quem sobrevive recupera 50%, e quem desmaia fica de fora.",
+      fainted: "Desmaiado",
+    },
+    homeBanner: {
+      title: "Modo Ginásio",
+      text: "Role o dado, monte um time de 6 e vença Brock, Misty e a Equipe Rocket. Um desafio novo todo dia, com Pokébolas, itens e lendários para colecionar.",
+      cta: "Jogar agora",
+    },
     practiceResult: "Foi um treino: sem recompensas, estatísticas ou conquistas.",
     legendaryRound: "Encontro lendário!",
     legendaryRoundHint:

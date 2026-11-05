@@ -22,6 +22,7 @@ import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
 import { Section } from "./gym-hub";
 import { ItemIcon } from "./item-icon";
+import { useBadges, useGymProgress } from "./use-gym";
 
 const m = messages.gym;
 const h = m.hub;
@@ -81,6 +82,7 @@ export function GymRewards({
     [m.stats.rocket, stats.cleared.daily],
     [m.stats.battlesWon, stats.battlesWon],
     [m.stats.best, m.bestOf(stats.best)],
+    [m.stats.dailyBest, m.bestOf(stats.dailyBest, GYMS.daily.battles.length)],
     [m.stats.streak, stats.streak],
     [m.stats.bestStreak, stats.bestStreak],
   ];
@@ -112,7 +114,7 @@ export function GymRewards({
           </ul>
         </RewardCard>
 
-        <RewardCard title={m.ballsTitle} hint={m.ballsHint}>
+        <RewardCard title={m.ballsTitle} hint={m.ballsHintModes}>
           <ul className="grid grid-cols-4 gap-2" data-testid="balls">
             {BALLS.map((ball) => (
               <li
@@ -228,5 +230,27 @@ export function GymRewards({
         </RewardCard>
       </div>
     </Section>
+  );
+}
+
+/** The rewards tab: reads the player's progress from localStorage. */
+export function GymRewardsPage({
+  legendaries,
+  items,
+}: {
+  legendaries: BattlePokemon[];
+  items: GameItem[];
+}) {
+  const { stats, achievements, bag } = useGymProgress();
+  const { badges } = useBadges();
+  return (
+    <GymRewards
+      stats={stats}
+      badges={badges}
+      achievements={achievements}
+      bag={bag}
+      items={items}
+      legendaries={legendaries}
+    />
   );
 }

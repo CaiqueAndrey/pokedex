@@ -8,7 +8,6 @@ import { HideOnFocusRoutes } from "./hide-on-routes";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
-  { href: "/gym", label: messages.nav.gym, Icon: Swords },
   { href: "/favorites", label: messages.nav.favorites, Icon: Heart },
   { href: "/team", label: messages.nav.team, Icon: Users },
   { href: "/compare", label: messages.nav.compare, Icon: Scale },
@@ -33,6 +32,14 @@ export function SiteHeader() {
           aria-label={messages.nav.main}
           className="order-2 ml-auto flex items-center sm:order-3 sm:ml-0"
         >
+          <Link
+            href="/gym"
+            className="font-display from-primary-600 to-primary-700 text-on-primary mr-1 inline-flex min-h-11 items-center gap-2 rounded-xl bg-linear-to-b px-3 text-[0.6rem] shadow-[0_3px_0_0_var(--primary-700)] hover:brightness-110"
+            data-testid="nav-gym"
+          >
+            <Swords aria-hidden className="size-4" />
+            {messages.nav.gym}
+          </Link>
           <ul className="flex items-center">
             {links.map(({ href, label, Icon, prefetch }) => (
               <li key={href}>

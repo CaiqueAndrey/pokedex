@@ -60,6 +60,8 @@ export function PreBattle({
   opponent,
   relations,
   counters,
+  health,
+  defeated,
   onReorder,
   onFight,
 }: {
@@ -71,6 +73,10 @@ export function PreBattle({
   relations: TypeRelations;
   /** The trainer picks its lead after seeing yours (its order follows your first slot). */
   counters: boolean;
+  /** Gauntlet: current and max HP per team member (in team order). */
+  health?: { hp: number; max: number }[];
+  /** Gauntlet: trainers beaten so far. */
+  defeated?: number;
   onReorder: (order: string[]) => void;
   onFight: () => void;
 }) {
@@ -201,6 +207,11 @@ export function PreBattle({
           {m.yourTeam}
         </h3>
         <p className="text-muted mb-2 text-sm">{m.orderHintDrag}</p>
+        {health && (
+          <p className="mb-2 text-sm font-bold" data-testid="gauntlet-status">
+            {m.gauntlet.defeated(defeated ?? 0)} · {m.gauntlet.hpCarry}
+          </p>
+        )}
         <p className="sr-only" aria-live="polite">
           {selected !== null && team[selected] ? m.selected(formatName(team[selected].name)) : ""}
         </p>
@@ -248,8 +259,37 @@ export function PreBattle({
                   pokemon={pokemon}
                   compact
                   showTypes
-                  className="w-28 shrink-0 border-0"
+                  className={cn(
+                    "w-28 shrink-0 border-0",
+                    health?.[i]?.hp === 0 && "opacity-40 grayscale",
+                  )}
                 />
+                {health?.[i] && (
+                  <div className="grid min-w-28 gap-1" data-testid="member-hp">
+                    {health[i].hp === 0 ? (
+                      <span className="text-xs font-bold">{m.gauntlet.fainted}</span>
+                    ) : (
+                      <>
+                        <div className="bg-border h-2 overflow-hidden rounded-full" aria-hidden>
+                          <div
+                            className={cn(
+                              "h-full",
+                              health[i].hp / health[i].max > 0.5
+                                ? "bg-green-500"
+                                : health[i].hp / health[i].max > 0.2
+                                  ? "bg-amber-400"
+                                  : "bg-red-500",
+                            )}
+                            style={{ width: `${(health[i].hp / health[i].max) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs tabular-nums">
+                          PS {health[i].hp} / {health[i].max}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
                 {reveal && (
                   <div className="min-w-36 flex-1">
                     <MiniStats pokemon={pokemon} />

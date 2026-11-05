@@ -5,9 +5,18 @@ import {
   EMPTY_STATS,
   achievementsFor,
   addDailyItem,
+  addToHistory,
+  cleanTrainerName,
   badgeCount,
   catchLegendary,
   dailyItem,
+  dailyStreak,
+  playsToStreakBonus,
+  streakBonus,
+  levelFor,
+  totalXp,
+  xpForLevel,
+  xpForRun,
   dailyKey,
   dailySeed,
   favoritePick,
@@ -35,14 +44,15 @@ const record = (battle: number, won: boolean): BattleRecord => ({
   damage: {},
 });
 
-/** A finished run that won `won` battles (all five with `badge`). */
+/** A finished run that won `won` battles (all of the mode's battles with `badge`). */
 function finished(won: number, badge: boolean, overrides: Partial<GymRun> = {}): GymRun {
+  const total = 5;
   return {
     ...startRun("p"),
     picks: ["pidgey", "rattata", "geodude", "squirtle", "pikachu", "oddish"],
     phase: badge ? "won" : "lost",
-    battle: badge ? 5 : won,
-    history: Array.from({ length: badge ? 5 : won + 1 }, (_, i) => record(i, i < won)),
+    battle: badge ? total : won,
+    history: Array.from({ length: badge ? total : won + 1 }, (_, i) => record(i, i < won)),
     ...overrides,
   };
 }
@@ -66,6 +76,8 @@ describe("battle stats", () => {
   const result: BattleResult = {
     winner: "player",
     maxHp: { player: [100, 100], opponent: [50, 80] },
+    startHp: { player: [100, 100], opponent: [50, 80] },
+    finalHp: { player: [0, 100], opponent: [0, 0] },
     events: [
       { kind: "send", side: "player", index: 0 },
       { kind: "send", side: "opponent", index: 0 },
@@ -120,7 +132,9 @@ describe("lifetime stats", () => {
     // The daily challenge counts and gives a Master Ball, but doesn't change the preferred mode.
     stats = recordRun(stats, finished(5, true, { mode: "daily", daily: "2026-11-05" }));
     expect(stats.cleared).toEqual({ easy: 2, hard: 0, daily: 1 });
-    expect(stats.balls.master).toBe(1);
+    // The daily's top ball is the Ultra Ball; its Master Ball comes from the streak.
+    expect(stats.balls.ultra).toBe(3);
+    expect(stats.balls.master).toBe(0);
     expect(stats.lastMode).toBe("hard");
     expect(badgeCount(stats)).toBe(2);
     expect(stats.used.pidgey).toBe(4);
@@ -146,7 +160,12 @@ describe("achievements", () => {
     expect(rewardFor(finished(4, false, { mode: "hard" }))).toBe("great");
     expect(rewardFor(finished(5, true))).toBe("ultra");
     expect(rewardFor(finished(5, true, { mode: "hard" }))).toBe("master");
-    expect(rewardFor(finished(5, true, { mode: "daily" }))).toBe("master");
+    // The gauntlet ladder: 3, 5, 7 and 10 trainers beaten.
+    // The daily always pays something: 1, 3 and 5 trainers beaten.
+    expect(rewardFor(finished(0, false, { mode: "daily" }))).toBeUndefined();
+    expect(rewardFor(finished(1, false, { mode: "daily" }))).toBe("poke");
+    expect(rewardFor(finished(3, false, { mode: "daily" }))).toBe("great");
+    expect(rewardFor(finished(5, true, { mode: "daily" }))).toBe("ultra");
   });
 
   it("covers hard mode, babies, a flawless leader, variety, both badges and streaks", () => {
@@ -205,12 +224,15 @@ describe("daily challenge", () => {
     expect(resultGrid(3, false)).toBe("🟩🟩🟩🟥⬛");
     expect(resultGrid(5, true)).toBe("🟩🟩🟩🟩🟩");
     expect(resultGrid(0, false)).toBe("🟥⬛⬛⬛⬛");
+    expect(resultGrid(6, false, 10)).toBe("🟩🟩🟩🟩🟩🟩🟥⬛⬛⬛");
   });
 
   it("builds the share text for daily and seeded runs", () => {
     expect(
       shareText({ mode: "daily", battlesWon: 2, won: false, daily: "2026-11-05" }, "https://x.dev"),
-    ).toBe("Equipe Rocket · Desafio do dia 05/11\n🟩🟩🟥⬛⬛ 2/5\nhttps://x.dev/gym");
+    ).toBe(
+      "Esconderijo da Equipe Rocket · Desafio do dia 05/11\n🟩🟩🟥⬛⬛ 2/5\nhttps://x.dev/gym",
+    );
     expect(
       shareText({ mode: "hard", battlesWon: 5, won: true, seed: "abc" }, "https://x.dev"),
     ).toBe(
@@ -233,11 +255,12 @@ describe("Master Ball, legendaries, bag and practice", () => {
     expect(dailyItem("2026-11-05")).toBe(dailyItem("2026-11-05"));
     const days = pastDays("2026-11-05", 30).map(dailyItem);
     expect(new Set(days).size).toBeGreaterThan(5);
-    const run = finished(5, true, { mode: "daily", daily: "2026-11-05" });
+    // Beating 3 trainers is enough for the day's item.
+    const run = finished(3, false, { mode: "daily", daily: "2026-11-05" });
     const item = dailyItem("2026-11-05");
     expect(addDailyItem({}, run)).toEqual({ [item]: 1 });
     expect(addDailyItem({ [item]: 1 }, run)).toEqual({ [item]: 2 });
-    expect(addDailyItem({}, finished(4, false, { mode: "daily", daily: "2026-11-05" }))).toEqual(
+    expect(addDailyItem({}, finished(2, false, { mode: "daily", daily: "2026-11-05" }))).toEqual(
       {},
     );
     expect(addDailyItem({}, { ...run, practice: true })).toEqual({});
@@ -263,5 +286,76 @@ describe("Master Ball, legendaries, bag and practice", () => {
       picks: ["lugia", "rattata", "geodude", "squirtle", "pikachu", "oddish"],
     });
     expect(achievementsFor(run, legendaryPool, EMPTY_STATS)).toContain("legend-champion");
+  });
+});
+
+describe("trainer: level, XP and history", () => {
+  it("levels up on a growing curve, with ranks", () => {
+    expect(xpForLevel(1)).toBe(0);
+    expect(xpForLevel(2)).toBe(100);
+    expect(xpForLevel(3)).toBe(300);
+    expect(levelFor(0)).toMatchObject({ level: 1, rank: "rookie", into: 0, needed: 100 });
+    expect(levelFor(99).level).toBe(1);
+    expect(levelFor(100)).toMatchObject({ level: 2, into: 0, needed: 200 });
+    expect(levelFor(xpForLevel(5)).rank).toBe("ace");
+    expect(levelFor(xpForLevel(12)).rank).toBe("master");
+  });
+
+  it("gives XP for battles won and cleared runs; practice gives none", () => {
+    expect(xpForRun(finished(2, false))).toBe(20);
+    expect(xpForRun(finished(5, true))).toBe(50 + 50);
+    expect(xpForRun(finished(5, true, { mode: "hard" }))).toBe(50 + 100);
+    expect(xpForRun(finished(5, true, { practice: true }))).toBe(0);
+    const stats = recordRun(recordRun(EMPTY_STATS, finished(5, true)), finished(2, false));
+    expect(totalXp(stats)).toBe(70 + 50);
+    expect(totalXp({ ...stats, caught: ["lugia"] })).toBe(150);
+  });
+
+  it("keeps the last 10 runs, newest first", () => {
+    let history = addToHistory([], finished(1, false), "2026-11-05T10:00:00.000Z");
+    for (let i = 0; i < 12; i++) history = addToHistory(history, finished(2, false), `t${i}`);
+    expect(history).toHaveLength(10);
+    expect(history[0]?.finishedAt).toBe("t11");
+  });
+
+  it("cleans trainer names", () => {
+    expect(cleanTrainerName("  Ash   Ketchum  ")).toBe("Ash Ketchum");
+    expect(cleanTrainerName("a".repeat(40))).toHaveLength(16);
+    expect(cleanTrainerName("   ")).toBe("");
+  });
+});
+
+describe("daily streak", () => {
+  const played = (...dates: string[]) => dates.map((date) => ({ date, won: false, battlesWon: 1 }));
+
+  it("counts consecutive days ending today, or yesterday while today is still open", () => {
+    expect(dailyStreak([], "2026-11-05")).toBe(0);
+    expect(dailyStreak(played("2026-11-05"), "2026-11-05")).toBe(1);
+    expect(dailyStreak(played("2026-11-03", "2026-11-04"), "2026-11-05")).toBe(2);
+    expect(dailyStreak(played("2026-11-02", "2026-11-04"), "2026-11-05")).toBe(1);
+    expect(dailyStreak(played("2026-11-02", "2026-11-03"), "2026-11-05")).toBe(0);
+    // Across a month boundary.
+    expect(dailyStreak(played("2026-10-31", "2026-11-01"), "2026-11-01")).toBe(2);
+  });
+
+  it("tells how many plays the next Master Ball needs", () => {
+    expect(playsToStreakBonus([], "2026-11-05")).toBe(3);
+    expect(playsToStreakBonus(played("2026-11-03", "2026-11-04"), "2026-11-05")).toBe(1);
+    expect(playsToStreakBonus(played("2026-11-03", "2026-11-04", "2026-11-05"), "2026-11-05")).toBe(
+      3,
+    );
+  });
+
+  it("pays a Master Ball on every third day in a row, once", () => {
+    const before = played("2026-11-03", "2026-11-04");
+    const after = recordDaily(before, finished(0, false, { mode: "daily", daily: "2026-11-05" }));
+    expect(streakBonus(before, after, "2026-11-05")).toBe(3);
+    // The same day again (not recorded twice) or a non-multiple streak: nothing.
+    expect(streakBonus(after, after, "2026-11-05")).toBeUndefined();
+    const two = recordDaily(
+      played("2026-11-04"),
+      finished(0, false, { mode: "daily", daily: "2026-11-05" }),
+    );
+    expect(streakBonus(played("2026-11-04"), two, "2026-11-05")).toBeUndefined();
   });
 });

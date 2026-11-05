@@ -13,7 +13,7 @@ import { createPokedexService } from "@/server/pokedex/service";
 import type { BattlePokemon } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
 import { bestAttack, levelStats, matchupScore, rollDamage } from "./damage";
-import { draftRound, legendaryRound } from "./draft";
+import { drawHand, draftRound, legendaryRound, tierOf, tierThresholds } from "./draft";
 import { counterPick, generateOpponent, scoutScore } from "./opponents";
 import { hashString, mulberry32, rngFrom, shuffle } from "./rng";
 import {
@@ -22,8 +22,11 @@ import {
   countersLead,
   currentDraft,
   gymRunSchema,
+  handFor,
   opponentBudget,
   opponentFor,
+  pickHand,
+  teamHp,
   pickPokemon,
   reorder,
   reroll,
@@ -102,11 +105,39 @@ describe("damage", () => {
     const strong = rollDamage(get("blastoise"), get("arcanine"), relations, rng).damage;
     const weak = rollDamage(get("arcanine"), get("blastoise"), relations, rng).damage;
     expect(strong).toBeGreaterThan(weak * 2);
-    // Normal can't touch Ghost
-    expect(rollDamage(get("tauros"), get("gengar"), relations, rng)).toMatchObject({
-      damage: 1,
-      struggle: true,
-    });
+    // Normal can't touch Ghost: Struggle, typeless, so it does real (neutral) damage.
+    const struggle = rollDamage(get("tauros"), get("gengar"), relations, rng);
+    expect(struggle).toMatchObject({ struggle: true, effectiveness: 1, critical: false });
+    expect(struggle.damage).toBeGreaterThan(10);
+  });
+
+  it("Normal vs Ghost (mutual immunity) ends quickly thanks to Struggle recoil", () => {
+    for (const [a, b] of [
+      ["snorlax", "misdreavus"],
+      ["chansey", "misdreavus"],
+      ["tauros", "misdreavus"],
+    ] as const) {
+      const result = simulateBattle([get(a)], [get(b)], relations, `${a}-${b}`);
+      const attacks = result.events.filter((e) => e.kind === "attack");
+      expect(attacks.length).toBeLessThanOrEqual(10);
+      expect(attacks.every((e) => e.kind === "attack" && e.struggle && (e.recoil ?? 0) > 0)).toBe(
+        true,
+      );
+      expect(result.events.at(-1)).toEqual({ kind: "end", winner: result.winner });
+    }
+  });
+
+  it("a recoil faint brings in the next Pokémon, and HP at the end is reported", () => {
+    const result = simulateBattle(
+      [get("misdreavus"), get("pikachu")],
+      [get("snorlax")],
+      relations,
+      "recoil",
+    );
+    expect(result.finalHp.player).toHaveLength(2);
+    expect(result.finalHp.opponent).toHaveLength(1);
+    const faints = result.events.filter((e) => e.kind === "faint");
+    expect(faints.length).toBeGreaterThan(0);
   });
 });
 
@@ -364,13 +395,14 @@ describe("gym run", () => {
   }
 
   it("is a real challenge in every mode, and playing well pays off", () => {
-    const modes = ["easy", "hard", "daily"] as const;
+    // The daily gauntlet has its own format and its own test below.
+    const modes = ["easy", "hard"] as const;
     const strategies = ["random", "strongest", "expert"] as const;
     const rates = Object.fromEntries(
       modes.flatMap((mode) =>
         strategies.map((strategy) => [`${mode}-${strategy}`, clearRate(mode, strategy)]),
       ),
-    ) as Record<`${GymMode}-${Strategy}`, { first: number; cleared: number }>;
+    ) as Record<`${"easy" | "hard"}-${Strategy}`, { first: number; cleared: number }>;
     console.error(
       "balance:",
       Object.entries(rates)
@@ -383,7 +415,6 @@ describe("gym run", () => {
     expect(rates["easy-expert"].cleared).toBeGreaterThanOrEqual(0.15);
     expect(rates["easy-expert"].cleared).toBeLessThanOrEqual(0.5);
     expect(rates["hard-expert"].cleared).toBeLessThanOrEqual(0.25);
-    expect(rates["daily-expert"].cleared).toBeLessThanOrEqual(0.4);
     for (const mode of modes) {
       // Nobody clears a mode by drafting at random, and thinking beats random drafting.
       expect(rates[`${mode}-random`].cleared).toBeLessThanOrEqual(0.15);
@@ -391,7 +422,6 @@ describe("gym run", () => {
     }
     // Easy is the easiest for anyone playing with intent.
     expect(rates["hard-expert"].cleared).toBeLessThan(rates["easy-expert"].cleared);
-    expect(rates["daily-expert"].cleared).toBeLessThan(rates["easy-expert"].cleared);
   }, 600_000);
 
   it("opponents scale per battle and leaders counter your lead", () => {
@@ -416,7 +446,7 @@ describe("gym run", () => {
       );
       GYMS[mode].battles.forEach((battle, index) => {
         const opponent = opponentFor(run, index, pool, relations);
-        expect(validateTeam(opponent)).toEqual([]);
+        expect(validateTeam(opponent, battle.teamSize ?? TEAM_SIZE)).toEqual([]);
         if (battle.signature) expect(opponent.map((p) => p.name)).toContain(battle.signature);
       });
     }
@@ -448,7 +478,9 @@ describe("gym run", () => {
     expect(a).not.toEqual(b);
     expect(trainersFor(startRun("names-a", "easy"))).toEqual(a);
     const rocket = trainersFor(startRun("dia-2026-11-05", "daily"));
-    expect(rocket.slice(-2)).toEqual(["James", "Jessie"]);
+    expect(rocket).toHaveLength(5);
+    expect(rocket[3]).toBe("James");
+    expect(rocket.at(-1)).toBe("Jessie");
     expect(rocket[0]).toMatch(/^Recruta Rocket /);
     expect(trainersFor(startRun("x", "hard")).at(-1)).toBe("Misty");
   });
@@ -473,8 +505,9 @@ describe("gym run", () => {
     expect(GYMS.easy.battles.at(-1)).toMatchObject({ trainer: "Brock", leader: true });
     expect(GYMS.hard.battles.at(-1)).toMatchObject({ trainer: "Misty", leader: true });
     expect(GYMS.daily.battles.at(-1)).toMatchObject({ trainer: "Jessie", leader: true });
+    expect(GYMS.daily.battles).toHaveLength(5);
     for (const gym of Object.values(GYMS)) {
-      expect(gym.battles).toHaveLength(BATTLES_PER_RUN);
+      if (gym.format === "gym") expect(gym.battles).toHaveLength(BATTLES_PER_RUN);
       for (const battle of gym.battles) {
         if (battle.signature) expect(pool.some((p) => p.name === battle.signature)).toBe(true);
       }
@@ -530,5 +563,173 @@ describe("legendaries", () => {
 
   it("legendary rounds are empty without legendaries in the pool", () => {
     expect(legendaryRound(pool, [], rngFrom("x"), 2500).offers).toEqual([]);
+  });
+});
+
+describe("daily gauntlet (Team Rocket hideout)", () => {
+  const strongestSix = (hand: BattlePokemon[], cap: number) => {
+    // Greedy: strongest first, as long as the cheapest picks can still fill the team.
+    const team: BattlePokemon[] = [];
+    for (const pokemon of [...hand].sort((a, b) => b.bst - a.bst)) {
+      if (team.length === 6) break;
+      const rest = hand
+        .filter((p) => p !== pokemon && !team.includes(p))
+        .map((p) => p.bst)
+        .sort((a, b) => a - b)
+        .slice(0, 5 - team.length)
+        .reduce((a, b) => a + b, 0);
+      if (teamBst(team) + pokemon.bst + rest <= cap) team.push(pokemon);
+    }
+    return team;
+  };
+
+  it("deals everyone the same hand: 12 families, a third of each tier", () => {
+    const run = startRun("dia-2026-11-05", "daily", { daily: "2026-11-05" });
+    const hand = handFor(run, pool);
+    expect(hand).toHaveLength(12);
+    expect(handFor(startRun("dia-2026-11-05", "daily"), pool)).toEqual(hand);
+    expect(new Set(hand.map((p) => p.family)).size).toBe(12);
+    const thresholds = tierThresholds(pool);
+    for (const tier of ["weak", "mid", "strong"] as const) {
+      expect(hand.filter((p) => tierOf(p, thresholds) === tier)).toHaveLength(4);
+    }
+    expect(drawHand(pool, rngFrom("other"), 12)).not.toEqual(hand);
+  });
+
+  it("takes six from the hand under the cap, nothing else", () => {
+    const run = startRun("hand-rules", "daily");
+    const hand = handFor(run, pool);
+    const cap = GYMS.daily.rules.player ?? 0;
+    const six = strongestSix(hand, cap);
+    const picked = pickHand(
+      run,
+      six.map((p) => p.name),
+      pool,
+    );
+    expect(picked.phase).toBe("ready");
+    expect(picked.order).toEqual(six.map((p) => p.name));
+    // Too few, not in the hand, or over the cap: ignored.
+    expect(
+      pickHand(
+        run,
+        six.slice(0, 5).map((p) => p.name),
+        pool,
+      ),
+    ).toBe(run);
+    expect(pickHand(run, [...six.slice(0, 5).map((p) => p.name), "mewtwo"], pool)).toBe(run);
+    const strongest = [...hand].sort((a, b) => b.bst - a.bst).slice(0, 6);
+    if (teamBst(strongest) > cap) {
+      expect(
+        pickHand(
+          run,
+          strongest.map((p) => p.name),
+          pool,
+        ),
+      ).toBe(run);
+    }
+    // Gym modes don't use hands.
+    expect(
+      pickHand(
+        startRun("x", "easy"),
+        six.map((p) => p.name),
+        pool,
+      ).phase,
+    ).toBe("draft");
+  });
+
+  it("carries HP between battles; fainted Pokémon stay down", () => {
+    let run = startRun("hp-carry", "daily");
+    run = pickHand(
+      run,
+      strongestSix(handFor(run, pool), GYMS.daily.rules.player ?? 0).map((p) => p.name),
+      pool,
+    );
+    const first = battleFor(run, pool, relations);
+    run = applyResult(run, first, pool, relations);
+    expect(run.history).toHaveLength(1);
+    if (run.phase !== "ready") return;
+    const hp = teamHp(run, pool);
+    first.finalHp.player.forEach((left, i) => {
+      if (left === 0) expect(hp[i]).toBe(0);
+      else expect(hp[i]).toBeGreaterThanOrEqual(left);
+      expect(hp[i]).toBeLessThanOrEqual(first.maxHp.player[i] ?? 0);
+    });
+    // The next battle starts from that HP, with the first Pokémon still standing.
+    const second = battleFor(run, pool, relations);
+    expect(second.startHp.player).toEqual(hp);
+    const lead = second.events[0];
+    expect(lead?.kind === "send" && (hp[lead.index] ?? 0) > 0).toBe(true);
+  });
+
+  it("trainers bring their own team sizes (grunts two or three)", () => {
+    const run = pickHand(
+      startRun("sizes", "daily"),
+      strongestSix(handFor(startRun("sizes", "daily"), pool), GYMS.daily.rules.player ?? 0).map(
+        (p) => p.name,
+      ),
+      pool,
+    );
+    GYMS.daily.battles.forEach((battle, index) => {
+      const opponent = opponentFor(run, index, pool, relations);
+      expect(opponent).toHaveLength(battle.teamSize ?? 6);
+      if (battle.signature) expect(opponent.map((p) => p.name)).toContain(battle.signature);
+    });
+  });
+
+  it("is short and rewarding: everyone scores, some clear it", () => {
+    const cap = GYMS.daily.rules.player ?? 0;
+    const scores = Array.from({ length: 40 }, (_, i) => {
+      let run = startRun(`ladder-${i}`, "daily");
+      run = pickHand(
+        run,
+        strongestSix(handFor(run, pool), cap).map((p) => p.name),
+        pool,
+      );
+      while (run.phase === "ready")
+        run = applyResult(run, battleFor(run, pool, relations), pool, relations);
+      return run.history.filter((r) => r.won).length;
+    });
+    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+    console.error(`gauntlet (strongest): mean ${mean.toFixed(1)}, best ${Math.max(...scores)}`);
+    // Short and rewarding: everyone beats someone, most get the item, a good share clears it.
+    expect(Math.min(...scores)).toBeGreaterThanOrEqual(1);
+    expect(mean).toBeGreaterThanOrEqual(3);
+    const clears = scores.filter((s) => s >= 5).length / scores.length;
+    expect(clears).toBeGreaterThanOrEqual(0.1);
+    expect(clears).toBeLessThanOrEqual(0.7);
+  }, 300_000);
+});
+
+describe("opponent variety", () => {
+  it("trainers in a run don't repeat each other's Pokémon (signatures aside)", () => {
+    for (const mode of ["easy", "hard", "daily"] as const) {
+      for (let seed = 0; seed < 15; seed++) {
+        let run = startRun(`variety-${mode}-${seed}`, mode);
+        if (mode === "daily") {
+          run = pickHand(
+            run,
+            handFor(run, pool)
+              .slice(0, 6)
+              .map((p) => p.name),
+            pool,
+          );
+        } else {
+          while (run.phase === "draft") {
+            const round = currentDraft(run, pool);
+            const legal = round.offers.filter((o) => !round.blocked.includes(o.name));
+            run = pickPokemon(run, (legal.at(-1) as BattlePokemon).name, pool);
+          }
+        }
+        const signatures = new Set(GYMS[mode].battles.flatMap((b) => b.signature ?? []));
+        const seen = new Map<number, number>();
+        GYMS[mode].battles.forEach((_, battle) => {
+          for (const p of opponentFor(run, battle, pool, relations)) {
+            if (signatures.has(p.name)) continue;
+            seen.set(p.family, (seen.get(p.family) ?? 0) + 1);
+          }
+        });
+        expect(Math.max(...seen.values())).toBe(1);
+      }
+    }
   });
 });

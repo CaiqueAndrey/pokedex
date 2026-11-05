@@ -10,6 +10,9 @@ const pages = [
   "/team",
   "/compare?a=pikachu&b=raichu",
   "/gym",
+  "/gym/recompensas",
+  "/gym/historico",
+  "/gym/treinador",
 ];
 
 for (const theme of ["light", "dark"] as const) {
@@ -43,8 +46,8 @@ for (const theme of ["light", "dark"] as const) {
       localStorage.setItem("pokedex:theme:v1", JSON.stringify(value));
     }, theme);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    // `e2e4` drafting the weakest offers loses the first battle (see gym.spec.ts).
-    await page.goto("/gym?seed=e2e4");
+    // `e2e2` drafting the weakest offers loses the first battle (see gym.spec.ts).
+    await page.goto("/gym?seed=e2e2");
     await expect(page.getByTestId("daily")).toBeVisible();
     await page.getByRole("button", { name: "Jogar no Fácil" }).click();
     for (let round = 1; round <= 6; round++) {

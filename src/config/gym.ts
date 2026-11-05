@@ -37,6 +37,8 @@ export interface ModeRules {
   scout: number;
   counterPick: boolean;
   reveal: boolean;
+  /** Gauntlet only: share of max HP survivors recover between battles. */
+  heal?: number;
 }
 
 export interface GymBattle {
@@ -51,9 +53,23 @@ export interface GymBattle {
   signature?: string;
   /** Artwork shown before the battle (in `public/`). */
   image?: string;
+  /** Pokémon this trainer brings (default 6). Team Rocket grunts carry two or three. */
+  teamSize?: number;
+}
+
+/** A reward threshold: winning at least `wins` battles in a run earns `ball`. */
+export interface BallReward {
+  wins: number;
+  ball: Ball;
 }
 
 export interface Gym {
+  /**
+   * `gym`: a six-round die draft, then the battles, fully healed between them. `gauntlet` (the daily
+   * Team Rocket hideout): pick 6 from the same hand of 12 for everyone, then as many battles as you
+   * last, with HP carried over (survivors recover `healBetween` of their max HP).
+   */
+  format: "gym" | "gauntlet";
   /** Badge id in storage; null for a challenge without a badge (Team Rocket). */
   badgeId: string | null;
   name: string;
@@ -61,11 +77,24 @@ export interface Gym {
   leaderImage: string;
   badge: string | null;
   badgeImage: string | null;
+  /** Victory art for clearing the run (black background, shown in a rounded square). */
+  trophyImage: string;
   rules: ModeRules;
   battles: readonly GymBattle[];
+  /** Pokéballs by battles won, ascending: a run earns the best threshold it reached. */
+  rewards: readonly BallReward[];
 }
 
+/** Battles in a gym run; the gauntlet has its own length (`GYMS.daily.battles`). */
 export const BATTLES_PER_RUN = 5;
+/** The most battles any mode has (schema limit, with room to grow). */
+export const MAX_BATTLES = 10;
+/** Gauntlet: the hand everyone drafts from, and what survivors recover between battles. */
+export const HAND_SIZE = 12;
+/** Gauntlet: beating this many trainers also wins the day's item. */
+export const DAILY_ITEM_WINS = 3;
+/** Playing the daily challenge this many days in a row (any result) earns a Master Ball. */
+export const DAILY_STREAK_BONUS = 3;
 
 /** First names for gym trainers, drawn per run from the seed. */
 export const TRAINER_NAMES = [
@@ -103,15 +132,22 @@ export const TRAINER_NAMES = [
 
 export const GYMS: Record<GymMode, Gym> = {
   easy: {
+    format: "gym",
     badgeId: "boulder",
     name: "Ginásio de Pewter",
     leader: "Brock",
     leaderImage: "/img/Brock.png",
     badge: "Insígnia da Rocha",
     badgeImage: "/img/insignia_rock.webp",
+    trophyImage: "/img/championKanto.png",
+    rewards: [
+      { wins: 3, ball: "poke" },
+      { wins: 4, ball: "great" },
+      { wins: 5, ball: "ultra" },
+    ],
     rules: {
       player: 2800,
-      opponents: 2450,
+      opponents: 2500,
       follow: 0,
       scout: 0.25,
       counterPick: false,
@@ -132,12 +168,19 @@ export const GYMS: Record<GymMode, Gym> = {
     ],
   },
   hard: {
+    format: "gym",
     badgeId: "cascade",
     name: "Ginásio de Cerulean",
     leader: "Misty",
     leaderImage: "/img/misty.png",
     badge: "Insígnia da Cascata",
     badgeImage: "/img/insignia_water.png",
+    trophyImage: "/img/championCerulean.png",
+    rewards: [
+      { wins: 3, ball: "poke" },
+      { wins: 4, ball: "great" },
+      { wins: 5, ball: "master" },
+    ],
     rules: {
       player: 2500,
       opponents: 2400,
@@ -161,31 +204,47 @@ export const GYMS: Record<GymMode, Gym> = {
     ],
   },
   daily: {
+    format: "gauntlet",
     badgeId: null,
-    name: "Equipe Rocket",
+    name: "Esconderijo da Equipe Rocket",
     leader: "Jessie",
     leaderImage: "/img/jessie.png",
     badge: null,
     badgeImage: null,
+    trophyImage: "/img/teamrocketdefeated.png",
+    // Short and always rewarding: one win already pays. The Master Ball comes from the streak.
+    rewards: [
+      { wins: 1, ball: "poke" },
+      { wins: 3, ball: "great" },
+      { wins: 5, ball: "ultra" },
+    ],
     rules: {
-      player: 2650,
-      opponents: 2400,
+      player: 2700,
+      opponents: 2500,
+      heal: 0.5,
       follow: 0,
       scout: 0.15,
-      counterPick: true,
+      counterPick: false,
       reveal: true,
     },
     battles: [
-      { classes: ["Recruta Rocket"], budgetFactor: 0.9 },
-      { classes: ["Recruta Rocket", "Cientista Rocket"], budgetFactor: 0.95 },
-      { classes: ["Cientista Rocket", "Executivo Rocket"], budgetFactor: 1.0 },
-      { trainer: "James", budgetFactor: 1.05, signature: "weezing", image: "/img/james.png" },
+      { classes: ["Recruta Rocket"], budgetFactor: 0.8, teamSize: 2 },
+      { classes: ["Recruta Rocket", "Cientista Rocket"], budgetFactor: 0.85, teamSize: 2 },
+      { classes: ["Cientista Rocket", "Executivo Rocket"], budgetFactor: 0.85, teamSize: 3 },
+      {
+        trainer: "James",
+        budgetFactor: 0.9,
+        signature: "weezing",
+        image: "/img/james.png",
+        teamSize: 3,
+      },
       {
         trainer: "Jessie",
-        budgetFactor: 1.1,
+        budgetFactor: 0.95,
         leader: true,
         signature: "arbok",
         image: "/img/jessie.png",
+        teamSize: 4,
       },
     ],
   },
@@ -199,13 +258,6 @@ export const BALL_IMAGES: Record<Ball, string> = {
   great: "/img/greatball.png",
   ultra: "/img/ultraball.png",
   master: "/img/masterball.png",
-};
-/** Battles won → ball. Clearing a run gives the mode's top ball (the hard ones: a Master Ball). */
-export const BALL_FOR_WINS: Record<number, Ball> = { 3: "poke", 4: "great" };
-export const BALL_FOR_CLEAR: Record<GymMode, Ball> = {
-  easy: "ultra",
-  hard: "master",
-  daily: "master",
 };
 
 /**
@@ -243,6 +295,10 @@ export const TEAM_BUDGET = 2500;
 
 export const BATTLE_LEVEL = 50;
 export const MOVE_POWER = 60;
+/** Struggle (when no own type can hurt the defender): typeless, like the games since Gen 4. */
+export const STRUGGLE_POWER = 50;
+/** Struggle recoil, as a fraction of the attacker's max HP. */
+export const STRUGGLE_RECOIL = 1 / 4;
 export const STAB = 1.5;
 export const CRITICAL_CHANCE = 1 / 24;
 export const CRITICAL_MULTIPLIER = 1.5;
@@ -276,3 +332,22 @@ export const BUDGET_CHAMPION_BST = 2300;
 export const VARIETY_CHAMPION_TYPES = 9;
 /** How many past daily results are kept. */
 export const DAILY_HISTORY = 30;
+
+/** XP per battle won and per cleared run (by mode), and per legendary caught. */
+export const XP = {
+  battle: 10,
+  clear: { easy: 50, hard: 100, daily: 100 },
+  legendary: 30,
+} as const;
+/** Trainer ranks by level (labels in messages.gym.trainer.ranks). */
+export const RANKS = [
+  { level: 1, id: "rookie" },
+  { level: 3, id: "trainer" },
+  { level: 5, id: "ace" },
+  { level: 8, id: "veteran" },
+  { level: 12, id: "master" },
+] as const;
+export type RankId = (typeof RANKS)[number]["id"];
+/** Finished runs kept in the history. */
+export const HISTORY_SIZE = 10;
+export const TRAINER_NAME_MAX = 16;

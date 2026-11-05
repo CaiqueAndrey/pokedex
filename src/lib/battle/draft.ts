@@ -139,3 +139,32 @@ export function legendaryRound(
   const sorted = offers.sort((a, b) => a.bst - b.bst || a.id - b.id);
   return { type: sorted[0]?.types[0] ?? "normal", legendary: true, offers: sorted, blocked: [] };
 }
+
+/**
+ * The gauntlet's hand: `size` Pokémon from different families, the same for everyone with the same
+ * seed. Thirds of weak, mid and strong (so a legal six always fits the cap), preferring types the
+ * hand doesn't have yet. Sorted by strength.
+ */
+export function drawHand(pool: readonly BattlePokemon[], rng: Rng, size = 12): BattlePokemon[] {
+  const regular = pool.filter((p) => !p.legendary);
+  const thresholds = tierThresholds(regular);
+  const quota = Math.ceil(size / 3);
+  const hand: BattlePokemon[] = [];
+  const families = new Set<number>();
+  const types = new Set<string>();
+  const count = (tier: Tier) => hand.filter((p) => tierOf(p, thresholds) === tier).length;
+  const shuffled = shuffle(rng, regular);
+  // Two passes: first only Pokémon that bring a new type, then anything that fits the quotas.
+  for (const freshOnly of [true, false]) {
+    for (const pokemon of shuffled) {
+      if (hand.length >= size) break;
+      if (families.has(pokemon.family)) continue;
+      if (count(tierOf(pokemon, thresholds)) >= quota) continue;
+      if (freshOnly && pokemon.types.some((t) => types.has(t))) continue;
+      hand.push(pokemon);
+      families.add(pokemon.family);
+      pokemon.types.forEach((t) => types.add(t));
+    }
+  }
+  return hand.sort((a, b) => a.bst - b.bst || a.id - b.id);
+}

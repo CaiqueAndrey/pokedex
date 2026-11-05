@@ -11,22 +11,33 @@ import {
   battlesWon,
   dailyItem,
   dailySeed,
+  earnsDailyItem,
   formatDailyDate,
+  levelFor,
   rewardFor,
+  totalXp,
+  xpForRun,
 } from "@/lib/battle/progress";
+import { levelStats } from "@/lib/battle/damage";
 import {
   applyResult,
+  battleConfig,
+  battleCount,
   battleFor,
   byName,
   countersLead,
   currentDraft,
   gymOf,
+  handFor,
+  isGauntlet,
   opponentFor,
+  pickHand,
   pickPokemon,
   playerTeam,
   reorder,
   reroll,
   startRun,
+  teamHp,
   trainerFor,
   type GymRun,
   type StartOptions,
@@ -41,10 +52,10 @@ import { DraftBoard } from "./draft-board";
 import { GymBadge } from "./gym-badge";
 import { GymPokemon } from "./gym-pokemon";
 import { GymHub, Section } from "./gym-hub";
-import { GymRewards } from "./gym-rewards";
+import { HandBoard } from "./hand-board";
 import { PreBattle } from "./pre-battle";
 import { RunPath } from "./run-path";
-import { RunResultDialog } from "./run-result-dialog";
+import { resultLine, RunResultDialog } from "./run-result-dialog";
 import { ShareButton } from "./share-button";
 import { SoundToggle } from "./sound-toggle";
 import { SpeedToggle } from "./speed-toggle";
@@ -55,9 +66,11 @@ import {
   sfx,
   takeMasterBall,
   useBadges,
+  useGymHistory,
   useGymProgress,
   useGymRun,
   useToday,
+  useTrainer,
 } from "./use-gym";
 
 const m = messages.gym;
@@ -70,6 +83,11 @@ interface ActiveBattle {
   next: GymRun;
   /** Achievements unlocked by this battle's outcome (only when it ends the run). */
   unlocked: AchievementId[];
+  /** XP the run gave (end of run only) and the new level, when it went up. */
+  xp: number;
+  levelUp?: number;
+  /** Daily streak that just earned a Master Ball. */
+  streakBonus?: number;
 }
 
 export function GymGame({
@@ -88,12 +106,14 @@ export function GymGame({
 }) {
   const { run, setRun } = useGymRun();
   const { badges, add: addBadge } = useBadges();
-  const { stats, achievements, daily, bag } = useGymProgress();
+  const { stats, daily } = useGymProgress();
+  const { trainer } = useTrainer();
+  const history = useGymHistory();
   const { today, secondsLeft } = useToday();
+  const playerName = trainer?.name ?? m.trainer.anonymous;
   const [battle, setBattle] = useState<ActiveBattle | null>(null);
   const [confirmAbandon, setConfirmAbandon] = useState(false);
   const names = useMemo(() => byName(pool), [pool]);
-  const legendaries = useMemo(() => pool.filter((p) => p.legendary), [pool]);
 
   // A saved run that no longer matches the pool (e.g. after a data update) or that was started
   // under older rules (its opponents would change mid-run) is discarded.
@@ -101,7 +121,7 @@ export function GymGame({
   const valid = run && !outdated && run.picks.every((name) => names.has(name)) ? run : null;
   const team = valid ? playerTeam(valid, pool) : [];
   const itemFor = (run: GymRun) => {
-    if (run.mode !== "daily" || run.phase !== "won" || run.practice || !run.daily) return undefined;
+    if (!earnsDailyItem(run) || !run.daily) return undefined;
     const name = dailyItem(run.daily);
     return items.find((item) => item.name === name);
   };
@@ -136,7 +156,10 @@ export function GymGame({
     const over = next.phase === "won" || next.phase === "lost";
     const badgeId = gymOf(next).badgeId;
     if (next.phase === "won" && badgeId && !next.practice) addBadge(badgeId);
-    const unlocked = over ? recordFinishedRun(next, pool) : [];
+    const before = levelFor(totalXp(stats));
+    const { unlocked, streakBonus } = over ? recordFinishedRun(next, pool) : { unlocked: [] };
+    const xp = over ? xpForRun(next) : 0;
+    const after = levelFor(before.xp + xp);
     window.scrollTo({ top: 0 });
     setBattle({
       result,
@@ -145,16 +168,26 @@ export function GymGame({
       trainer: trainerFor(current, current.battle),
       next,
       unlocked,
+      xp,
+      ...(after.level > before.level ? { levelUp: after.level } : {}),
+      ...(streakBonus ? { streakBonus } : {}),
     });
   }
 
   if (battle) {
     const over = battle.next.phase !== "ready";
     const nextTrainer = trainerFor(battle.next, battle.next.battle);
+    const index = battle.next.history.length - 1;
     return (
       <BattleView
         key={`${battle.next.seed}-${battle.next.battle}-${battle.next.phase}`}
-        {...battle}
+        result={battle.result}
+        team={battle.team}
+        opponent={battle.opponent}
+        trainer={battle.trainer}
+        playerName={playerName}
+        heading={`${gymOf(battle.next).name} · ${m.battleOf(index + 1, battleCount(battle.next))}`}
+        trainerImage={battleConfig(battle.next, index)?.image}
         doneLabel={m.next}
         doneHint={over ? undefined : m.wonNext(nextTrainer)}
         badge={battle.next.phase === "won"}
@@ -166,6 +199,9 @@ export function GymGame({
             item={itemFor(battle.next)}
             streak={stats.streak}
             unlocked={battle.unlocked}
+            xp={battle.xp}
+            levelUp={battle.levelUp}
+            streakBonus={battle.streakBonus}
             onHistory={() => setBattle(null)}
             onNewRun={newRun}
           />
@@ -190,15 +226,9 @@ export function GymGame({
           today={today}
           secondsLeft={secondsLeft}
           items={items}
+          lastRun={history[0]}
+          pool={pool}
           onStart={start}
-        />
-        <GymRewards
-          stats={stats}
-          badges={badges}
-          achievements={achievements}
-          bag={bag}
-          items={items}
-          legendaries={legendaries}
         />
         <Section id="regras" title={m.rulesTitle}>
           <Card className="grid gap-4">
@@ -259,6 +289,21 @@ export function GymGame({
     </div>
   );
 
+  if (valid.phase === "draft" && isGauntlet(valid)) {
+    return (
+      <>
+        {runBar}
+        <HandBoard
+          hand={handFor(valid, pool)}
+          onConfirm={(picks) => {
+            sfx("pick");
+            setRun(pickHand(valid, picks, pool));
+          }}
+        />
+      </>
+    );
+  }
+
   if (valid.phase === "draft") {
     return (
       <>
@@ -295,6 +340,15 @@ export function GymGame({
             opponent={opponentFor(valid, valid.battle, pool, relations)}
             relations={relations}
             counters={gymOf(valid).rules.reveal && countersLead(valid, valid.battle)}
+            {...(isGauntlet(valid)
+              ? {
+                  health: teamHp(valid, pool).map((hp, i) => ({
+                    hp,
+                    max: team[i] ? levelStats(team[i].stats).hp : hp,
+                  })),
+                  defeated: battlesWon(valid),
+                }
+              : {})}
             onReorder={(order) => setRun(reorder(valid, order))}
             onFight={() => fight(valid)}
           />
@@ -322,13 +376,7 @@ export function GymGame({
           )}
           <div className="grid gap-1">
             <h2 className="text-xs sm:text-sm">{won ? m.wonTitles[valid.mode] : m.lostTitle}</h2>
-            <p className="text-base">
-              {won
-                ? valid.mode === "daily"
-                  ? m.resultRocket
-                  : m.resultWon(gym.name)
-                : m.resultLost(wins)}
-            </p>
+            <p className="text-base">{resultLine(valid)}</p>
             {reward && (
               <p className="flex items-center gap-2 text-sm">
                 <BallIcon ball={reward} />

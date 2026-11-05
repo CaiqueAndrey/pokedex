@@ -7,7 +7,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { messages } from "@/config/messages";
 import { REWARD_ITEMS, type AchievementId } from "@/config/gym";
 import { battlesWon, rewardFor } from "@/lib/battle/progress";
-import { gymOf, trainerFor, type GymRun } from "@/lib/battle/run";
+import { battleCount, gymOf, isGauntlet, trainerFor, type GymRun } from "@/lib/battle/run";
 import { topDamage } from "@/lib/battle/stats";
 import { formatName } from "@/lib/format";
 import type { GameItem } from "@/types/item";
@@ -30,6 +30,14 @@ export function RocketDuo({ className }: { className?: string }) {
   );
 }
 
+/** The one-line outcome of a finished run, for the dialog and the result card. */
+export function resultLine(run: GymRun): string {
+  const wins = battlesWon(run);
+  if (run.phase === "won")
+    return run.mode === "daily" ? m.resultRocket : m.resultWon(gymOf(run).name);
+  return isGauntlet(run) ? m.resultGauntlet(wins) : m.resultLost(wins, battleCount(run));
+}
+
 /**
  * Shown over the battle screen as soon as the deciding battle ends (a defeat, or the win over the
  * leader): the outcome and the reward first, then the choice between the history and a new run.
@@ -39,6 +47,9 @@ export function RunResultDialog({
   item,
   streak,
   unlocked,
+  xp = 0,
+  levelUp,
+  streakBonus,
   onHistory,
   onNewRun,
 }: {
@@ -47,6 +58,9 @@ export function RunResultDialog({
   item?: GameItem;
   streak: number;
   unlocked: AchievementId[];
+  xp?: number;
+  levelUp?: number;
+  streakBonus?: number;
   onHistory: () => void;
   onNewRun: () => void;
 }) {
@@ -66,13 +80,11 @@ export function RunResultDialog({
       testId="run-result-dialog"
     >
       <div className="grid justify-items-center gap-3 text-center">
-        {won && run.mode === "daily" ? (
-          <RocketDuo className="motion-safe:animate-float" />
-        ) : won ? (
+        {won ? (
           <div className="flex items-center justify-center gap-3">
             <Image
-              src="/img/championKanto.png"
-              alt={m.championAlt}
+              src={gym.trophyImage}
+              alt={run.mode === "daily" ? m.rocketAlt : m.championAlt}
               width={1254}
               height={1254}
               className="size-32 rounded-2xl sm:size-40"
@@ -81,6 +93,8 @@ export function RunResultDialog({
               <GymBadge src={gym.badgeImage} label={gym.badge} className="animate-float size-20" />
             )}
           </div>
+        ) : isGauntlet(run) && wins > 0 ? (
+          <RocketDuo className="motion-safe:animate-float" />
         ) : (
           <Image
             src="/img/game_over.png"
@@ -90,13 +104,16 @@ export function RunResultDialog({
             className="h-auto w-full max-w-xs rounded-2xl"
           />
         )}
-        <p className="text-base">
-          {won
-            ? run.mode === "daily"
-              ? m.resultRocket
-              : m.resultWon(gym.name)
-            : m.resultLost(wins)}
-        </p>
+        <p className="text-base">{resultLine(run)}</p>
+        {xp > 0 && (
+          <p
+            className="font-display flex items-center gap-2 text-[0.65rem] text-amber-600 dark:text-amber-400"
+            data-testid="xp-gained"
+          >
+            {m.xpGained(xp)}
+            {levelUp && <span className="text-foreground">· {m.levelUp(levelUp)}</span>}
+          </p>
+        )}
         {!won && last && (
           <p className="text-muted text-sm">
             {last.opponentMvp
@@ -125,6 +142,15 @@ export function RunResultDialog({
           >
             <ItemIcon item={item} className="size-10" />
             {m.itemWon(REWARD_ITEMS[item.name as keyof typeof REWARD_ITEMS] ?? item.name)}
+          </p>
+        )}
+        {streakBonus && (
+          <p
+            className="font-display flex items-center gap-2 text-[0.6rem] leading-relaxed"
+            data-testid="streak-bonus"
+          >
+            <BallIcon ball="master" className="motion-safe:animate-pop size-10" />
+            {m.streakBonus(streakBonus)}
           </p>
         )}
         {mvp && (

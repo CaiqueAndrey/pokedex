@@ -30,6 +30,9 @@ export type BattleEvent =
       critical: boolean;
       struggle: boolean;
       hpLeft: number;
+      /** Struggle recoil taken by the attacker, and its HP after it. */
+      recoil?: number;
+      attackerHpLeft?: number;
     }
   | { kind: "faint"; side: Side; index: number }
   | { kind: "end"; winner: Side };
@@ -39,4 +42,7 @@ export interface BattleResult {
   events: BattleEvent[];
   /** Max HP of each member, by side, in team order. */
   maxHp: Record<Side, number[]>;
+  /** HP of each member at the start (the gauntlet starts hurt) and at the end, in team order. */
+  startHp: Record<Side, number[]>;
+  finalHp: Record<Side, number[]>;
 }

@@ -787,6 +787,28 @@ tipos e reordena a cada batalha vence mais que qualquer robô. Com uma 4ª estra
   futura: um modo "Liga Lendária" com chefes lendários.
 - O endpoint GraphQL antigo saiu do ar; o pool passou para `graphql.pokeapi.co/v1beta2`.
 
+### Quarta passada (05/11/2026): Desespero, treinador, abas do ginásio e um desafio do dia diferente
+
+- **Bug do Normal × Fantasma:** era a única imunidade mútua do pool; os dois lados davam 1 de dano
+  e a batalha durava centenas de golpes. O **Desespero** agora é como nos jogos: sem tipo, poder 50 e
+  recuo de 1/4 do PS do atacante (a batalha acaba em ~5 golpes).
+- **Navegação:** botão "Ginásio" destacado no cabeçalho, faixa na página inicial e abas no ginásio
+  (Jogar · Recompensas · Histórico · Treinador).
+- **Treinador sem login:** nome digitado uma vez, ID e data; aparece nas batalhas e no **Cartão de
+  Treinador**, com **nível, XP e patente** (derivados das estatísticas).
+- **Histórico:** os últimos 10 desafios; o último também aparece na tela de jogar.
+- **Batalha:** cabeçalho "Você × Treinador" e uma abertura "VS".
+- **Desafio do dia = Esconderijo da Equipe Rocket:** a mesma mão de 12 para todos, escolha 6 numa
+  tela; até 10 batalhas seguidas sem cura completa (40% para quem sobrevive); recrutas com 2–3
+  Pokémon. Pontuação de 0 a 10, com recompensas em 3, 5 (+ item do dia), 7 e 10.
+
+### Quinta passada (05/11/2026): treinadores variados e um desafio do dia curto
+
+- **Bug:** todo treinador escolhia o mesmo "melhor contra-ataque" ao seu time. Agora sorteiam entre
+  os 3 melhores e evitam as famílias já usadas por treinadores anteriores da corrida.
+- **Desafio do dia:** 5 batalhas rápidas (era 10), 50% de recuperação, recompensa garantida (1, 3 e
+  5 derrotados) e **Master Ball a cada 3 dias seguidos** jogando, para dar motivo de voltar.
+
 ### 5. Mais gamificação (avaliadas e priorizadas)
 
 | Ideia                                   | Valor | Esforço | Decisão         |

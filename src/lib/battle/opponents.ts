@@ -7,6 +7,8 @@ import { fitsBudget, teamBst } from "./team";
 
 /** How far from the per-slot target a pick may be before we widen the search. */
 const TARGET_WINDOW = 60;
+/** A scouting trainer picks among this many best counters, not always the single best. */
+const SCOUT_SHORTLIST = 3;
 
 export interface Scouting {
   /** The player's team, which the trainer builds against. */
@@ -38,7 +40,16 @@ export function generateOpponent(
   budget: number,
   rng: Rng,
   size = TEAM_SIZE,
-  { scouting, signature = [] }: { scouting?: Scouting; signature?: readonly BattlePokemon[] } = {},
+  {
+    scouting,
+    signature = [],
+    avoid,
+  }: {
+    scouting?: Scouting;
+    signature?: readonly BattlePokemon[];
+    /** Families earlier trainers in the run already fielded: skipped while others remain. */
+    avoid?: ReadonlySet<number>;
+  } = {},
 ): BattlePokemon[] {
   const team: BattlePokemon[] = [];
   for (const ace of signature) if (fitsBudget(ace, team, pool, budget, size)) team.push(ace);
@@ -47,6 +58,7 @@ export function generateOpponent(
     rng,
     pool.filter((p) => !p.legendary),
   );
+  const fresh = avoid ? shuffled.filter((p) => !avoid.has(p.family)) : shuffled;
   const scores = new Map<string, number>();
   const score = (p: BattlePokemon) => {
     if (!scouting) return 0;
@@ -59,15 +71,16 @@ export function generateOpponent(
   };
   while (team.length < size) {
     const target = (budget - teamBst(team)) / (size - team.length);
-    const candidates = shuffled.filter((p) => fitsBudget(p, team, pool, budget, size));
+    const fits = (list: readonly BattlePokemon[]) =>
+      list.filter((p) => fitsBudget(p, team, pool, budget, size));
+    const freshFits = fits(fresh);
+    const candidates = freshFits.length > 0 ? freshFits : fits(shuffled);
     const near = candidates.filter((p) => Math.abs(p.bst - target) <= TARGET_WINDOW);
     const options = near.length > 0 ? near : candidates;
+    // A study, not a script: one of the few best counters, so trainers don't all pick the same one.
     const studied =
       scouting && rng() < scouting.focus
-        ? options.reduce<BattlePokemon | undefined>(
-            (best, p) => (!best || score(p) > score(best) ? p : best),
-            undefined,
-          )
+        ? pick(rng, [...options].sort((a, b) => score(b) - score(a)).slice(0, SCOUT_SHORTLIST))
         : undefined;
     const choice =
       studied ??

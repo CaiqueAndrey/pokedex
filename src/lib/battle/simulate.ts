@@ -1,4 +1,4 @@
-import { MAX_ATTACKS } from "@/config/gym";
+import { MAX_ATTACKS, STRUGGLE_RECOIL } from "@/config/gym";
 import type { BattleEvent, BattlePokemon, BattleResult, Side } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
 import { levelStats, matchupScore, rollDamage, type LevelStats } from "./damage";
@@ -34,26 +34,39 @@ export function chooseReplacement(
 /**
  * One-on-one, in sequence: the leads fight, a fainted Pokémon is replaced by the reserve with the
  * best matchup, and the side with Pokémon left wins. Fully deterministic for a given seed.
+ *
+ * `playerHp` (the gauntlet) starts the player's team hurt: Pokémon at 0 HP sit out, and the first
+ * one still standing opens.
  */
 export function simulateBattle(
   player: BattlePokemon[],
   opponent: BattlePokemon[],
   relations: TypeRelations,
   seed: string | number,
+  { playerHp }: { playerHp?: readonly number[] } = {},
 ): BattleResult {
   const rng: Rng = mulberry32(typeof seed === "number" ? seed : hashString(seed));
-  const toFighters = (team: BattlePokemon[]): Fighter[] =>
-    team.map((pokemon) => {
+  const toFighters = (team: BattlePokemon[], hp?: readonly number[]): Fighter[] =>
+    team.map((pokemon, index) => {
       const stats = levelStats(pokemon.stats);
-      return { pokemon, stats, hp: stats.hp };
+      const start = hp?.[index];
+      return { pokemon, stats, hp: start === undefined ? stats.hp : Math.min(stats.hp, start) };
     });
   const teams: Record<Side, Fighter[]> = {
-    player: toFighters(player),
+    player: toFighters(player, playerHp),
     opponent: toFighters(opponent),
   };
-  const active: Record<Side, number> = { player: 0, opponent: 0 };
+  const startHp: Record<Side, number[]> = {
+    player: teams.player.map((f) => f.hp),
+    opponent: teams.opponent.map((f) => f.hp),
+  };
+  const firstStanding = Math.max(
+    0,
+    teams.player.findIndex((f) => f.hp > 0),
+  );
+  const active: Record<Side, number> = { player: firstStanding, opponent: 0 };
   const events: BattleEvent[] = [
-    { kind: "send", side: "player", index: 0 },
+    { kind: "send", side: "player", index: firstStanding },
     { kind: "send", side: "opponent", index: 0 },
   ];
   const fighter = (side: Side) => teams[side][active[side]] as Fighter;
@@ -75,6 +88,10 @@ export function simulateBattle(
         defender: defender.stats,
       });
       defender.hp = Math.max(0, defender.hp - roll.damage);
+      const recoil = roll.struggle
+        ? Math.min(attacker.hp, Math.max(1, Math.floor(attacker.stats.hp * STRUGGLE_RECOIL)))
+        : 0;
+      attacker.hp -= recoil;
       attacks++;
       events.push({
         kind: "attack",
@@ -87,17 +104,23 @@ export function simulateBattle(
         critical: roll.critical,
         struggle: roll.struggle,
         hpLeft: defender.hp,
+        ...(recoil > 0 ? { recoil, attackerHpLeft: attacker.hp } : {}),
       });
-      if (defender.hp > 0) continue;
+      if (defender.hp > 0 && attacker.hp > 0) continue;
 
-      events.push({ kind: "faint", side: defenderSide, index: active[defenderSide] });
-      const next = chooseReplacement(teams[defenderSide], attacker.pokemon, relations);
-      if (next < 0) {
-        winner = side;
-      } else {
-        active[defenderSide] = next;
-        events.push({ kind: "send", side: defenderSide, index: next });
-      }
+      // Faints resolve defender first, then the attacker (Struggle recoil).
+      const knockOut = (fainted: Side, against: BattlePokemon) => {
+        events.push({ kind: "faint", side: fainted, index: active[fainted] });
+        const next = chooseReplacement(teams[fainted], against, relations);
+        if (next < 0) {
+          winner ??= other(fainted);
+        } else {
+          active[fainted] = next;
+          events.push({ kind: "send", side: fainted, index: next });
+        }
+      };
+      if (defender.hp <= 0) knockOut(defenderSide, attacker.pokemon);
+      if (attacker.hp <= 0 && !winner) knockOut(side, fighter(defenderSide).pokemon);
       // A fainted Pokémon doesn't get to attack this turn.
       break;
     }
@@ -111,6 +134,11 @@ export function simulateBattle(
   return {
     winner,
     events,
+    startHp,
+    finalHp: {
+      player: teams.player.map((f) => f.hp),
+      opponent: teams.opponent.map((f) => f.hp),
+    },
     maxHp: {
       player: teams.player.map((f) => f.stats.hp),
       opponent: teams.opponent.map((f) => f.stats.hp),
