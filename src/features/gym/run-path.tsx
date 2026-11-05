@@ -2,8 +2,8 @@ import { Check, Crown, Swords, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/components/ui/cn";
 import { messages } from "@/config/messages";
-import { GYM } from "@/config/gym";
-import { byName, type GymRun } from "@/lib/battle/run";
+import { byName, gymOf, trainersFor, type GymRun } from "@/lib/battle/run";
+import { topDamage } from "@/lib/battle/stats";
 import { formatName } from "@/lib/format";
 import { spriteUrl } from "@/lib/sprites";
 import type { BattlePokemon } from "@/types/battle";
@@ -59,14 +59,17 @@ export function RunPath({
   pool: BattlePokemon[];
   showTeams?: boolean;
 }) {
+  const trainers = trainersFor(run);
   return (
     <section aria-labelledby="path-title" className="grid gap-3" data-testid="run-path">
       <h2 id="path-title" className="text-[0.65rem]">
         {m.pathTitle}
       </h2>
       <ol className="grid gap-2">
-        {GYM.battles.map((battle, index) => {
+        {gymOf(run).battles.map((battle, index) => {
+          const trainer = trainers[index] ?? "";
           const record = run.history.find((r) => r.battle === index);
+          const mvp = record ? topDamage([record.damage]) : undefined;
           const isNext = !record && index === run.battle && run.phase === "ready";
           const status = record ? (record.won ? "won" : "lost") : isNext ? "next" : "upcoming";
           const Icon = {
@@ -77,7 +80,7 @@ export function RunPath({
           }[status];
           return (
             <li
-              key={battle.trainer}
+              key={index}
               className={cn(
                 "border-border animate-fade-up flex gap-3 rounded-2xl border-2 p-3",
                 status === "won" && "bg-green-500/10",
@@ -102,9 +105,13 @@ export function RunPath({
               <div className="grid min-w-0 flex-1 gap-1">
                 <p className="flex flex-wrap items-baseline gap-x-2">
                   <span className="font-display text-[0.6rem] leading-relaxed">
-                    {index + 1}. {battle.trainer}
+                    {index + 1}. {trainer}
                   </span>
-                  {battle.leader && <span className="text-muted text-xs">{m.leader}</span>}
+                  {battle.leader && (
+                    <span className="text-muted text-xs">
+                      {run.mode === "daily" ? m.boss : m.leader}
+                    </span>
+                  )}
                 </p>
                 <p className="text-sm">
                   {record
@@ -115,6 +122,17 @@ export function RunPath({
                       ? m.pathCurrent
                       : m.pathUpcoming}
                 </p>
+                {record && (
+                  <p className="text-muted flex flex-wrap gap-x-3 text-xs" data-testid="path-score">
+                    <span className="font-display text-foreground text-[0.55rem]">
+                      {m.score(
+                        record.opponent.length - record.opponentRemaining,
+                        record.order.length - record.remaining,
+                      )}
+                    </span>
+                    {mvp && <span>⭐ {m.battleMvp(formatName(mvp), record.damage[mvp] ?? 0)}</span>}
+                  </p>
+                )}
                 {record && showTeams && (
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     <Sprites names={record.order} pool={pool} label={m.historyYourTeam} />

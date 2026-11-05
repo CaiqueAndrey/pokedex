@@ -11,6 +11,9 @@ async function main() {
   writeFileSync("src/server/pokedex/data/battle-pool.json", `${JSON.stringify(pool)}\n`);
   const families = new Set(pool.map((p) => p.family)).size;
   console.error(`Recorded ${pool.length} Pokémon in ${families} families.`);
+  const legendaries = await fetchBattlePool({ timeoutMs: 30_000, legendary: true });
+  writeFileSync("src/server/pokedex/data/legendary-pool.json", `${JSON.stringify(legendaries)}\n`);
+  console.error(`Recorded ${legendaries.length} legendaries.`);
 }
 
 main().catch((error) => {

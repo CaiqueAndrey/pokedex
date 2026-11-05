@@ -21,6 +21,8 @@ export function tierOf(pokemon: BattlePokemon, [low, high]: [number, number]): T
 export interface DraftRound {
   /** The die face: offers come from this type (topped up from others when it runs short). */
   type: PokemonTypeName;
+  /** A Master Ball encounter: the offers are legendaries instead of a die roll. */
+  legendary?: boolean;
   offers: BattlePokemon[];
   /** Offers that would break the budget: shown, but can't be picked. */
   blocked: string[];
@@ -70,12 +72,14 @@ export function draftRound(
   budget: number | null = TEAM_BUDGET,
 ): DraftRound {
   const teamFamilies = new Set(team.map((p) => p.family));
-  const available = pool.filter((p) => !teamFamilies.has(p.family));
+  // Legendaries never come from the die: only from a Master Ball encounter.
+  const regular = pool.filter((p) => !p.legendary);
+  const available = regular.filter((p) => !teamFamilies.has(p.family));
   const affordable = new Set(
     budget === null ? available : available.filter((p) => fitsBudget(p, team, pool, budget)),
   );
   const fits = (p: BattlePokemon) => affordable.has(p);
-  const thresholds = tierThresholds(pool);
+  const thresholds = tierThresholds(regular);
   const type = rollType(available, team, fits, thresholds, rng);
 
   const offers: BattlePokemon[] = [];
@@ -115,4 +119,52 @@ export function draftRound(
     offers: final.sort((a, b) => a.bst - b.bst || a.id - b.id),
     blocked: final.filter((p) => !fits(p)).map((p) => p.name),
   };
+}
+
+/**
+ * A Master Ball encounter (the first round of a legendary run): three different legendaries that
+ * fit the budget, leaving room for the five slots after them.
+ */
+export function legendaryRound(
+  pool: readonly BattlePokemon[],
+  team: readonly BattlePokemon[],
+  rng: Rng,
+  budget: number | null = TEAM_BUDGET,
+): DraftRound {
+  const fits = (p: BattlePokemon) => budget === null || fitsBudget(p, team, pool, budget);
+  const offers = shuffle(
+    rng,
+    pool.filter((p) => p.legendary && fits(p)),
+  ).slice(0, OFFERS_PER_ROUND);
+  const sorted = offers.sort((a, b) => a.bst - b.bst || a.id - b.id);
+  return { type: sorted[0]?.types[0] ?? "normal", legendary: true, offers: sorted, blocked: [] };
+}
+
+/**
+ * The gauntlet's hand: `size` Pokémon from different families, the same for everyone with the same
+ * seed. Thirds of weak, mid and strong (so a legal six always fits the cap), preferring types the
+ * hand doesn't have yet. Sorted by strength.
+ */
+export function drawHand(pool: readonly BattlePokemon[], rng: Rng, size = 12): BattlePokemon[] {
+  const regular = pool.filter((p) => !p.legendary);
+  const thresholds = tierThresholds(regular);
+  const quota = Math.ceil(size / 3);
+  const hand: BattlePokemon[] = [];
+  const families = new Set<number>();
+  const types = new Set<string>();
+  const count = (tier: Tier) => hand.filter((p) => tierOf(p, thresholds) === tier).length;
+  const shuffled = shuffle(rng, regular);
+  // Two passes: first only Pokémon that bring a new type, then anything that fits the quotas.
+  for (const freshOnly of [true, false]) {
+    for (const pokemon of shuffled) {
+      if (hand.length >= size) break;
+      if (families.has(pokemon.family)) continue;
+      if (count(tierOf(pokemon, thresholds)) >= quota) continue;
+      if (freshOnly && pokemon.types.some((t) => types.has(t))) continue;
+      hand.push(pokemon);
+      families.add(pokemon.family);
+      pokemon.types.forEach((t) => types.add(t));
+    }
+  }
+  return hand.sort((a, b) => a.bst - b.bst || a.id - b.id);
 }

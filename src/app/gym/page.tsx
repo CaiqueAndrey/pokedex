@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { REWARD_ITEM_NAMES } from "@/config/gym";
 import { messages } from "@/config/messages";
 import { GymGame } from "@/features/gym/gym-game";
 import { getBattlePool, getPokedex } from "@/server/pokedex/next-cache";
@@ -18,6 +19,12 @@ export default async function GymPage({
 }) {
   const { seed } = await searchParams;
   const fixedSeed = typeof seed === "string" && /^[\w-]{1,40}$/.test(seed) ? seed : undefined;
-  const [pool, relations] = await Promise.all([getBattlePool(), getPokedex().getTypeRelations()]);
-  return <GymGame pool={pool} relations={relations} seed={fixedSeed} />;
+  const pokedex = getPokedex();
+  const [pool, relations, items] = await Promise.all([
+    getBattlePool(),
+    pokedex.getTypeRelations(),
+    // Item sprites are a nice-to-have: the game works without them.
+    pokedex.getItems(REWARD_ITEM_NAMES).catch(() => []),
+  ]);
+  return <GymGame pool={pool} relations={relations} items={items} seed={fixedSeed} />;
 }

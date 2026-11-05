@@ -1,4 +1,11 @@
-import { BATTLE_LEVEL, CRITICAL_CHANCE, CRITICAL_MULTIPLIER, MOVE_POWER, STAB } from "@/config/gym";
+import {
+  BATTLE_LEVEL,
+  CRITICAL_CHANCE,
+  CRITICAL_MULTIPLIER,
+  MOVE_POWER,
+  STAB,
+  STRUGGLE_POWER,
+} from "@/config/gym";
 import type { BattlePokemon } from "@/types/battle";
 import type { PokemonTypeName, StatName, TypeRelations } from "@/types/pokemon";
 import { computeMatchups } from "../type-effectiveness";
@@ -47,7 +54,10 @@ export interface DamageRoll {
   type: PokemonTypeName;
   effectiveness: number;
   critical: boolean;
-  /** No type can hurt the defender: falls back to a 1-damage Struggle so battles always end. */
+  /**
+   * No own type can hurt the defender (Normal vs Ghost): Struggle, a typeless hit with recoil, so
+   * the battle ends in a few turns instead of trading 1-damage blows.
+   */
   struggle: boolean;
 }
 
@@ -65,13 +75,16 @@ export function rollDamage(
   const choice = bestAttack(attacker, defender, relations);
   const critical = rng() < CRITICAL_CHANCE;
   const random = 0.85 + rng() * 0.15;
-  if (choice.effectiveness === 0) {
-    return { damage: 1, type: choice.type, effectiveness: 0, critical: false, struggle: true };
-  }
   const attack = choice.physical ? stats.attacker.attack : stats.attacker.specialAttack;
   const defense = choice.physical ? stats.defender.defense : stats.defender.specialDefense;
-  const base =
-    Math.floor(Math.floor((((2 * BATTLE_LEVEL) / 5 + 2) * MOVE_POWER * attack) / defense) / 50) + 2;
+  const formula = (power: number) =>
+    Math.floor(Math.floor((((2 * BATTLE_LEVEL) / 5 + 2) * power * attack) / defense) / 50) + 2;
+  if (choice.effectiveness === 0) {
+    // Typeless, so no STAB and no immunity; no critical either (keeps it a last resort).
+    const damage = Math.max(1, Math.floor(formula(STRUGGLE_POWER) * random));
+    return { damage, type: choice.type, effectiveness: 1, critical: false, struggle: true };
+  }
+  const base = formula(MOVE_POWER);
   const damage = Math.max(
     1,
     Math.floor(base * STAB * choice.effectiveness * (critical ? CRITICAL_MULTIPLIER : 1) * random),

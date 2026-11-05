@@ -19,9 +19,11 @@ import {
   type PokemonVariety,
   type StatName,
 } from "@/types/pokemon";
+import type { GameItem } from "@/types/item";
 import type {
   ChainLink,
   EvolutionChainResponse,
+  ItemResponse,
   PokemonResponse,
   SpeciesResponse,
   TypeResponse,
@@ -189,4 +191,13 @@ export function mapTypeRelations(response: TypeResponse): Partial<Record<Pokemon
   apply(response.damage_relations.half_damage_to, 0.5);
   apply(response.damage_relations.no_damage_to, 0);
   return result;
+}
+
+/** An item as the game shows it: the official sprite and its category. */
+export function mapItem(response: ItemResponse): GameItem {
+  return {
+    name: response.name,
+    sprite: response.sprites.default,
+    category: response.category.name,
+  };
 }

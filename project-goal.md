@@ -5,8 +5,8 @@
 > português de propósito. O resto do repositório (código, commits, `AGENTS.md`, `PHASES.md`,
 > `docs/`) é escrito em inglês. A **interface do app é em português** (ver §3.7).
 >
-> **Fora de escopo deste plano:** deploy na Vercel. Ele entra como fase própria depois que a Fase 9
-> estiver concluída (ver §12).
+> **Deploy na Vercel:** feito como Fase 10, antes do MCP (Fase 11), por escolha. A Fase 9 (Modo
+> Ginásio 2.0) nasceu do uso em produção (§8.9).
 
 ---
 
@@ -151,7 +151,7 @@ botão "voltar" funciona e a página pode ser renderizada no servidor.
 | Testes E2E        | Playwright (viewport de celular primeiro)               |                                                         |
 | Qualidade         | ESLint 9 (flat config) + Prettier + Husky + lint-staged | mesma config do polyglot-lab                            |
 | CI                | GitHub Actions: lint, format, typecheck, test, build    | **sem** etapa de deploy                                 |
-| MCP               | `@modelcontextprotocol/sdk` (TypeScript) + transporte stdio, executado com `tsx` | Fase 9; reaproveita o núcleo de dados (§5) |
+| MCP               | `@modelcontextprotocol/sdk` (TypeScript) + transporte stdio, executado com `tsx` | Fase 11; reaproveita o núcleo de dados (§5) |
 
 > Antes de escrever código de cache, rotas ou `next/image`, ler a documentação da versão instalada
 > em `node_modules/next/dist/docs/` (regra herdada do `AGENTS.md` do polyglot-lab: o Next 16 tem
@@ -183,7 +183,7 @@ Next.js (Server Components)              Servidor MCP (Node puro, src/mcp)
 
 ### Núcleo independente do framework
 
-O mesmo núcleo atende **dois consumidores**: o app Next.js e o servidor MCP (Fase 9), que roda em
+O mesmo núcleo atende **dois consumidores**: o app Next.js e o servidor MCP (Fase 11), que roda em
 Node puro, fora do Next. Por isso, desde a Fase 1:
 
 - `server/pokeapi`, `server/pokedex` e `lib/` **não importam nada de `next/*`** — nem
@@ -557,7 +557,8 @@ técnico: é **calibrar o equilíbrio** para ser divertido. Por isso a simulaç�
    - A cada rodada o jogador **rola o dado**, que sorteia um **tipo** (das 18 faces possíveis) e
      oferece **3 Pokémon** daquele tipo, um de cada faixa de poder (fraco / médio / forte, pelo total
      de base stats, o BST). O jogador escolhe 1.
-   - **Limite de força do time (só no Difícil):** a soma de BST tem um teto de 2.500. No Fácil não
+   - **Limite de força do time** (_revisado na Fase 9: agora vale nos dois modos, 2.800 no Fácil;
+     ver §8.9_) **(só no Difícil):** a soma de BST tem um teto de 2.500. No Fácil não
      há limite: o jogador escolhe por gosto e tipo. No Difícil as 3 ofertas ignoram o limite de propósito: as que estourariam aparecem **bloqueadas** ("Não
      cabe: passa X do limite"), e pelo menos uma sempre cabe. Assim o custo de escolher fortes cedo
      fica visível: as próximas vagas ficam com menos força (como um teto salarial).
@@ -575,7 +576,8 @@ técnico: é **calibrar o equilíbrio** para ser divertido. Por isso a simulaç�
    - Batalhas 1–4: treinadores do ginásio (nomes curados: "Campista", "Montanhista"…), com times
      **totalmente aleatórios** (sem preferência de tipo), gerados pelo **mesmo algoritmo, orçamento e
      regras de composição** do jogador.
-   - Força **fixa** por modo (Fácil 2.500, Difícil 2.600), crescente de 85% na 1ª batalha até 105% na
+   - Força **fixa** por modo (Fácil 2.500, Difícil 2.600; _na Fase 9 passou a 2.600 / 2.500 com
+     contra-escolha do titular, ver §8.9_), crescente de 85% na 1ª batalha até 105% na
      5ª. Não depende do time do jogador: montar um time mais forte é uma vantagem real.
    - Batalha 5: **Brock**, também com time aleatório no orçamento da batalha final. O único toque
      temático é o nome, a apresentação e a insígnia (sem viés de Pedra/Terra).
@@ -650,6 +652,180 @@ tool `simulate_battle` do MCP (§8.7) reaproveita.
 - Nenhum dado da PokeAPI é buscado no navegador: o pool vem do servidor (Server Component passa
   para o componente cliente do jogo), e o motor roda no cliente porque é só matemática.
 
+## 8.9 Modo Ginásio 2.0: desafio, fim de jogo, sons e gamificação
+
+**Contexto (05/11/2026, após o deploy):** jogando em produção, o modo ginásio ficou fácil demais, o
+fim do desafio pouco claro (um botão "Derrota…" leva a uma segunda tela, e só lá aparece o
+histórico), e "Novo desafio" pula a escolha do modo. Esta seção define a fase 9 (§11).
+
+### Diagnóstico do equilíbrio (medido)
+
+Simulação com o motor atual, 300 corridas por linha. "Mais forte" pega sempre a oferta mais forte
+que cabe; "Esperto" faz o mesmo e, antes de cada batalha, põe para abrir o Pokémon com melhor
+confronto contra o titular adversário (é o que o Fácil permite, porque mostra a ordem do oponente).
+
+| Modo                         | Força média do time | Aleatório: insígnia | Mais forte | Esperto |
+| ---------------------------- | ------------------- | ------------------- | ---------- | ------- |
+| Fácil (sem teto / opon. 2.500) | 2.400 / **3.020**   | 24%                 | **85–89%** | **95%** |
+| Difícil (teto 2.500 / 2.600)   | 2.320 / 2.480       | 6%                  | 19%        | 31%     |
+
+A causa é clara: no Fácil não há teto, então quem pega sempre o forte monta ~3.000 de força contra
+oponentes de 2.125 a 2.625. O teste de equilíbrio atual só mede a estratégia **aleatória**, que
+ninguém usa de verdade; por isso ele passava. O Difícil está numa faixa boa.
+
+### 1. Equilíbrio mais desafiador (pesando as escolhas de força do jogador)
+
+- **Oponentes acompanham parte da força do time:** orçamento do oponente =
+  `base + k × (força do time − base)`, com `k ≈ 0,4–0,5`. Escolher fortes continua valendo a pena
+  (só parte da vantagem é compensada), mas deixa de garantir a insígnia. É o meio-termo entre a
+  primeira versão (k = 1, que anulava o draft) e a atual (k = 0, que torna o Fácil trivial).
+- **Teto também no Fácil, mais alto** (ex.: 2.800–2.900), para que o draft sempre tenha custo.
+- **Curva mais íngreme** entre a 1ª e a 5ª batalha (ex.: 90% → 110%), para Brock ser um chefe.
+- **Brock e o Difícil reagem ao seu time:** no Difícil (time adversário escondido) o oponente
+  escolhe quem abre **depois** de ver o seu titular, com a mesma heurística de vantagem de tipo da
+  troca. Brock faz isso nos dois modos. Contra-escolher o titular deixa de ser exclusivo do jogador.
+- **Metas por modo**, em teste estatístico com as **três estratégias** (aleatória, mais forte,
+  esperta), para nunca mais regredir sem ninguém ver:
+
+  | Modo    | Aleatório | Mais forte | Esperto  |
+  | ------- | --------- | ---------- | -------- |
+  | Fácil   | 10–25%    | 40–60%     | 55–75%   |
+  | Difícil | ≤ 10%     | 12–30%     | 20–40%   |
+
+  **Resultado (Fase 9, `docs/phases/09-gym-mode-2.md`):** Fácil com teto 2.800, oponentes 2.600,
+  `k = 0` e o Brock contra-escolhendo: **10% / 51% / 53%**. Difícil com teto 2.500, oponentes 2.500,
+  `k = 0` e todos contra-escolhendo: **11% / 21% / 26%**. O `k` ficou no motor, mas em 0 nos dois
+  modos: no Fácil ele aproximava quem drafta bem de quem drafta mal (aleatório 16% / mais forte
+  33%), e no Difícil (k = 0,3) salvava times fracos (aleatório 16%, acima do Fácil). O teto já
+  pesa as escolhas de força do jogador.
+
+  Medições preliminares: teto 2.800 + oponentes 2.600 dá 15% / 51% / 70% no Fácil; sem teto com
+  k = 0,5 dá 28% / 59% / 80%; teto 2.900 + k = 0,4 dá 18% / 48% / 66%. A curva 90% → 110% com
+  oponentes de 2.650 passa do ponto nos dois modos (Fácil 4% / 24% / 42%; Difícil 1% / 5% / 11%):
+  o Difícil atual (9% / 15% / 31%) já está na meta e só deve ganhar a contra-escolha do titular. A
+  combinação final sai do teste, ajustando só `config/gym.ts`, nunca o motor.
+- **Corridas salvas** com as regras antigas: incluir `rulesVersion` na corrida (ou subir a chave
+  para `gym-run:v2`). Uma corrida de outra versão é descartada com aviso, porque os oponentes
+  derivados da seed mudariam no meio do desafio.
+
+### 2. Fim do desafio no estilo do 7a0 (modal de resultado → histórico)
+
+- Quando a batalha que encerra o desafio termina (derrota em qualquer batalha ou vitória sobre o
+  Brock), a própria tela de batalha abre um **modal de resultado**, sem o passo intermediário do
+  botão "Derrota…"/"Vitória!":
+  - **Derrota:** arte de game over, "Você venceu X de 5", quem te derrotou e o Pokémon que mais
+    causou dano no seu time (MVP).
+  - **Vitória:** troféu + Insígnia da Rocha (com o brilho), MVP da corrida e a sequência de vitórias.
+  - Ações: **Ver histórico** (fecha o modal e mostra o percurso completo, batalha a batalha, com os
+    dois times e o placar de cada uma) e **Novo desafio**. Compartilhar entra no item 5.
+- Entre batalhas vencidas, um aviso curto de vitória ("Vitória! Próximo: Montanhista Rui") com o
+  botão de seguir, sem modal.
+- O modal é um `<dialog>` nativo (foco preso, `Esc` fecha e leva ao histórico, `aria-labelledby`),
+  com animação que respeita `prefers-reduced-motion`.
+- O histórico ganha o que hoje falta: resultado por batalha (ex.: 4 × 0), MVP de cada batalha e o
+  time do jogador na ordem usada. O MVP sai de uma função pura sobre os eventos da batalha
+  (`lib/battle/stats.ts`: dano causado e nocautes por Pokémon).
+
+### 3. Fluxo: escolher a dificuldade antes de todo desafio
+
+- **Novo desafio** (no modal, no histórico ou em "Abandonar") volta sempre para a **tela inicial
+  com a escolha de modo**, com o último modo usado pré-selecionado. Nunca começa uma corrida direto.
+- **Abandonar** no meio da corrida pede confirmação (perde o progresso).
+- Com `?seed=` na URL a seed fica fixa, mas o modo ainda é escolhido na tela inicial.
+- E2E cobre: perder → modal → Ver histórico → Novo desafio → escolha de modo.
+
+### 4. Sons 8-bit
+
+- **Sintetizados com a Web Audio API** (osciladores de onda quadrada/triangular e ruído), sem
+  arquivos de áudio: zero download, sem licença de terceiros e fácil de ajustar. **Melodias
+  originais e curtas**, nada copiado das trilhas dos jogos.
+- Eventos: rolar o dado, escolher Pokémon, mandar a campo, golpe (normal, super efetivo, pouco
+  efetivo, crítico), desmaio, vitória na batalha, derrota (jingle de game over), insígnia
+  (fanfarra) e cliques do modal.
+- As "partituras" (notas, durações, onda) são **dados puros** em `lib/sound/` (testáveis); o
+  tocador que usa `AudioContext` fica em `features/gym/` (só no navegador).
+- **Botão de som** (ligado/desligado) no jogo, salvo no `localStorage` (`pokedex:sound:v1`);
+  volume baixo por padrão. O `AudioContext` só é criado no primeiro clique (regra de autoplay dos
+  navegadores). Em "pular animação" os sons dos eventos pulados não tocam, só o do resultado.
+- Testes: unitário das partituras (durações, limites de frequência); E2E com `AudioContext` falso
+  para conferir que nada quebra sem som e que o botão persiste.
+
+### Segunda passada (05/11/2026): três ginásios, treinadores que estudam o time, Pokébolas
+
+Mesmo com o item 1, o jogo continuou fácil para uma pessoa: quem drafta pensando em cobertura de
+tipos e reordena a cada batalha vence mais que qualquer robô. Com uma 4ª estratégia de teste,
+**experiente** (cobertura + melhor titular), as taxas eram 49% (Fácil) e 21% (Difícil). Mudanças:
+
+- **Treinadores estudam o seu time:** ao montar o time, cada vaga vai, numa fração `scout` das
+  vezes, para o candidato com melhor confronto contra os seus Pokémon. Líderes e chefes trazem o
+  **Pokémon de assinatura** (Brock: Onix; Misty: Starmie; James: Weezing; Jessie: Arbok) e sempre
+  escolhem quem abre depois de ver o seu titular.
+- **Um ginásio por modo:** Fácil = **Pewter** (Brock, Insígnia da Rocha); Difícil = **Cerulean**
+  (Misty, Insígnia da Cascata); **desafio do dia = Equipe Rocket** (recrutas, James e Jessie).
+- **Nomes sorteados por corrida:** classe do ginásio (Campista, Nadadora, Recruta Rocket…) + nome.
+- **Pokébolas como recompensa:** 3 vitórias = Poké Bola, 4 = Grande Bola, Fácil completo = Ultra
+  Bola, Difícil ou desafio do dia completo = Master Ball. Coleção na tela inicial e novas conquistas.
+- **Taxas finais (aleatório / mais forte / experiente):** Fácil 3% / 15% / 30%; Difícil
+  3% / 5% / 13%; desafio do dia 8% / 27% / 23%. Detalhes em `docs/phases/09-gym-mode-2.md`.
+- **Arte:** as imagens novas tiveram o fundo (branco ou xadrez de "transparência falsa") removido
+  por script e foram salvas como PNG transparente.
+
+### Terceira passada (05/11/2026): tela inicial em seções, recompensas, treino e lendários
+
+- **Tela inicial no estilo do 7a0:** chamada, passos "01 Role · 02 Monte · 03 Batalhe", e um
+  cartão por desafio com quem você enfrenta, **o que ganha** e o seu status. Depois, uma seção de
+  **Recompensas** (insígnias, Pokébolas, Mochila, lendários capturados, conquistas e estatísticas)
+  e as regras.
+- **Desafio do dia claro:** resultado de hoje, "Novo desafio em HH:MM:SS", **treino** (não vale) e
+  **desafios anteriores** (últimos 7 dias, só treino).
+- **Mochila com itens da PokeAPI:** o desafio do dia dá o item do dia (pedras de evolução, Doce Raro,
+  Pepita…), com sprite oficial. A API tem itens e sprites, mas não tem nomes em pt-BR (curados) nem
+  preços úteis, e continua sem insígnias e treinadores.
+- **Lendários:** 26 das gerações 1 a 4 (sem míticos), em um pool à parte. Nunca saem do dado nem
+  dos treinadores; entram pelo **Encontro lendário**, que gasta uma Master Ball antes de um ginásio:
+  a primeira rodada oferece 3 lendários que cabem no limite. O capturado fica na coleção. Ideia
+  futura: um modo "Liga Lendária" com chefes lendários.
+- O endpoint GraphQL antigo saiu do ar; o pool passou para `graphql.pokeapi.co/v1beta2`.
+
+### Quarta passada (05/11/2026): Desespero, treinador, abas do ginásio e um desafio do dia diferente
+
+- **Bug do Normal × Fantasma:** era a única imunidade mútua do pool; os dois lados davam 1 de dano
+  e a batalha durava centenas de golpes. O **Desespero** agora é como nos jogos: sem tipo, poder 50 e
+  recuo de 1/4 do PS do atacante (a batalha acaba em ~5 golpes).
+- **Navegação:** botão "Ginásio" destacado no cabeçalho, faixa na página inicial e abas no ginásio
+  (Jogar · Recompensas · Histórico · Treinador).
+- **Treinador sem login:** nome digitado uma vez, ID e data; aparece nas batalhas e no **Cartão de
+  Treinador**, com **nível, XP e patente** (derivados das estatísticas).
+- **Histórico:** os últimos 10 desafios; o último também aparece na tela de jogar.
+- **Batalha:** cabeçalho "Você × Treinador" e uma abertura "VS".
+- **Desafio do dia = Esconderijo da Equipe Rocket:** a mesma mão de 12 para todos, escolha 6 numa
+  tela; até 10 batalhas seguidas sem cura completa (40% para quem sobrevive); recrutas com 2–3
+  Pokémon. Pontuação de 0 a 10, com recompensas em 3, 5 (+ item do dia), 7 e 10.
+
+### Quinta passada (05/11/2026): treinadores variados e um desafio do dia curto
+
+- **Bug:** todo treinador escolhia o mesmo "melhor contra-ataque" ao seu time. Agora sorteiam entre
+  os 3 melhores e evitam as famílias já usadas por treinadores anteriores da corrida.
+- **Desafio do dia:** 5 batalhas rápidas (era 10), 50% de recuperação, recompensa garantida (1, 3 e
+  5 derrotados) e **Master Ball a cada 3 dias seguidos** jogando, para dar motivo de voltar.
+
+### 5. Mais gamificação (avaliadas e priorizadas)
+
+| Ideia                                   | Valor | Esforço | Decisão         |
+| --------------------------------------- | ----- | ------- | --------------- |
+| **Desafio do dia** (seed por data, igual para todos, uma tentativa válida por dia) | Alto | Baixo | Entra |
+| **Compartilhar resultado** em texto com emojis (ex.: `Ginásio de Pewter · 05/11 · 🟩🟩🟩🟥⬜`) via Web Share API ou área de transferência | Alto | Baixo | Entra |
+| **Estatísticas locais:** corridas, insígnias, sequência de vitórias, melhor resultado, Pokémon mais usado | Médio | Baixo | Entra |
+| **Conquistas** (ex.: vencer no Difícil, vencer com time abaixo de 2.300, vencer o Brock sem perder ninguém, campeão com bebê no time), exibidas no `/gym` | Alto | Médio | Entra |
+| **Recompensa entre batalhas** (roguelike): ao vencer, escolher 1 de 3: trocar um Pokémon por uma nova rolagem, +1 rolagem, ou "treino" (+10% em um atributo na corrida) | Alto | Médio | Adiada: mexe no equilíbrio recém-calibrado; entra numa passada própria com o mesmo teste de 3 estratégias |
+| Dicas de confronto na pré-batalha (Fácil): ícone de vantagem/desvantagem por par | Médio | Baixo | Entra |
+| Vibração no celular em crítico/desmaio (`navigator.vibrate`) | Baixo | Baixo | Entra (junto com o botão de som) |
+| Ranking online                          | Médio | Alto (backend) | Fica fora (§3.4, §12) |
+
+Tudo continua sem backend: estatísticas e conquistas em `localStorage` (versionado + Zod), o
+desafio do dia é só uma seed derivada da data, e as regras de conquista são funções puras sobre o
+histórico da corrida.
+
 ---
 
 # 9. Design
@@ -707,7 +883,7 @@ acessibilidade básica, documentado, commit em inglês.
 ```text
 00 Setup → 01 Camada PokeAPI → 02 Shell & Design → 03 Pokédex (lista) →
 04 Busca & Filtros → 05 Detalhes → 06 Favoritos & Time → 07 Comparação & Polimento →
-08 Modo Ginásio → 09 Servidor MCP
+08 Modo Ginásio → 09 Modo Ginásio 2.0 → 10 Deploy → 11 Servidor MCP
 ```
 
 Cada fase termina com a nota de aprendizado `docs/phases/NN-nome.md` (template do polyglot-lab).
@@ -737,7 +913,7 @@ Cada fase termina com a nota de aprendizado `docs/phases/NN-nome.md` (template d
   `server/pokeapi`, `server/pokedex` e `lib/`; regra `no-restricted-imports` no ESLint
 - Interface `PokeApiCache` + implementação em memória (testada) + adaptador `next-cache.ts` com a
   estratégia de cache do Next 16 (ler a doc local; `fetch` com revalidate ou `"use cache"`)
-- Teste que importa os serviços num processo Node puro (sem Next), garantindo que o MCP da Fase 9
+- Teste que importa os serviços num processo Node puro (sem Next), garantindo que o MCP da Fase 11
   vai conseguir usá-los
 - Schemas Zod de `pokemon`, `pokemon-species`, `type`, `generation`, `evolution-chain`
 - Mappers para os tipos de domínio (§7), incluindo a classificação das formas (§5)
@@ -841,7 +1017,35 @@ batalhas reproduzíveis e balanceamento verificado por testes.
 > Fora de escopo nesta fase: golpes reais, habilidades, naturezas, itens, status, multiplayer e
 > outros ginásios (ver §12).
 
-## Fase 9 — Servidor MCP
+## Fase 9 — Modo Ginásio 2.0 (desafio, fim de jogo, sons e gamificação)
+
+**Objetivo:** deixar o ginásio desafiador e mais recompensador (§8.9), praticando balanceamento
+guiado por dados, diálogos acessíveis, Web Audio e persistência local de progresso.
+
+1. **Equilíbrio:** oponentes que acompanham parte da força do time (`k`), teto no Fácil, curva
+   90% → 110%, contra-escolha do titular no Difícil e pelo Brock; `rulesVersion` na corrida.
+   Teste estatístico com as três estratégias (aleatória, mais forte, esperta) e as metas por modo.
+2. **Fim do desafio:** modal de resultado ao fim da batalha decisiva (derrota ou insígnia) com MVP,
+   "Ver histórico" e "Novo desafio"; aviso curto entre vitórias; histórico com placar e MVP por
+   batalha (`lib/battle/stats.ts`).
+3. **Fluxo:** "Novo desafio" sempre volta para a escolha de modo (último modo pré-selecionado);
+   confirmação ao abandonar.
+4. **Sons 8-bit:** partituras originais em `lib/sound/` + tocador Web Audio em `features/gym/`,
+   botão de som persistido, criação do `AudioContext` no primeiro clique.
+5. **Gamificação:** desafio do dia, compartilhar resultado com emojis, estatísticas locais,
+   conquistas e dicas de confronto no Fácil. Recompensa entre batalhas e vibração são opcionais.
+6. **Testes:** Vitest (metas de equilíbrio, MVP, conquistas, partituras, seed do dia); Playwright
+   (derrota → modal → histórico → novo desafio → escolha de modo; som desligado persiste; desafio
+   do dia); axe no modal nos dois temas; conferir no celular.
+7. Nota: `docs/phases/09-gym-mode-2.md` (com as taxas medidas antes e depois).
+
+**Resultado:** vencer o Fácil exige um bom draft e uma boa ordem, o Difícil é um desafio de
+verdade, o fim de jogo é claro e o modo tem motivos para voltar todo dia.
+
+> Fora de escopo nesta fase: golpes reais, habilidades, status, outros ginásios e ranking online
+> (ver §12).
+
+## Fase 11 — Servidor MCP
 
 **Objetivo:** aprender MCP de ponta a ponta — da fundação do servidor até o uso no Claude Code —
 reaproveitando o núcleo, sem duplicar regra de negócio (§8.7).
@@ -857,7 +1061,7 @@ reaproveitando o núcleo, sem duplicar regra de negócio (§8.7).
    - Logs só em `stderr` + regra de ESLint em `src/mcp/`
    - Primeira tool (`get_type_matchups`, que é função pura) testada no Inspector
 3. **Tools:** `search_pokemon`, `get_pokemon`, `get_evolution_chain`, `analyze_team`,
-   `simulate_battle` (reaproveita o motor da Fase 8), com schemas
+   `simulate_battle` (reaproveita o motor das Fases 8 e 9), com schemas
    Zod, `readOnlyHint`, respostas compactas e erros com `isError`
 4. **Resources:** `pokemon://{name}` (template de URI) e `pokedex://types` (tabela de tipos)
 5. **Prompts:** `build-team` (argumentos: estilo, geração) e `explain-matchup` (dois Pokémon)
@@ -870,7 +1074,7 @@ reaproveitando o núcleo, sem duplicar regra de negócio (§8.7).
    - Observar como o modelo escolhe as tools e ajustar nomes/descrições quando ele errar
 8. **Documentação:** `docs/guides/mcp.md` (rodar, inspecionar, registrar, exemplos de perguntas) +
    seção no README
-9. Nota: `docs/phases/09-mcp-server.md`
+9. Nota: `docs/phases/11-mcp-server.md`
 
 **Resultado:** o Claude Code consulta a Pokédex por MCP usando exatamente a mesma lógica da
 interface web.
@@ -882,14 +1086,14 @@ interface web.
 
 # 12. Depois deste plano (não implementar agora)
 
-- **Fase 10 — Deploy na Vercel** (CI → Vercel, previews, verificação no celular). Fica para depois,
-  conforme combinado. Junto com ele, opcionalmente: expor o servidor MCP também por **Streamable
-  HTTP** numa rota `/api/mcp` do Next, para ser usado sem clonar o repositório.
+- **Fase 10 — Deploy na Vercel** (CI → Vercel, previews, verificação no celular): feita antes do
+  MCP (ver `docs/phases/10-deploy.md`). Depois da Fase 11, opcionalmente: expor o servidor MCP também
+  por **Streamable HTTP** numa rota `/api/mcp` do Next, para ser usado sem clonar o repositório.
 - Ideias futuras, só se houver motivo real: conta de usuário + banco para sincronizar favoritos/times
   entre dispositivos; quiz "Quem é esse Pokémon?"; filtros por stats; i18n (inglês além do português).
 - Evoluções do Modo Ginásio (§8.8): os outros 7 ginásios de Kanto e a Liga; golpes reais, habilidades
-  e status na batalha; desafio diário com seed única para todos (como o "Desafio do dia" do 7a0);
-  ranking de corridas (exigiria backend, então só com motivo real).
+  e status na batalha; ranking de corridas (exigiria backend, então só com motivo real). O desafio
+  do dia saiu desta lista e entrou na Fase 9 (§8.9).
 
 ---
 
@@ -901,10 +1105,13 @@ interface web.
 | Paginação               | Páginas numeradas na URL (§8.1)                             | Decidido                        |
 | Escopo de Pokémon       | 1025 espécies + formas alternativas (regionais, Mega, Gigantamax, outras), cosméticas fora (§5) | Decidido |
 | Gerenciador de pacotes  | Yarn 4 (igual ao polyglot-lab)                              | Recomendado                     |
-| Servidor MCP            | Fase 9, transporte stdio, núcleo compartilhado com o app (§5, §8.7) | Decidido                |
+| Servidor MCP            | Fase 11, transporte stdio, núcleo compartilhado com o app (§5, §8.7) | Decidido                |
 | Modo Ginásio            | Fase 8: draft + batalhas simuladas pelo Ginásio de Pewter (§8.8)   | Proposto                        |
-| Fonte dos stats do jogo | GraphQL `beta.pokeapi.co/graphql/v1beta` (1 requisição, cache 24 h) + snapshot JSON gerado por script como fallback/fixture (§8.8) | Recomendado (testado) |
-| Pool do draft           | Gerações 1 a 4 (458), sem lendários/míticos; configurável em `config/gym.ts` | Decidido               |
+| Fonte dos stats do jogo | GraphQL `graphql.pokeapi.co/v1beta2` (antes `beta.pokeapi.co/graphql/v1beta`, fora do ar desde 11/2026), cache 24 h + snapshots JSON como fallback/fixture (§8.8, §8.9) | Decidido |
+| Pool do draft           | Gerações 1 a 4 (458), sem lendários/míticos; configurável em `config/gym.ts` | Decidido; lendários (26) só por Encontro lendário (Master Ball), §8.9 |
 | Derrota no desafio      | Encerra a corrida (estilo roguelike, como o "7 a 0")                | Decidido                        |
-| Oponentes               | Times aleatórios, sem viés de tipo (inclusive o Brock), mesmo orçamento e regras | Decidido           |
+| Oponentes               | Times aleatórios, sem viés de tipo (inclusive o Brock), mesmo orçamento e regras | Revisado na Fase 9: treinadores estudam o seu time (`scout`) e líderes trazem Pokémon de assinatura (§8.9) |
 | Composição de time      | Sem repetidos e no máximo um Pokémon por família evolutiva (jogador e oponentes) | Decidido           |
+| Equilíbrio do ginásio   | Teto nos dois modos (2.800 / 2.500), contra-escolha do titular (Brock sempre; todos no Difícil), metas testadas com 3 estratégias; `k` disponível mas em 0 (§8.9) | Decidido (Fase 9) |
+| Fim do desafio          | Modal de resultado → histórico; "Novo desafio" sempre passa pela escolha de modo (§8.9) | Decidido (Fase 9) |
+| Sons do ginásio         | Web Audio sintetizado (sem arquivos), melodias originais, desligável (§8.9) | Decidido (Fase 9)     |

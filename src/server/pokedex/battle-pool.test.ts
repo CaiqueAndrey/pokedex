@@ -1,26 +1,28 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  createBattlePoolLoader,
+  createGamePoolLoader,
   fetchBattlePool,
   mapPoolResponse,
   poolMaxSpeciesId,
+  snapshotGamePool,
+  snapshotLegendaries,
   snapshotPool,
 } from "./battle-pool";
 
-const stat = (name: string, base_stat: number) => ({ base_stat, pokemon_v2_stat: { name } });
+const stat = (name: string, base_stat: number) => ({ base_stat, stat: { name } });
 
 const raw = {
   data: {
-    pokemon_v2_pokemonspecies: [
+    pokemonspecies: [
       {
         id: 6,
         name: "charizard",
         evolution_chain_id: 2,
         is_baby: false,
-        pokemon_v2_pokemons: [
+        pokemons: [
           {
             id: 6,
-            pokemon_v2_pokemonstats: [
+            pokemonstats: [
               stat("hp", 78),
               stat("attack", 84),
               stat("defense", 78),
@@ -28,9 +30,9 @@ const raw = {
               stat("special-defense", 85),
               stat("speed", 100),
             ],
-            pokemon_v2_pokemontypes: [
-              { slot: 2, pokemon_v2_type: { name: "flying" } },
-              { slot: 1, pokemon_v2_type: { name: "fire" } },
+            pokemontypes: [
+              { slot: 2, type: { name: "flying" } },
+              { slot: 1, type: { name: "fire" } },
             ],
           },
         ],
@@ -71,19 +73,37 @@ describe("battle pool", () => {
     expect(pool[0]?.name).toBe("charizard");
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(init.method).toBe("POST");
-    expect(JSON.parse(String(init.body)).variables).toEqual({ maxId: 493 });
+    expect(JSON.parse(String(init.body)).variables).toEqual({ maxId: 493, legendary: false });
 
     const bad = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: {} })));
     await expect(fetchBattlePool({ fetch: bad })).rejects.toThrow(/Unexpected GraphQL shape/);
   });
 
-  it("falls back to the snapshot when GraphQL fails, and memoizes", async () => {
+  it("asks for legendaries separately and flags them", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(raw)));
+    const pool = await fetchBattlePool({ fetch: fetchMock, legendary: true });
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body)).variables).toEqual({ maxId: 493, legendary: true });
+    expect(pool[0]?.legendary).toBe(true);
+  });
+
+  it("has a legendary snapshot: generations 1–4, no mythicals", () => {
+    const legendaries = snapshotLegendaries();
+    expect(legendaries).toHaveLength(26);
+    expect(legendaries.every((p) => p.legendary)).toBe(true);
+    const names = legendaries.map((p) => p.name);
+    expect(names).toEqual(expect.arrayContaining(["mewtwo", "lugia", "rayquaza", "giratina"]));
+    expect(names).not.toContain("mew");
+    expect(snapshotPool().some((p) => p.legendary)).toBe(false);
+  });
+
+  it("falls back to the snapshots when GraphQL fails, and memoizes", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const load = vi.fn().mockRejectedValue(new Error("down"));
-    const loader = createBattlePoolLoader(load);
+    const loader = createGamePoolLoader(load);
     const pool = await loader();
     await loader();
-    expect(pool).toEqual(snapshotPool());
+    expect(pool).toEqual(snapshotGamePool());
     expect(load).toHaveBeenCalledTimes(1);
     error.mockRestore();
   });

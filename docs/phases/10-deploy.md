@@ -2,7 +2,7 @@
 
 ## Goal
 
-Put the app online on Vercel with automatic previews per pull request. Done before phase 9 (MCP)
+Put the app online on Vercel with automatic previews per pull request. Done before phase 11 (MCP)
 by choice: the MCP server runs locally over stdio and does not depend on the deploy.
 
 ## What was built

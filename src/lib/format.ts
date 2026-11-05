@@ -75,3 +75,10 @@ export function displayName(pokemon: { speciesName: string; form?: { label: stri
   const base = formatName(pokemon.speciesName);
   return pokemon.form ? `${base} (${pokemon.form.label})` : base;
 }
+
+/** 3725 → "01:02:05" (a countdown). */
+export function formatCountdown(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+}

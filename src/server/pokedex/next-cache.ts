@@ -2,7 +2,7 @@ import "server-only";
 import { CACHE_TTL_SECONDS } from "@/config/pokedex";
 import { MemoryCache } from "../pokeapi/cache";
 import { createPokeApiClient } from "../pokeapi/client";
-import { createBattlePoolLoader } from "./battle-pool";
+import { createGamePoolLoader } from "./battle-pool";
 import { createPokedexService, type PokedexService } from "./service";
 
 /**
@@ -12,7 +12,7 @@ import { createPokedexService, type PokedexService } from "./service";
  */
 const globalForPokedex = globalThis as unknown as {
   __pokedexService?: PokedexService;
-  __battlePool?: ReturnType<typeof createBattlePoolLoader>;
+  __battlePool?: ReturnType<typeof createGamePoolLoader>;
 };
 
 export function getPokedex(): PokedexService {
@@ -25,8 +25,8 @@ export function getPokedex(): PokedexService {
   return globalForPokedex.__pokedexService;
 }
 
-/** Gym draft pool (GraphQL, memoized for a day, snapshot fallback). */
+/** Gym game pool: regular Pokémon plus legendaries (GraphQL, memoized for a day, snapshot fallback). */
 export function getBattlePool() {
-  globalForPokedex.__battlePool ??= createBattlePoolLoader();
+  globalForPokedex.__battlePool ??= createGamePoolLoader();
   return globalForPokedex.__battlePool();
 }

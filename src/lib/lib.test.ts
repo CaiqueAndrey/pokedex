@@ -9,7 +9,14 @@ import {
   parseFilters,
   sortPokemon,
 } from "./filters";
-import { cleanFlavorText, formatName, formatNumber, idFromUrl, romanToNumber } from "./format";
+import {
+  cleanFlavorText,
+  formatCountdown,
+  formatName,
+  formatNumber,
+  idFromUrl,
+  romanToNumber,
+} from "./format";
 import { normalizeText, parseQuery } from "./search";
 import { readStorage, writeStorage } from "./storage";
 import {
@@ -184,5 +191,14 @@ describe("storage", () => {
     stubWindow();
     writeStorage("k", ["pikachu"]);
     expect(readStorage("k", schema, [])).toEqual(["pikachu"]);
+  });
+});
+
+describe("formatCountdown", () => {
+  it("formats seconds as HH:MM:SS", () => {
+    expect(formatCountdown(3725)).toBe("01:02:05");
+    expect(formatCountdown(0)).toBe("00:00:00");
+    expect(formatCountdown(-5)).toBe("00:00:00");
+    expect(formatCountdown(86_399)).toBe("23:59:59");
   });
 });

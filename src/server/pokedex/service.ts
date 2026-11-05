@@ -1,4 +1,5 @@
 import { CACHE_TTL_SECONDS } from "@/config/pokedex";
+import type { GameItem } from "@/types/item";
 import {
   POKEMON_TYPES,
   type EvolutionNode,
@@ -7,8 +8,14 @@ import {
   type TypeRelations,
 } from "@/types/pokemon";
 import { createPokeApiClient, type PokeApiClient } from "../pokeapi/client";
-import { mapEvolutionChain, mapPokemonDetail, mapTypeRelations } from "../pokeapi/mappers";
-import { evolutionChainSchema, pokemonSchema, speciesSchema, typeSchema } from "../pokeapi/schemas";
+import { mapEvolutionChain, mapItem, mapPokemonDetail, mapTypeRelations } from "../pokeapi/mappers";
+import {
+  evolutionChainSchema,
+  itemSchema,
+  pokemonSchema,
+  speciesSchema,
+  typeSchema,
+} from "../pokeapi/schemas";
 import { buildIndex } from "./index";
 import { parseResource } from "./parse";
 
@@ -19,6 +26,8 @@ export interface PokedexService {
   getPokemonDetail(name: string): Promise<PokemonDetail | null>;
   getEvolutionChain(chainId: number): Promise<EvolutionNode | null>;
   getTypeRelations(): Promise<TypeRelations>;
+  /** Items by name (sprite, category); unknown names are skipped. */
+  getItems(names: readonly string[]): Promise<GameItem[]>;
 }
 
 export function createPokedexService(
@@ -90,6 +99,13 @@ export function createPokedexService(
         throw error;
       });
       return relations;
+    },
+
+    async getItems(names) {
+      const responses = await Promise.all(
+        names.map((name) => parseResource(client, `/item/${encodeURIComponent(name)}`, itemSchema)),
+      );
+      return responses.flatMap((response) => (response ? [mapItem(response)] : []));
     },
   };
 }

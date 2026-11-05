@@ -1,7 +1,8 @@
 "use client";
 
 import { FastForward } from "lucide-react";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TypeBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
@@ -9,9 +10,11 @@ import { TYPE_LABELS, messages } from "@/config/messages";
 import { formatName } from "@/lib/format";
 import type { BattleEvent, BattlePokemon, BattleResult, Side } from "@/types/battle";
 import { BATTLE_SPEEDS } from "@/config/gym";
+import { battleEventTune } from "@/lib/sound/tunes";
 import { PokemonImage } from "../pokedex/pokemon-image";
+import { SoundToggle } from "./sound-toggle";
 import { SpeedToggle } from "./speed-toggle";
-import { useBattleSpeed } from "./use-gym";
+import { haptic, sfx, useBattleSpeed } from "./use-gym";
 
 const m = messages.gym;
 
@@ -31,7 +34,7 @@ function replay(
 ): Snapshot {
   const state: Snapshot = {
     active: { player: 0, opponent: 0 },
-    hp: { player: [...result.maxHp.player], opponent: [...result.maxHp.opponent] },
+    hp: { player: [...result.startHp.player], opponent: [...result.startHp.opponent] },
     hits: { player: 0, opponent: 0 },
     log: [],
   };
@@ -46,7 +49,11 @@ function replay(
         ];
       case "attack": {
         const attacker = name(event.side, event.attacker);
-        if (event.struggle) return [m.struggle(attacker)];
+        if (event.struggle) {
+          const lines = [m.struggle(attacker)];
+          if (event.recoil) lines.push(m.recoil(attacker));
+          return lines;
+        }
         const lines = [m.attack(attacker, TYPE_LABELS[event.type])];
         if (event.critical) lines.push(m.critical);
         if (event.effectiveness > 1) lines.push(m.superEffective);
@@ -66,6 +73,9 @@ function replay(
       const target: Side = event.side === "player" ? "opponent" : "player";
       state.hp[target][event.defender] = event.hpLeft;
       state.hits[target]++;
+      if (event.attackerHpLeft !== undefined) {
+        state.hp[event.side][event.attacker] = event.attackerHpLeft;
+      }
     }
     state.log.push(...describe(event));
   }
@@ -170,26 +180,71 @@ export function BattleView({
   team,
   opponent,
   trainer,
+  playerName,
+  heading,
+  trainerImage,
   onDone,
   doneLabel,
+  doneHint,
+  badge = false,
+  children,
 }: {
   result: BattleResult;
   team: BattlePokemon[];
   opponent: BattlePokemon[];
   trainer: string;
+  /** The player's trainer name (or "Você"). */
+  playerName: string;
+  /** Where we are, e.g. "Ginásio de Pewter · Batalha 3 de 5". */
+  heading: string;
+  /** The opponent's artwork for the "VS" intro (leaders and bosses). */
+  trainerImage?: string;
   onDone: () => void;
   doneLabel: string;
+  /** Shown next to the "done" button (e.g. who's next). */
+  doneHint?: string;
+  /** This battle wins the badge: the ending plays the fanfare instead of the victory jingle. */
+  badge?: boolean;
+  /** Replaces the "done" button once the battle ends (the end-of-run dialog); null keeps it. */
+  children?: ReactNode;
 }) {
   const [step, setStep] = useState(0);
+  const [intro, setIntro] = useState(true);
   const { speed } = useBattleSpeed();
   const total = result.events.length;
   const finished = step >= total;
+  const played = useRef(0);
+
+  // The "VS" card first, like a trainer battle in the games; then the events play out.
+  useEffect(() => {
+    if (!intro) return;
+    const timer = setTimeout(() => setIntro(false), speed === "fast" ? 800 : 1600);
+    return () => clearTimeout(timer);
+  }, [intro, speed]);
 
   useEffect(() => {
-    if (finished) return;
+    if (finished || intro) return;
     const timer = setTimeout(() => setStep((s) => s + 1), BATTLE_SPEEDS[speed]);
     return () => clearTimeout(timer);
-  }, [finished, step, speed]);
+  }, [finished, intro, step, speed]);
+
+  // One effect per new event; skipping jumps straight to the ending sound.
+  useEffect(() => {
+    if (step <= played.current) return;
+    const skipped = step - played.current > 1;
+    played.current = step;
+    const event = result.events[step - 1];
+    if (!event) return;
+    if (event.kind === "end") {
+      sfx(event.winner === "player" ? (badge ? "badge" : "battleWon") : "battleLost");
+      return;
+    }
+    if (skipped) return;
+    const tune = battleEventTune(event);
+    if (tune) sfx(tune);
+    if (event.kind === "faint" && event.side === "player") haptic(120);
+    if (event.kind === "attack" && event.critical) haptic([30, 40, 30]);
+  }, [step, result.events, badge]);
 
   const teams = { player: team, opponent };
   const view = replay(result, step, teams, trainer);
@@ -201,7 +256,41 @@ export function BattleView({
 
   return (
     <div className="grid gap-3 sm:gap-4">
+      <div
+        className="border-border bg-surface flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 px-3 py-2"
+        data-testid="battle-header"
+      >
+        <span className="text-muted text-sm">{heading}</span>
+        <span className="font-display text-[0.6rem] leading-relaxed">
+          {playerName} <span className="text-primary-600">×</span> {trainer}
+        </span>
+      </div>
       <div className="from-surface border-border relative grid gap-3 overflow-hidden rounded-3xl border-2 bg-linear-to-b to-green-500/20 p-3 shadow-[4px_4px_0_0_var(--border)]">
+        {intro && (
+          <div
+            className="bg-foreground/90 text-background absolute inset-0 z-20 grid place-items-center p-4 text-center"
+            data-testid="battle-intro"
+            role="status"
+          >
+            <div className="grid justify-items-center gap-3">
+              {trainerImage && (
+                <div className="motion-safe:animate-pop relative h-28 w-24">
+                  <Image src={trainerImage} alt="" fill sizes="96px" className="object-contain" />
+                </div>
+              )}
+              <p className="font-display text-xs leading-relaxed sm:text-sm">
+                {m.vsTitle(trainer)}
+              </p>
+              <p className="font-display flex items-center gap-3 text-[0.65rem]">
+                <span>{playerName}</span>
+                <span className="bg-primary-600 text-on-primary motion-safe:animate-pop rounded-lg px-2 py-1 text-sm">
+                  VS
+                </span>
+                <span>{trainer}</span>
+              </p>
+            </div>
+          </div>
+        )}
         <Fighter
           side="opponent"
           label={trainer}
@@ -212,7 +301,7 @@ export function BattleView({
         />
         <Fighter
           side="player"
-          label={m.you}
+          label={playerName}
           {...fighter("player")}
           hits={view.hits.player}
           team={team}
@@ -233,13 +322,31 @@ export function BattleView({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <SpeedToggle />
+        <div className="flex flex-wrap items-center gap-2">
+          <SpeedToggle />
+          <SoundToggle />
+        </div>
         {finished ? (
-          <Button onClick={onDone} className="animate-pop">
-            {doneLabel}
-          </Button>
+          (children ?? (
+            <div className="flex flex-wrap items-center gap-3">
+              {doneHint && (
+                <p className="font-display text-[0.6rem]" role="status">
+                  {doneHint}
+                </p>
+              )}
+              <Button onClick={onDone} className="animate-pop">
+                {doneLabel}
+              </Button>
+            </div>
+          ))
         ) : (
-          <Button variant="secondary" onClick={() => setStep(total)}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setIntro(false);
+              setStep(total);
+            }}
+          >
             <FastForward aria-hidden className="size-4" />
             {m.skip}
           </Button>
