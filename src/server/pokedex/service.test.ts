@@ -99,3 +99,12 @@ describe("getTypeRelations", () => {
     expect(relations.water.dragon).toBe(0.5);
   });
 });
+
+describe("getItems", () => {
+  it("maps reward items from the PokeAPI and skips unknown names", async () => {
+    const items = await service.getItems(["thunder-stone", "rare-candy", "not-an-item"]);
+    expect(items.map((item) => item.name)).toEqual(["thunder-stone", "rare-candy"]);
+    expect(items[0]).toMatchObject({ category: "evolution" });
+    expect(items[0]?.sprite).toMatch(/sprites\/items\/thunder-stone\.png$/);
+  });
+});

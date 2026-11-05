@@ -8,12 +8,12 @@ import {
   type GymMode,
 } from "@/config/gym";
 import { createFixtureClient } from "@/server/pokeapi/fixtures";
-import { snapshotPool } from "@/server/pokedex/battle-pool";
+import { snapshotLegendaries, snapshotPool } from "@/server/pokedex/battle-pool";
 import { createPokedexService } from "@/server/pokedex/service";
 import type { BattlePokemon } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
 import { bestAttack, levelStats, matchupScore, rollDamage } from "./damage";
-import { draftRound } from "./draft";
+import { draftRound, legendaryRound } from "./draft";
 import { counterPick, generateOpponent, scoutScore } from "./opponents";
 import { hashString, mulberry32, rngFrom, shuffle } from "./rng";
 import {
@@ -479,5 +479,56 @@ describe("gym run", () => {
         if (battle.signature) expect(pool.some((p) => p.name === battle.signature)).toBe(true);
       }
     }
+  });
+});
+
+describe("legendaries", () => {
+  const gamePool = [...pool, ...snapshotLegendaries()];
+
+  it("never come from the die or a trainer's team", () => {
+    for (let seed = 0; seed < 60; seed++) {
+      const round = draftRound(gamePool, [], rngFrom("no-legend", seed), 2800);
+      expect(round.offers.some((p) => p.legendary)).toBe(false);
+      const opponent = generateOpponent(gamePool, 2600, rngFrom("no-legend-opp", seed));
+      expect(opponent.some((p) => p.legendary)).toBe(false);
+    }
+  });
+
+  it("a Master Ball run opens with three legendaries that fit the cap", () => {
+    for (let seed = 0; seed < 30; seed++) {
+      const run = startRun(`legend-${seed}`, "hard", { legendary: true });
+      const round = currentDraft(run, gamePool);
+      expect(round.legendary).toBe(true);
+      expect(round.offers).toHaveLength(3);
+      expect(round.offers.every((p) => p.legendary)).toBe(true);
+      expect(round.blocked).toEqual([]);
+      for (const offer of round.offers) expect(fitsBudget(offer, [], gamePool, 2500)).toBe(true);
+
+      const picked = pickPokemon(run, round.offers[0]?.name ?? "", gamePool);
+      expect(picked.picks).toHaveLength(1);
+      // From the second round on, the die is back and offers no more legendaries.
+      const next = currentDraft(picked, gamePool);
+      expect(next.legendary).toBeUndefined();
+      expect(next.offers.some((p) => p.legendary)).toBe(false);
+    }
+  });
+
+  it("a legendary team still has to fit and plays like any other", () => {
+    let run = startRun("legend-play", "easy", { legendary: true });
+    while (run.phase === "draft") {
+      const round = currentDraft(run, gamePool);
+      const legal = round.offers.filter((o) => !round.blocked.includes(o.name));
+      run = pickPokemon(run, (legal.at(-1) as BattlePokemon).name, gamePool);
+    }
+    const team = run.picks.map((name) => gamePool.find((p) => p.name === name) as BattlePokemon);
+    expect(team.filter((p) => p.legendary)).toHaveLength(1);
+    expect(validateTeam(team)).toEqual([]);
+    expect(teamBst(team)).toBeLessThanOrEqual(2800);
+    run = applyResult(run, battleFor(run, gamePool, relations), gamePool, relations);
+    expect(run.history).toHaveLength(1);
+  });
+
+  it("legendary rounds are empty without legendaries in the pool", () => {
+    expect(legendaryRound(pool, [], rngFrom("x"), 2500).offers).toEqual([]);
   });
 });

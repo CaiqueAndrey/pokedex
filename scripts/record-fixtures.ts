@@ -6,9 +6,11 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { idFromUrl } from "../src/lib/format";
+import { REWARD_ITEM_NAMES } from "../src/config/gym";
 import {
   evolutionChainSchema,
   generationSchema,
+  itemSchema,
   pokemonSchema,
   speciesSchema,
   typeSchema,
@@ -101,6 +103,9 @@ async function main() {
       ...full,
       pokemon_species: full.pokemon_species.filter((s) => speciesNames.has(s.name)),
     };
+  }
+  for (const name of REWARD_ITEM_NAMES) {
+    out[`/item/${name}`] = itemSchema.parse(await get(`/item/${name}`));
   }
   out["/pokemon-species"] = { count: speciesEntries.length, results: speciesEntries };
   out["/pokemon"] = { count: pokemonEntries.length, results: pokemonEntries };

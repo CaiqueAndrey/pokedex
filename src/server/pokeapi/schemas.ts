@@ -92,8 +92,16 @@ const chainLink: z.ZodType<ChainLink> = z.lazy(() =>
 
 export const evolutionChainSchema = z.object({ id: z.number(), chain: chainLink });
 
+export const itemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  category: namedResource,
+  sprites: z.object({ default: z.string().nullable() }),
+});
+
 export type PokemonResponse = z.infer<typeof pokemonSchema>;
 export type SpeciesResponse = z.infer<typeof speciesSchema>;
 export type TypeResponse = z.infer<typeof typeSchema>;
 export type GenerationResponse = z.infer<typeof generationSchema>;
 export type EvolutionChainResponse = z.infer<typeof evolutionChainSchema>;
+export type ItemResponse = z.infer<typeof itemSchema>;

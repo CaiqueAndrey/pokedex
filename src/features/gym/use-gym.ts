@@ -6,11 +6,16 @@ import type { AchievementId, BattleSpeed } from "@/config/gym";
 import {
   EMPTY_STATS,
   achievementsFor,
+  addDailyItem,
+  bagSchema,
+  catchLegendary,
   dailyKey,
   dailyResultsSchema,
   gymStatsSchema,
   recordDaily,
   recordRun,
+  spendMasterBall,
+  type Bag,
   type DailyResult,
   type GymStats,
 } from "@/lib/battle/progress";
@@ -23,6 +28,7 @@ import { createValueStore } from "@/lib/value-store";
 import { playTune, vibrate } from "./sound";
 
 const NO_DAILY: DailyResult[] = [];
+const EMPTY_BAG: Bag = {};
 
 const runStore = createValueStore<GymRun | null>(
   STORAGE_KEYS.gymRun,
@@ -93,6 +99,7 @@ const dailyStore = createValueStore<DailyResult[]>(
   dailyResultsSchema,
   NO_DAILY,
 );
+const bagStore = createValueStore<Bag>(STORAGE_KEYS.gymBag, bagSchema, EMPTY_BAG);
 
 export function useGymProgress() {
   const stats = useSyncExternalStore(
@@ -110,18 +117,38 @@ export function useGymProgress() {
     dailyStore.getSnapshot,
     dailyStore.getServerSnapshot,
   );
-  return { stats, achievements, daily };
+  const bag = useSyncExternalStore(
+    bagStore.subscribe,
+    bagStore.getSnapshot,
+    bagStore.getServerSnapshot,
+  );
+  return { stats, achievements, daily, bag };
+}
+
+/** Uses a Master Ball for a legendary encounter. Returns false when there is none. */
+export function takeMasterBall(): boolean {
+  const stats = statsStore.getSnapshot();
+  if (stats.balls.master <= 0) return false;
+  statsStore.set(spendMasterBall(stats));
+  return true;
+}
+
+/** Records the legendary picked in an encounter (the Master Ball always catches). */
+export function recordCatch(name: string) {
+  statsStore.set(catchLegendary(statsStore.getSnapshot(), name));
 }
 
 /**
- * Folds a finished run into stats, achievements and the daily results. Called once, from the
- * event handler that produces the final outcome, so reloads never count a run twice.
- * Returns the achievements unlocked for the first time.
+ * Folds a finished run into stats, achievements, the daily results and the bag. Called once, from
+ * the event handler that produces the final outcome, so reloads never count a run twice. Practice
+ * runs change nothing. Returns the achievements unlocked for the first time.
  */
 export function recordFinishedRun(run: GymRun, pool: readonly BattlePokemon[]): AchievementId[] {
+  if (run.practice) return [];
   const stats = recordRun(statsStore.getSnapshot(), run);
   statsStore.set(stats);
   dailyStore.set(recordDaily(dailyStore.getSnapshot(), run));
+  bagStore.set(addDailyItem(bagStore.getSnapshot(), run));
   const before = new Set(achievementStore.getSnapshot());
   return achievementsFor(run, pool, stats).filter((id) => {
     if (before.has(id)) return false;
@@ -130,18 +157,30 @@ export function recordFinishedRun(run: GymRun, pool: readonly BattlePokemon[]): 
   });
 }
 
-const subscribeNever = () => () => {};
+/** A clock that ticks once per second (only while something is subscribed). */
+function subscribeClock(listener: () => void) {
+  const timer = window.setInterval(listener, 1000);
+  return () => window.clearInterval(timer);
+}
+const nowInSeconds = () => Math.floor(Date.now() / 1000);
 
-/** Today's local date key, or "" during SSR (the server doesn't know the player's timezone). */
+/**
+ * Today's local date key and the seconds until the next daily challenge (local midnight). Both are
+ * empty during SSR: the server doesn't know the player's timezone.
+ */
 export function useToday() {
-  return useSyncExternalStore(
-    subscribeNever,
-    () => dailyKey(new Date()),
-    () => "",
-  );
+  const now = useSyncExternalStore(subscribeClock, nowInSeconds, () => 0);
+  if (now === 0) return { today: "", secondsLeft: 0 };
+  const date = new Date(now * 1000);
+  const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+  return {
+    today: dailyKey(date),
+    secondsLeft: Math.max(0, Math.round((midnight.getTime() - date.getTime()) / 1000)),
+  };
 }
 
 /** Abandoning the daily challenge still uses up the day's attempt (no free retries). */
 export function recordAbandonedDaily(run: GymRun) {
+  if (run.practice) return;
   dailyStore.set(recordDaily(dailyStore.getSnapshot(), { ...run, phase: "lost" }));
 }

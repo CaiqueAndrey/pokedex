@@ -33,6 +33,7 @@ export const STORAGE_KEYS = {
   gymStats: "pokedex:gym-stats:v1",
   achievements: "pokedex:achievements:v1",
   gymDaily: "pokedex:gym-daily:v1",
+  gymBag: "pokedex:gym-bag:v1",
 } as const;
 
 export const nameListSchema = z.array(z.string().min(1).max(80)).max(2000);

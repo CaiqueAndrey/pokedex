@@ -42,7 +42,11 @@ export function generateOpponent(
 ): BattlePokemon[] {
   const team: BattlePokemon[] = [];
   for (const ace of signature) if (fitsBudget(ace, team, pool, budget, size)) team.push(ace);
-  const shuffled = shuffle(rng, pool);
+  // Trainers never field legendaries: those only join the player's team (Master Ball).
+  const shuffled = shuffle(
+    rng,
+    pool.filter((p) => !p.legendary),
+  );
   const scores = new Map<string, number>();
   const score = (p: BattlePokemon) => {
     if (!scouting) return 0;

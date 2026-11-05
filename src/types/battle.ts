@@ -11,6 +11,8 @@ export interface BattlePokemon {
   stats: Record<StatName, number>;
   /** Base stat total. */
   bst: number;
+  /** Legendary: only joins a team through a Master Ball encounter. */
+  legendary?: true;
 }
 
 export type Side = "player" | "opponent";

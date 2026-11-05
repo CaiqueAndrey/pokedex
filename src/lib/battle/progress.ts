@@ -7,12 +7,15 @@ import {
   BUDGET_CHAMPION_BST,
   DAILY_HISTORY,
   GYMS,
+  REWARD_ITEM_NAMES,
   VARIETY_CHAMPION_TYPES,
   type AchievementId,
   type Ball,
+  type RewardItemName,
 } from "@/config/gym";
 import { messages } from "@/config/messages";
 import type { BattlePokemon } from "@/types/battle";
+import { hashString } from "./rng";
 import { byName, type GymMode, type GymRun } from "./run";
 import { teamBst } from "./team";
 
@@ -36,6 +39,8 @@ export const gymStatsSchema = z.object({
   bestStreak: count,
   /** How often each Pokémon was drafted (name → runs). */
   used: z.record(z.string(), count),
+  /** Legendaries caught with a Master Ball (names, first catch first). */
+  caught: z.array(z.string()),
   /** Last mode chosen on the start screen (the daily challenge doesn't change it). */
   lastMode: z.enum(["easy", "hard"]).optional(),
 });
@@ -51,7 +56,35 @@ export const EMPTY_STATS: GymStats = {
   streak: 0,
   bestStreak: 0,
   used: {},
+  caught: [],
 };
+
+/** Spends a Master Ball (for a legendary encounter); a no-op without one. */
+export function spendMasterBall(stats: GymStats): GymStats {
+  if (stats.balls.master <= 0) return stats;
+  return { ...stats, balls: { ...stats.balls, master: stats.balls.master - 1 } };
+}
+
+/** Records a legendary caught in an encounter (each one counted once). */
+export function catchLegendary(stats: GymStats, name: string): GymStats {
+  return stats.caught.includes(name) ? stats : { ...stats, caught: [...stats.caught, name] };
+}
+
+/** The bag: reward items won (name → count). */
+export const bagSchema = z.record(z.string(), count);
+export type Bag = z.infer<typeof bagSchema>;
+
+/** Today's item: the daily challenge's prize, the same for everyone on the same day. */
+export function dailyItem(key: string): RewardItemName {
+  return REWARD_ITEM_NAMES[hashString(`item|${key}`) % REWARD_ITEM_NAMES.length] ?? "rare-candy";
+}
+
+/** Adds the day's item to the bag when a (non-practice) daily challenge is cleared. */
+export function addDailyItem(bag: Bag, run: GymRun): Bag {
+  if (run.mode !== "daily" || run.phase !== "won" || run.practice || !run.daily) return bag;
+  const item = dailyItem(run.daily);
+  return { ...bag, [item]: (bag[item] ?? 0) + 1 };
+}
 
 export const battlesWon = (run: GymRun) => run.history.filter((r) => r.won).length;
 
@@ -66,8 +99,9 @@ export function rewardFor(run: GymRun): Ball | undefined {
   return run.phase === "won" ? BALL_FOR_CLEAR[run.mode] : BALL_FOR_WINS[battlesWon(run)];
 }
 
-/** Folds a finished (won or lost) run into the lifetime stats. */
+/** Folds a finished (won or lost) run into the lifetime stats. Practice runs don't count. */
 export function recordRun(stats: GymStats, run: GymRun): GymStats {
+  if (run.practice) return stats;
   const won = run.phase === "won";
   const streak = won ? stats.streak + 1 : 0;
   const used = { ...stats.used };
@@ -75,6 +109,7 @@ export function recordRun(stats: GymStats, run: GymRun): GymStats {
   const reward = rewardFor(run);
   const lastMode = run.mode === "daily" ? stats.lastMode : run.mode;
   return {
+    ...stats,
     runs: stats.runs + 1,
     cleared: { ...stats.cleared, [run.mode]: stats.cleared[run.mode] + (won ? 1 : 0) },
     balls: reward ? { ...stats.balls, [reward]: stats.balls[reward] + 1 } : stats.balls,
@@ -100,6 +135,7 @@ export function achievementsFor(
   pool: readonly BattlePokemon[],
   stats: GymStats,
 ): AchievementId[] {
+  if (run.practice) return [];
   const map = byName(pool);
   const team = run.picks.flatMap((name) => map.get(name) ?? []);
   const won = run.phase === "won";
@@ -116,6 +152,7 @@ export function achievementsFor(
     "variety-champion": won && new Set(team.flatMap((p) => p.types)).size >= VARIETY_CHAMPION_TYPES,
     "streak-3": stats.streak >= 3,
     "master-ball": rewardFor(run) === "master",
+    "legend-champion": won && team.some((p) => p.legendary),
   };
   return ACHIEVEMENTS.filter((id) => unlocked[id]);
 }
@@ -141,7 +178,7 @@ export const dailyResultsSchema = z.array(dailyResultSchema).max(DAILY_HISTORY);
 
 /** Records the day's attempt (only the first one counts) and keeps the most recent days. */
 export function recordDaily(results: readonly DailyResult[], run: GymRun): DailyResult[] {
-  if (!run.daily || results.some((r) => r.date === run.daily)) return [...results];
+  if (!run.daily || run.practice || results.some((r) => r.date === run.daily)) return [...results];
   const entry: DailyResult = {
     date: run.daily,
     won: run.phase === "won",
@@ -185,4 +222,10 @@ export function shareText(result: ShareResult, origin: string): string {
     result.won ? `${score} 🏅` : score,
     url,
   ].join("\n");
+}
+
+/** The `count` days before `key` (YYYY-MM-DD), most recent first: the daily archive. */
+export function pastDays(key: string, count: number): string[] {
+  const [year = 0, month = 1, day = 1] = key.split("-").map(Number);
+  return Array.from({ length: count }, (_, i) => dailyKey(new Date(year, month - 1, day - i - 1)));
 }

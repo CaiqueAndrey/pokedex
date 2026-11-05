@@ -12,6 +12,7 @@ import { formatName } from "@/lib/format";
 import { sharedWeaknesses, teamCoverage } from "@/lib/type-effectiveness";
 import type { BattlePokemon } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
+import { BallIcon } from "./ball-icon";
 import { GymPokemon } from "./gym-pokemon";
 
 const m = messages.gym;
@@ -62,19 +63,33 @@ export function DraftBoard({
           </Button>
         </div>
 
-        <div className="flex items-center gap-4" aria-live="polite">
+        {round.legendary ? (
           <div
-            key={`${run.picks.length}-${run.rerollsUsed}`}
-            className="animate-pop font-display flex size-16 shrink-0 items-center justify-center rounded-xl border-4 border-black/20 text-[0.55rem] shadow-[4px_4px_0_0_var(--border)] motion-safe:animate-[spin_0.6s_ease-out]"
-            style={{ backgroundColor: die.color, color: die.textColor }}
-            aria-hidden
+            className="flex items-center gap-4 rounded-2xl border-2 border-amber-500 bg-amber-500/10 p-3"
+            aria-live="polite"
+            data-testid="legendary-round"
           >
-            {die.label}
+            <BallIcon ball="master" className="motion-safe:animate-pop size-14" />
+            <div className="grid gap-1">
+              <p className="font-display text-[0.65rem]">{m.legendaryRound}</p>
+              <p className="text-sm">{m.legendaryRoundHint}</p>
+            </div>
           </div>
-          <p className="text-base" data-testid="die-result">
-            {m.rolledType(TYPE_LABELS[round.type])}
-          </p>
-        </div>
+        ) : (
+          <div className="flex items-center gap-4" aria-live="polite">
+            <div
+              key={`${run.picks.length}-${run.rerollsUsed}`}
+              className="animate-pop font-display flex size-16 shrink-0 items-center justify-center rounded-xl border-4 border-black/20 text-[0.55rem] shadow-[4px_4px_0_0_var(--border)] motion-safe:animate-[spin_0.6s_ease-out]"
+              style={{ backgroundColor: die.color, color: die.textColor }}
+              aria-hidden
+            >
+              {die.label}
+            </div>
+            <p className="text-base" data-testid="die-result">
+              {m.rolledType(TYPE_LABELS[round.type])}
+            </p>
+          </div>
+        )}
 
         {plan && budget !== null ? (
           <div

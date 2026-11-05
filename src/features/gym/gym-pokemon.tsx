@@ -42,6 +42,7 @@ export function GymPokemon({
     <div
       className={cn(
         "border-border relative flex flex-col items-center rounded-2xl border-2 p-2 text-center",
+        pokemon.legendary && "border-amber-500",
         className,
       )}
       style={{
@@ -56,6 +57,11 @@ export function GymPokemon({
         <span className="text-muted font-display text-[0.55rem]">{formatNumber(pokemon.id)}</span>
       )}
       <span className="font-display text-[0.6rem] leading-relaxed">{formatName(pokemon.name)}</span>
+      {pokemon.legendary && (
+        <span className="rounded-md bg-amber-500 px-1.5 text-[0.65rem] font-bold text-black">
+          ✦ {messages.gym.legendaryTag}
+        </span>
+      )}
       {showTypes && (
         <div className="mt-1 flex flex-wrap justify-center gap-1">
           {pokemon.types.map((type) => (

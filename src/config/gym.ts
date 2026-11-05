@@ -209,6 +209,30 @@ export const BALL_FOR_CLEAR: Record<GymMode, Ball> = {
 };
 
 /**
+ * Items the daily challenge can award, one per day (drawn from the date). Data (sprite, price)
+ * comes from the PokeAPI `/item/{name}`; the API has no pt-BR names, so they are curated here.
+ */
+export const REWARD_ITEMS = {
+  "fire-stone": "Pedra do Fogo",
+  "water-stone": "Pedra da Água",
+  "thunder-stone": "Pedra do Trovão",
+  "leaf-stone": "Pedra da Folha",
+  "moon-stone": "Pedra da Lua",
+  "sun-stone": "Pedra do Sol",
+  "ice-stone": "Pedra do Gelo",
+  "shiny-stone": "Pedra Brilhante",
+  "dusk-stone": "Pedra do Anoitecer",
+  "dawn-stone": "Pedra da Alvorada",
+  "rare-candy": "Doce Raro",
+  nugget: "Pepita",
+  "star-piece": "Pedaço de Estrela",
+} as const;
+export type RewardItemName = keyof typeof REWARD_ITEMS;
+export const REWARD_ITEM_NAMES = Object.keys(REWARD_ITEMS) as RewardItemName[];
+/** Past daily challenges that can be replayed as practice. */
+export const DAILY_ARCHIVE_DAYS = 7;
+
+/**
  * Bumped whenever a rule change would alter the opponents or battles derived from a saved seed:
  * runs saved under other rules are discarded instead of changing mid-run.
  */
@@ -242,6 +266,7 @@ export const ACHIEVEMENTS = [
   "variety-champion",
   "streak-3",
   "master-ball",
+  "legend-champion",
 ] as const;
 export type AchievementId = (typeof ACHIEVEMENTS)[number];
 

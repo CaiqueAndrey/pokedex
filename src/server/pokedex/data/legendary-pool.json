@@ -1,0 +1,444 @@
+[
+  {
+    "id": 144,
+    "name": "articuno",
+    "family": 73,
+    "baby": false,
+    "types": ["ice", "flying"],
+    "stats": {
+      "hp": 90,
+      "attack": 85,
+      "defense": 100,
+      "special-attack": 95,
+      "special-defense": 125,
+      "speed": 85
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 145,
+    "name": "zapdos",
+    "family": 74,
+    "baby": false,
+    "types": ["electric", "flying"],
+    "stats": {
+      "hp": 90,
+      "attack": 90,
+      "defense": 85,
+      "special-attack": 125,
+      "special-defense": 90,
+      "speed": 100
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 146,
+    "name": "moltres",
+    "family": 75,
+    "baby": false,
+    "types": ["fire", "flying"],
+    "stats": {
+      "hp": 90,
+      "attack": 100,
+      "defense": 90,
+      "special-attack": 125,
+      "special-defense": 85,
+      "speed": 90
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 150,
+    "name": "mewtwo",
+    "family": 77,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 106,
+      "attack": 110,
+      "defense": 90,
+      "special-attack": 154,
+      "special-defense": 90,
+      "speed": 130
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 243,
+    "name": "raikou",
+    "family": 123,
+    "baby": false,
+    "types": ["electric"],
+    "stats": {
+      "hp": 90,
+      "attack": 85,
+      "defense": 75,
+      "special-attack": 115,
+      "special-defense": 100,
+      "speed": 115
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 244,
+    "name": "entei",
+    "family": 124,
+    "baby": false,
+    "types": ["fire"],
+    "stats": {
+      "hp": 115,
+      "attack": 115,
+      "defense": 85,
+      "special-attack": 90,
+      "special-defense": 75,
+      "speed": 100
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 245,
+    "name": "suicune",
+    "family": 125,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 100,
+      "attack": 75,
+      "defense": 115,
+      "special-attack": 90,
+      "special-defense": 115,
+      "speed": 85
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 249,
+    "name": "lugia",
+    "family": 127,
+    "baby": false,
+    "types": ["psychic", "flying"],
+    "stats": {
+      "hp": 106,
+      "attack": 90,
+      "defense": 130,
+      "special-attack": 90,
+      "special-defense": 154,
+      "speed": 110
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 250,
+    "name": "ho-oh",
+    "family": 128,
+    "baby": false,
+    "types": ["fire", "flying"],
+    "stats": {
+      "hp": 106,
+      "attack": 130,
+      "defense": 90,
+      "special-attack": 110,
+      "special-defense": 154,
+      "speed": 90
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 377,
+    "name": "regirock",
+    "family": 193,
+    "baby": false,
+    "types": ["rock"],
+    "stats": {
+      "hp": 80,
+      "attack": 100,
+      "defense": 200,
+      "special-attack": 50,
+      "special-defense": 100,
+      "speed": 50
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 378,
+    "name": "regice",
+    "family": 194,
+    "baby": false,
+    "types": ["ice"],
+    "stats": {
+      "hp": 80,
+      "attack": 50,
+      "defense": 100,
+      "special-attack": 100,
+      "special-defense": 200,
+      "speed": 50
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 379,
+    "name": "registeel",
+    "family": 195,
+    "baby": false,
+    "types": ["steel"],
+    "stats": {
+      "hp": 80,
+      "attack": 75,
+      "defense": 150,
+      "special-attack": 75,
+      "special-defense": 150,
+      "speed": 50
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 380,
+    "name": "latias",
+    "family": 196,
+    "baby": false,
+    "types": ["dragon", "psychic"],
+    "stats": {
+      "hp": 80,
+      "attack": 80,
+      "defense": 90,
+      "special-attack": 110,
+      "special-defense": 130,
+      "speed": 110
+    },
+    "bst": 600,
+    "legendary": true
+  },
+  {
+    "id": 381,
+    "name": "latios",
+    "family": 197,
+    "baby": false,
+    "types": ["dragon", "psychic"],
+    "stats": {
+      "hp": 80,
+      "attack": 90,
+      "defense": 80,
+      "special-attack": 130,
+      "special-defense": 110,
+      "speed": 110
+    },
+    "bst": 600,
+    "legendary": true
+  },
+  {
+    "id": 382,
+    "name": "kyogre",
+    "family": 198,
+    "baby": false,
+    "types": ["water"],
+    "stats": {
+      "hp": 100,
+      "attack": 100,
+      "defense": 90,
+      "special-attack": 150,
+      "special-defense": 140,
+      "speed": 90
+    },
+    "bst": 670,
+    "legendary": true
+  },
+  {
+    "id": 383,
+    "name": "groudon",
+    "family": 199,
+    "baby": false,
+    "types": ["ground"],
+    "stats": {
+      "hp": 100,
+      "attack": 150,
+      "defense": 140,
+      "special-attack": 100,
+      "special-defense": 90,
+      "speed": 90
+    },
+    "bst": 670,
+    "legendary": true
+  },
+  {
+    "id": 384,
+    "name": "rayquaza",
+    "family": 200,
+    "baby": false,
+    "types": ["dragon", "flying"],
+    "stats": {
+      "hp": 105,
+      "attack": 150,
+      "defense": 90,
+      "special-attack": 150,
+      "special-defense": 90,
+      "speed": 95
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 480,
+    "name": "uxie",
+    "family": 241,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 75,
+      "attack": 75,
+      "defense": 130,
+      "special-attack": 75,
+      "special-defense": 130,
+      "speed": 95
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 481,
+    "name": "mesprit",
+    "family": 242,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 80,
+      "attack": 105,
+      "defense": 105,
+      "special-attack": 105,
+      "special-defense": 105,
+      "speed": 80
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 482,
+    "name": "azelf",
+    "family": 243,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 75,
+      "attack": 125,
+      "defense": 70,
+      "special-attack": 125,
+      "special-defense": 70,
+      "speed": 115
+    },
+    "bst": 580,
+    "legendary": true
+  },
+  {
+    "id": 483,
+    "name": "dialga",
+    "family": 244,
+    "baby": false,
+    "types": ["steel", "dragon"],
+    "stats": {
+      "hp": 100,
+      "attack": 120,
+      "defense": 120,
+      "special-attack": 150,
+      "special-defense": 100,
+      "speed": 90
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 484,
+    "name": "palkia",
+    "family": 245,
+    "baby": false,
+    "types": ["water", "dragon"],
+    "stats": {
+      "hp": 90,
+      "attack": 120,
+      "defense": 100,
+      "special-attack": 150,
+      "special-defense": 120,
+      "speed": 100
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 485,
+    "name": "heatran",
+    "family": 246,
+    "baby": false,
+    "types": ["fire", "steel"],
+    "stats": {
+      "hp": 91,
+      "attack": 90,
+      "defense": 106,
+      "special-attack": 130,
+      "special-defense": 106,
+      "speed": 77
+    },
+    "bst": 600,
+    "legendary": true
+  },
+  {
+    "id": 486,
+    "name": "regigigas",
+    "family": 247,
+    "baby": false,
+    "types": ["normal"],
+    "stats": {
+      "hp": 110,
+      "attack": 160,
+      "defense": 110,
+      "special-attack": 80,
+      "special-defense": 110,
+      "speed": 100
+    },
+    "bst": 670,
+    "legendary": true
+  },
+  {
+    "id": 487,
+    "name": "giratina",
+    "family": 248,
+    "baby": false,
+    "types": ["ghost", "dragon"],
+    "stats": {
+      "hp": 150,
+      "attack": 100,
+      "defense": 120,
+      "special-attack": 100,
+      "special-defense": 120,
+      "speed": 90
+    },
+    "bst": 680,
+    "legendary": true
+  },
+  {
+    "id": 488,
+    "name": "cresselia",
+    "family": 249,
+    "baby": false,
+    "types": ["psychic"],
+    "stats": {
+      "hp": 120,
+      "attack": 70,
+      "defense": 110,
+      "special-attack": 75,
+      "special-defense": 120,
+      "speed": 85
+    },
+    "bst": 580,
+    "legendary": true
+  }
+]

@@ -12,9 +12,11 @@ async function hydrated(page: Page) {
 
 async function begin(page: Page, mode: "Fácil" | "Difícil" = "Fácil") {
   await hydrated(page);
-  await page.getByRole("radio", { name: new RegExp(`^${mode}`) }).click();
-  await page.getByRole("button", { name: `Começar desafio: ${mode}` }).click();
+  await page.getByRole("button", { name: `Jogar no ${mode}` }).click();
 }
+
+/** The start screen: the hub with the challenges. */
+const hub = (page: Page) => page.getByRole("heading", { name: "Escolha seu desafio" });
 
 async function draftStrongest(page: Page, pick: "first" | "last" = "last") {
   for (let round = 1; round <= 6; round++) {
@@ -90,7 +92,7 @@ test("a defeat opens the result dialog, then the history, then the mode choice",
 
   // A new challenge always goes back to choosing the mode.
   await page.getByRole("button", { name: "Novo desafio" }).first().click();
-  await expect(page.getByRole("radiogroup", { name: "Escolha o modo" })).toBeVisible();
+  await expect(hub(page)).toBeVisible();
 });
 
 test("Esc closes the result dialog into the history", async ({ page }) => {
@@ -103,9 +105,9 @@ test("Esc closes the result dialog into the history", async ({ page }) => {
 test("'Novo desafio' in the result dialog goes to the mode choice", async ({ page }) => {
   const dialog = await loseFirstBattle(page);
   await dialog.getByRole("button", { name: "Novo desafio" }).click();
-  await expect(page.getByRole("radiogroup", { name: "Escolha o modo" })).toBeVisible();
-  // The last mode used comes preselected.
-  await expect(page.getByRole("radio", { name: /^Fácil/ })).toHaveAttribute("aria-checked", "true");
+  await expect(hub(page)).toBeVisible();
+  // The last mode played is highlighted.
+  await expect(page.getByTestId("mode-card-easy")).toContainText("Último jogado");
 });
 
 test("abandoning asks for confirmation", async ({ page }) => {
@@ -118,7 +120,7 @@ test("abandoning asks for confirmation", async ({ page }) => {
 
   await page.getByRole("button", { name: "Abandonar desafio" }).click();
   await dialog.getByRole("button", { name: "Abandonar", exact: true }).click();
-  await expect(page.getByRole("radiogroup", { name: "Escolha o modo" })).toBeVisible();
+  await expect(hub(page)).toBeVisible();
 });
 
 test("the draft survives a reload and the reroll can be used once", async ({ page }) => {
@@ -153,7 +155,7 @@ test("the team order can be changed before a battle", async ({ page }) => {
 test("the daily challenge counts once a day", async ({ page }) => {
   await page.goto("/gym");
   await hydrated(page);
-  await page.getByRole("button", { name: /^Desafio do dia .*: Equipe Rocket$/ }).click();
+  await page.getByRole("button", { name: "Jogar o desafio de hoje" }).click();
   await expect(page.getByRole("heading", { name: "Equipe Rocket", level: 1 })).toBeVisible();
   await expect(page.getByText(/^Desafio do dia \d\d\/\d\d$/)).toBeVisible();
   await page.getByRole("button", { name: "Abandonar desafio" }).click();
@@ -161,9 +163,12 @@ test("the daily challenge counts once a day", async ({ page }) => {
   await expect(dialog).toContainText("desafio do dia");
   await dialog.getByRole("button", { name: "Abandonar", exact: true }).click();
 
-  await expect(page.getByTestId("daily")).toContainText("concluído: 0 de 5");
-  await expect(page.getByRole("button", { name: /^Desafio do dia/ })).toHaveCount(0);
-  await expect(page.getByTestId("daily").getByTestId("share")).toBeVisible();
+  // Already played today: the result, the countdown and a practice run instead of a new attempt.
+  await expect(page.getByTestId("daily-played")).toContainText("0 de 5");
+  await expect(page.getByTestId("daily-countdown")).toContainText(/Novo desafio em \d\d:\d\d:\d\d/);
+  await expect(page.getByRole("button", { name: "Jogar o desafio de hoje" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Treinar (não vale)" }).click();
+  await expect(page.getByText(/^Treino · Desafio do dia/)).toBeVisible();
 });
 
 test.describe("modes, history and controls", () => {
@@ -313,5 +318,72 @@ test.describe("focus layout and battle details", () => {
     await page.getByRole("button", { name: "Batalhar!" }).click();
     await expect(page.getByTestId("fighter-types-player")).not.toBeEmpty();
     await expect(page.getByTestId("fighter-types-opponent")).not.toBeEmpty();
+  });
+});
+
+test.describe("hub, rewards and legendaries", () => {
+  test("the hub explains each challenge and what it gives", async ({ page }) => {
+    await page.goto("/gym");
+    await hydrated(page);
+    await expect(page.getByText("Role o dado. Monte seu time. Vença o ginásio.")).toBeVisible();
+    await expect(page.getByTestId("prize-easy")).toContainText("Insígnia da Rocha");
+    await expect(page.getByTestId("prize-easy")).toContainText("Ultra Bola");
+    await expect(page.getByTestId("prize-hard")).toContainText("Master Ball");
+    await expect(page.getByTestId("prize-daily")).toContainText("Master Ball");
+    await expect(page.getByRole("heading", { name: "Recompensas" })).toBeVisible();
+    await expect(page.getByTestId("bag")).toContainText("Pedra do Trovão");
+    await expect(page.getByTestId("legends")).toContainText("0 de 26");
+    // Without a Master Ball the legendary encounter only explains how to get one.
+    await expect(page.getByTestId("legendary-option")).toContainText("Ganhe uma Master Ball");
+  });
+
+  test("past daily challenges can be replayed as practice", async ({ page }) => {
+    await page.goto("/gym");
+    await hydrated(page);
+    await page.getByText("Desafios anteriores").click();
+    await page
+      .getByRole("button", { name: /^Treinar \d\d\/\d\d$/ })
+      .first()
+      .click();
+    await expect(page.getByText(/^Treino · Desafio do dia/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Draft · rodada 1 de 6" })).toBeVisible();
+  });
+
+  test("a Master Ball opens a legendary encounter and catches the pick", async ({ page }) => {
+    await page.addInitScript(() => {
+      const key = "pokedex:gym-stats:v1";
+      if (localStorage.getItem(key)) return;
+      const stats = {
+        runs: 1,
+        cleared: { easy: 0, hard: 1, daily: 0 },
+        balls: { poke: 0, great: 0, ultra: 0, master: 1 },
+        battlesWon: 5,
+        best: 5,
+        streak: 1,
+        bestStreak: 1,
+        used: {},
+        caught: [],
+      };
+      localStorage.setItem(key, JSON.stringify(stats));
+    });
+    await page.goto("/gym?seed=e2e4");
+    await hydrated(page);
+    await page.getByLabel("Usar uma Master Ball (você tem 1)").check();
+    await page.getByRole("button", { name: "Jogar no Fácil" }).click();
+    await expect(page.getByTestId("legendary-round")).toBeVisible();
+    await expect(page.getByText("✦ Lendário")).toHaveCount(3);
+    await page
+      .getByRole("button", { name: /^Escolher / })
+      .first()
+      .click();
+    await expect(page.getByRole("heading", { name: "Draft · rodada 2 de 6" })).toBeVisible();
+    await expect(page.getByTestId("legendary-round")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Abandonar desafio" }).click();
+    const dialog = page.getByRole("dialog", { name: "Abandonar o desafio?" });
+    await expect(dialog).toContainText("A Master Ball usada não volta.");
+    await dialog.getByRole("button", { name: "Abandonar", exact: true }).click();
+    await expect(page.getByTestId("legends")).toContainText("1 de 26");
+    await expect(page.getByTestId("legendary-option")).toContainText("Ganhe uma Master Ball");
   });
 });

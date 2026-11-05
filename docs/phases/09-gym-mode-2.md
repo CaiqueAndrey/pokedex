@@ -159,3 +159,56 @@ the margins and saved PNGs. Pixel balls were scaled with nearest-neighbour and r
 - Python heredocs through the shell tool broke on some quote sequences: one-off edit scripts went to
   files instead.
 - `follow` stays at 0 everywhere; with scouting it would double-count the player's strength.
+
+## Third pass: a hub with clear sections, rewards, practice and legendaries
+
+Playing the second pass, the start screen didn't say what the gym mode _is_, what each challenge
+gives, or why the daily challenge couldn't be started (it had already been played that day, by an
+earlier build, and nothing said so). The layout now follows 7a0's structure.
+
+### What changed
+
+- **Hub** (`gym-hub.tsx`): a pitch ("Role o dado. Monte seu time. Vença o ginásio."), three steps
+  (01 Role · 02 Monte · 03 Batalhe) and section links. Then **one card per challenge** (Pewter,
+  Cerulean, Team Rocket) with who you face, **what you win** (badge, ball, the day's item) and your
+  status. Picking a card is choosing the mode: the radio group is gone.
+- **Daily challenge state**: today's result (grid + score), "Novo desafio em HH:MM:SS" (a clock store
+  that ticks once per second, empty on the server) and **Treinar (não vale)**. Practice runs
+  (`run.practice`) replay a seed without stats, rewards, achievements or daily results.
+- **Archive** ("Desafios anteriores", like 7a0's "Volte no tempo"): the last 7 days, each with your
+  result and a practice button.
+- **Rewards section** (`gym-rewards.tsx`): badges, Pokéballs (how each is earned), the **bag**,
+  **legendaries caught**, achievements and stats, each with a line on what it is and how to get it.
+- **Bag (PokeAPI items)**: the daily challenge awards one item per day (`dailyItem`, from the date):
+  evolution stones, Rare Candy, Nugget, Star Piece. Sprites and categories come from
+  `/item/{name}` through the usual path (client → Zod `itemSchema` → `mapItem` → `GameItem`); the
+  API has no pt-BR names, so those are curated in `REWARD_ITEMS`. If the API is down, the page still
+  renders (no sprites).
+- **Legendaries**: the pool query takes `$legendary` and a second snapshot
+  (`data/legendary-pool.json`, 26 legendaries of generations 1–4, mythicals still out) is recorded
+  with the regular one. The game pool is both lists, with `legendary: true` on the second.
+  Legendaries **never** come from the die or a trainer's team. A **Master Ball** finally has a use:
+  checking "Usar uma Master Ball" before a gym run spends it, and the first draft round becomes a
+  **legendary encounter** (three legendaries that fit the cap). The pick is caught (stats) and shown
+  in "Lendários capturados". The daily challenge doesn't allow it (everyone plays the same hand).
+
+### What the PokeAPI does and doesn't have for rewards
+
+| Wanted                      | In the API? | Used                                                   |
+| --------------------------- | ----------- | ------------------------------------------------------ |
+| Items (sprites, categories) | Yes         | The bag (`/item/{name}`)                               |
+| Item prices                 | Mostly no   | `cost` is gone; `prices` is empty for most items       |
+| Localized item names        | No pt-BR    | Curated in `config/gym.ts`                             |
+| Legendary / mythical flags  | Yes         | Legendary pool (GraphQL `is_legendary`, `is_mythical`) |
+| Badges, trainers, rewards   | No          | Curated (unchanged)                                    |
+
+### Gotchas (third pass)
+
+- **The pinned GraphQL endpoint went down** (`beta.pokeapi.co/graphql/v1beta` answers 522), so
+  production was silently on the snapshot. The pool now uses `graphql.pokeapi.co/v1beta2`: same
+  data, without the `pokemon_v2_` prefixes. The snapshot recorded from it is identical.
+- The REST item `cost` field no longer exists (Zod caught it while recording fixtures).
+- Small red text (`text-primary-600`) fails contrast on the light surface; labels use the red as a
+  background with `text-on-primary` instead.
+- A daily result recorded by an earlier build still counts for that day: that is why the Rocket
+  battle couldn't be started on the day it was tested. The hub now says so and offers practice.

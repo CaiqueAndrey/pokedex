@@ -46,7 +46,7 @@ for (const theme of ["light", "dark"] as const) {
     // `e2e4` drafting the weakest offers loses the first battle (see gym.spec.ts).
     await page.goto("/gym?seed=e2e4");
     await expect(page.getByTestId("daily")).toBeVisible();
-    await page.getByRole("button", { name: "Começar desafio: Fácil" }).click();
+    await page.getByRole("button", { name: "Jogar no Fácil" }).click();
     for (let round = 1; round <= 6; round++) {
       await expect(
         page.getByRole("heading", { name: `Draft · rodada ${round} de 6` }),

@@ -5,13 +5,15 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { messages } from "@/config/messages";
-import type { AchievementId } from "@/config/gym";
+import { REWARD_ITEMS, type AchievementId } from "@/config/gym";
 import { battlesWon, rewardFor } from "@/lib/battle/progress";
 import { gymOf, trainerFor, type GymRun } from "@/lib/battle/run";
 import { topDamage } from "@/lib/battle/stats";
 import { formatName } from "@/lib/format";
+import type { GameItem } from "@/types/item";
 import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
+import { ItemIcon } from "./item-icon";
 import { ShareButton } from "./share-button";
 
 const m = messages.gym;
@@ -34,12 +36,15 @@ export function RocketDuo({ className }: { className?: string }) {
  */
 export function RunResultDialog({
   run,
+  item,
   streak,
   unlocked,
   onHistory,
   onNewRun,
 }: {
   run: GymRun;
+  /** The daily item won (cleared daily challenge only). */
+  item?: GameItem;
   streak: number;
   unlocked: AchievementId[];
   onHistory: () => void;
@@ -51,7 +56,7 @@ export function RunResultDialog({
   const last = run.history.at(-1);
   const trainer = last ? trainerFor(run, last.battle) : "";
   const mvp = topDamage(won ? run.history.map((r) => r.damage) : last ? [last.damage] : []);
-  const reward = rewardFor(run);
+  const reward = run.practice ? undefined : rewardFor(run);
 
   return (
     <Dialog
@@ -99,6 +104,11 @@ export function RunResultDialog({
               : m.defeatedByTrainer(trainer)}
           </p>
         )}
+        {run.practice && (
+          <p className="text-muted text-sm" data-testid="practice-note">
+            {m.practiceResult}
+          </p>
+        )}
         {reward && (
           <p
             className="font-display flex items-center gap-2 text-[0.6rem] leading-relaxed"
@@ -106,6 +116,15 @@ export function RunResultDialog({
           >
             <BallIcon ball={reward} className="motion-safe:animate-pop size-10" />
             {m.ballWon(m.balls[reward])}
+          </p>
+        )}
+        {item && (
+          <p
+            className="font-display flex items-center gap-2 text-[0.6rem] leading-relaxed"
+            data-testid="reward-item"
+          >
+            <ItemIcon item={item} className="size-10" />
+            {m.itemWon(REWARD_ITEMS[item.name as keyof typeof REWARD_ITEMS] ?? item.name)}
           </p>
         )}
         {mvp && (

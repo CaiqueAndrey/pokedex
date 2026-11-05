@@ -296,7 +296,6 @@ export const messages = {
     loading: "Preparando o ginásio…",
     startSelected: (mode: string) => `Começar desafio: ${mode}`,
     daily: "Desafio do dia",
-    dailyStart: (date: string) => `Desafio do dia ${date}: Equipe Rocket`,
     dailyHint:
       "A Equipe Rocket está à solta: enfrente recrutas, James e Jessie. Mesma semente para todo mundo hoje; só a primeira tentativa conta.",
     dailyDone: (date: string, won: number) => `Desafio do dia ${date} concluído: ${won} de 5.`,
@@ -379,6 +378,10 @@ export const messages = {
         description: "Vença um desafio com um time de 9 tipos ou mais.",
       },
       "streak-3": { label: "Imparável", description: "Vença 3 desafios seguidos." },
+      "legend-champion": {
+        label: "Lenda viva",
+        description: "Vença um desafio com um Pokémon lendário no time.",
+      },
       "master-ball": {
         label: "A bola definitiva",
         description: "Ganhe uma Master Ball (Difícil ou desafio do dia completo).",
@@ -395,6 +398,80 @@ export const messages = {
       "3 vitórias: Poké Bola · 4: Grande Bola · Fácil completo: Ultra Bola · Difícil ou desafio do dia completo: Master Ball.",
     ballWon: (ball: string) => `Você ganhou uma ${ball}!`,
     ballCount: (ball: string, n: number) => `${ball}: ${n}`,
+    hub: {
+      tagline: "Role o dado. Monte seu time. Vença o ginásio.",
+      intro:
+        "Um jogo dentro da Pokédex: você drafta 6 Pokémon com um dado de tipos e enfrenta 5 batalhas seguidas, simuladas com os atributos reais da PokeAPI. Vencer dá insígnias, Pokébolas, itens e até lendários.",
+      steps: [
+        {
+          title: "Role",
+          text: "O dado sorteia um tipo e oferece 3 Pokémon: fraco, médio e forte.",
+        },
+        {
+          title: "Monte",
+          text: "Escolha 6 sem estourar o limite de força e cubra o máximo de tipos.",
+        },
+        {
+          title: "Batalhe",
+          text: "Defina quem abre e encare 5 batalhas seguidas. Uma derrota encerra o desafio.",
+        },
+      ],
+      nav: { play: "Desafios", rewards: "Recompensas", rules: "Como funciona" },
+      navLabel: "Seções do Modo Ginásio",
+      playTitle: "Escolha seu desafio",
+      playDescription:
+        "Dois ginásios para jogar quando quiser e um desafio por dia, igual para todo mundo.",
+      youFace: "Você enfrenta",
+      youWin: "Você ganha",
+      face: {
+        easy: "4 treinadores do ginásio e o Brock, com o Onix.",
+        hard: "4 treinadores, com o time escondido, e a Misty, com a Starmie.",
+        daily: "3 recrutas, o James (Weezing) e a Jessie (Arbok).",
+      },
+      play: { easy: "Jogar no Fácil", hard: "Jogar no Difícil", daily: "Jogar o desafio de hoje" },
+      practice: "Treinar (não vale)",
+      badgeEarned: "Insígnia conquistada",
+      badgeMissing: "Ainda sem a insígnia",
+      clears: (n: number) => (n === 1 ? "Vencido 1 vez" : `Vencido ${n} vezes`),
+      dailyPlayed: (won: number) => `Você já enfrentou a Equipe Rocket hoje: ${won} de 5.`,
+      dailyOnce:
+        "Só a primeira tentativa do dia vale. Treinos usam a mesma semente, mas não dão recompensas.",
+      nextDaily: (time: string) => `Novo desafio em ${time}`,
+      todayPrize: "Prêmio de hoje",
+      today: (date: string) => `Hoje · ${date}`,
+      bosses: "Chefes: James e Jessie",
+      lastPlayed: "Último jogado",
+      legendaryTitle: "Encontro lendário",
+      legendaryToggle: (n: number) => `Usar uma Master Ball (você tem ${n})`,
+      legendaryHelp:
+        "A primeira rodada do draft oferece 3 lendários. O escolhido entra no time e conta no limite de força. A Master Ball é gasta ao começar. Não vale no desafio do dia.",
+      legendaryLocked:
+        "Ganhe uma Master Ball, vencendo o Difícil ou o desafio do dia, para ter um encontro lendário.",
+      archiveTitle: "Desafios anteriores",
+      archiveHint:
+        "Treine com a semente dos últimos dias. Treinos não valem recompensas nem estatísticas.",
+      archiveNotPlayed: "Não jogado",
+      archivePractice: (date: string) => `Treinar ${date}`,
+      rewardsTitle: "Recompensas",
+      rewardsDescription:
+        "O que você ganha jogando. Tudo fica salvo neste navegador (sem conta, sem servidor).",
+      badgesHint: "Vença as 5 batalhas de um ginásio.",
+      bagTitle: "Mochila",
+      bagHint: "Vença o desafio do dia para levar o item do dia. Sprites e dados da PokeAPI.",
+      bagEmpty: "Mochila vazia.",
+      legendsTitle: "Lendários capturados",
+      legendsHint: (n: number, total: number) =>
+        `${n} de ${total}. Gaste uma Master Ball num encontro lendário para capturar.`,
+      settingsTitle: "Ajustes",
+    },
+    practiceBadge: "Treino",
+    practiceResult: "Foi um treino: sem recompensas, estatísticas ou conquistas.",
+    legendaryRound: "Encontro lendário!",
+    legendaryRoundHint:
+      "Escolha um lendário: ele ocupa uma vaga e conta no limite de força. A Master Ball já foi usada.",
+    legendaryTag: "Lendário",
+    abandonLegendary: "A Master Ball usada não volta.",
+    itemWon: (item: string) => `Item do dia: ${item}`,
     scoutHint: (trainer: string) =>
       `${trainer} estudou o seu time: espere Pokémon com vantagem sobre os seus tipos.`,
     matchupGood: "Vantagem",

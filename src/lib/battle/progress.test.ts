@@ -4,13 +4,18 @@ import type { BattleEvent, BattleResult, Side } from "@/types/battle";
 import {
   EMPTY_STATS,
   achievementsFor,
+  addDailyItem,
   badgeCount,
+  catchLegendary,
+  dailyItem,
   dailyKey,
   dailySeed,
   favoritePick,
   formatDailyDate,
+  pastDays,
   recordDaily,
   recordRun,
+  spendMasterBall,
   resultGrid,
   rewardFor,
   shareText,
@@ -211,5 +216,52 @@ describe("daily challenge", () => {
     ).toBe(
       "Ginásio de Cerulean · Semente abc · Difícil\n🟩🟩🟩🟩🟩 5/5 🏅\nhttps://x.dev/gym?seed=abc",
     );
+  });
+});
+
+describe("Master Ball, legendaries, bag and practice", () => {
+  it("spends Master Balls and records catches once", () => {
+    const stats = { ...EMPTY_STATS, balls: { ...EMPTY_STATS.balls, master: 1 } };
+    const spent = spendMasterBall(stats);
+    expect(spent.balls.master).toBe(0);
+    expect(spendMasterBall(spent)).toBe(spent);
+    const caught = catchLegendary(catchLegendary(spent, "lugia"), "lugia");
+    expect(caught.caught).toEqual(["lugia"]);
+  });
+
+  it("draws the same item for everyone on a day, and adds it for a cleared daily", () => {
+    expect(dailyItem("2026-11-05")).toBe(dailyItem("2026-11-05"));
+    const days = pastDays("2026-11-05", 30).map(dailyItem);
+    expect(new Set(days).size).toBeGreaterThan(5);
+    const run = finished(5, true, { mode: "daily", daily: "2026-11-05" });
+    const item = dailyItem("2026-11-05");
+    expect(addDailyItem({}, run)).toEqual({ [item]: 1 });
+    expect(addDailyItem({ [item]: 1 }, run)).toEqual({ [item]: 2 });
+    expect(addDailyItem({}, finished(4, false, { mode: "daily", daily: "2026-11-05" }))).toEqual(
+      {},
+    );
+    expect(addDailyItem({}, { ...run, practice: true })).toEqual({});
+  });
+
+  it("practice runs change nothing", () => {
+    const practice = finished(5, true, { mode: "daily", daily: "2026-11-05", practice: true });
+    expect(recordRun(EMPTY_STATS, practice)).toBe(EMPTY_STATS);
+    expect(recordDaily([], practice)).toEqual([]);
+    expect(achievementsFor(practice, pool, EMPTY_STATS)).toEqual([]);
+  });
+
+  it("lists the archive days before today, most recent first", () => {
+    expect(pastDays("2026-03-02", 3)).toEqual(["2026-03-01", "2026-02-28", "2026-02-27"]);
+  });
+
+  it("a cleared run with a legendary unlocks 'Lenda viva'", () => {
+    const legendaryPool = [
+      ...pool,
+      { ...pool[0]!, name: "lugia", family: -1, legendary: true as const },
+    ];
+    const run = finished(5, true, {
+      picks: ["lugia", "rattata", "geodude", "squirtle", "pikachu", "oddish"],
+    });
+    expect(achievementsFor(run, legendaryPool, EMPTY_STATS)).toContain("legend-champion");
   });
 });

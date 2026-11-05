@@ -770,6 +770,23 @@ tipos e reordena a cada batalha vence mais que qualquer robô. Com uma 4ª estra
 - **Arte:** as imagens novas tiveram o fundo (branco ou xadrez de "transparência falsa") removido
   por script e foram salvas como PNG transparente.
 
+### Terceira passada (05/11/2026): tela inicial em seções, recompensas, treino e lendários
+
+- **Tela inicial no estilo do 7a0:** chamada, passos "01 Role · 02 Monte · 03 Batalhe", e um
+  cartão por desafio com quem você enfrenta, **o que ganha** e o seu status. Depois, uma seção de
+  **Recompensas** (insígnias, Pokébolas, Mochila, lendários capturados, conquistas e estatísticas)
+  e as regras.
+- **Desafio do dia claro:** resultado de hoje, "Novo desafio em HH:MM:SS", **treino** (não vale) e
+  **desafios anteriores** (últimos 7 dias, só treino).
+- **Mochila com itens da PokeAPI:** o desafio do dia dá o item do dia (pedras de evolução, Doce Raro,
+  Pepita…), com sprite oficial. A API tem itens e sprites, mas não tem nomes em pt-BR (curados) nem
+  preços úteis, e continua sem insígnias e treinadores.
+- **Lendários:** 26 das gerações 1 a 4 (sem míticos), em um pool à parte. Nunca saem do dado nem
+  dos treinadores; entram pelo **Encontro lendário**, que gasta uma Master Ball antes de um ginásio:
+  a primeira rodada oferece 3 lendários que cabem no limite. O capturado fica na coleção. Ideia
+  futura: um modo "Liga Lendária" com chefes lendários.
+- O endpoint GraphQL antigo saiu do ar; o pool passou para `graphql.pokeapi.co/v1beta2`.
+
 ### 5. Mais gamificação (avaliadas e priorizadas)
 
 | Ideia                                   | Valor | Esforço | Decisão         |
@@ -1068,8 +1085,8 @@ interface web.
 | Gerenciador de pacotes  | Yarn 4 (igual ao polyglot-lab)                              | Recomendado                     |
 | Servidor MCP            | Fase 11, transporte stdio, núcleo compartilhado com o app (§5, §8.7) | Decidido                |
 | Modo Ginásio            | Fase 8: draft + batalhas simuladas pelo Ginásio de Pewter (§8.8)   | Proposto                        |
-| Fonte dos stats do jogo | GraphQL `beta.pokeapi.co/graphql/v1beta` (1 requisição, cache 24 h) + snapshot JSON gerado por script como fallback/fixture (§8.8) | Recomendado (testado) |
-| Pool do draft           | Gerações 1 a 4 (458), sem lendários/míticos; configurável em `config/gym.ts` | Decidido               |
+| Fonte dos stats do jogo | GraphQL `graphql.pokeapi.co/v1beta2` (antes `beta.pokeapi.co/graphql/v1beta`, fora do ar desde 11/2026), cache 24 h + snapshots JSON como fallback/fixture (§8.8, §8.9) | Decidido |
+| Pool do draft           | Gerações 1 a 4 (458), sem lendários/míticos; configurável em `config/gym.ts` | Decidido; lendários (26) só por Encontro lendário (Master Ball), §8.9 |
 | Derrota no desafio      | Encerra a corrida (estilo roguelike, como o "7 a 0")                | Decidido                        |
 | Oponentes               | Times aleatórios, sem viés de tipo (inclusive o Brock), mesmo orçamento e regras | Revisado na Fase 9: treinadores estudam o seu time (`scout`) e líderes trazem Pokémon de assinatura (§8.9) |
 | Composição de time      | Sem repetidos e no máximo um Pokémon por família evolutiva (jogador e oponentes) | Decidido           |

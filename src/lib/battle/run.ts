@@ -10,7 +10,7 @@ import {
 } from "@/config/gym";
 import type { BattlePokemon, BattleResult } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
-import { draftRound, type DraftRound } from "./draft";
+import { draftRound, legendaryRound, type DraftRound } from "./draft";
 import { counterPick, generateOpponent } from "./opponents";
 import { pick, rngFrom, shuffle } from "./rng";
 import { simulateBattle } from "./simulate";
@@ -63,14 +63,31 @@ export const gymRunSchema = z.object({
   mode: z.enum(["easy", "hard", "daily"]).default("easy"),
   /** One entry per battle fought in this run (a new run starts empty). */
   history: z.array(battleRecordSchema).max(BATTLES_PER_RUN).default([]),
+  /** A Master Ball was spent: the first draft round is a legendary encounter. */
+  legendary: z.boolean().default(false),
+  /** Practice: replays a seed (e.g. a past daily) without stats, rewards or daily results. */
+  practice: z.boolean().default(false),
 });
 
 export type GymRun = z.infer<typeof gymRunSchema>;
 
-export function startRun(seed: string, mode: GymMode = "easy", daily?: string): GymRun {
+export interface StartOptions {
+  /** The daily challenge's date (YYYY-MM-DD). */
+  daily?: string;
+  legendary?: boolean;
+  practice?: boolean;
+}
+
+export function startRun(
+  seed: string,
+  mode: GymMode = "easy",
+  { daily, legendary = false, practice = false }: StartOptions = {},
+): GymRun {
   return {
     rules: RULES_VERSION,
     ...(daily ? { daily } : {}),
+    legendary,
+    practice,
     seed,
     picks: [],
     rerollsUsed: 0,
@@ -96,7 +113,11 @@ export const playerTeam = (run: GymRun, pool: readonly BattlePokemon[]) =>
 
 export function currentDraft(run: GymRun, pool: readonly BattlePokemon[]): DraftRound {
   const rng = rngFrom(run.seed, "draft", run.picks.length, run.rerollsUsed);
-  return draftRound(pool, resolve(run.picks, pool), rng, GYMS[run.mode].rules.player);
+  const budget = GYMS[run.mode].rules.player;
+  const team = resolve(run.picks, pool);
+  return run.legendary && run.picks.length === 0
+    ? legendaryRound(pool, team, rng, budget)
+    : draftRound(pool, team, rng, budget);
 }
 
 export function pickPokemon(run: GymRun, name: string, pool: readonly BattlePokemon[]): GymRun {
