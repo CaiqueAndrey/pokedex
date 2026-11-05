@@ -1,9 +1,14 @@
 import { z } from "zod";
 import {
+  BATTLE_REWARDS,
   GYMS,
   HAND_SIZE,
   MAX_BATTLES,
+  MAX_BONUS_REROLLS,
   REROLLS_PER_RUN,
+  REWARD_ITEM_NAMES,
+  type BattleReward,
+  type RewardItemName,
   RULES_VERSION,
   TEAM_SIZE,
   TRAINER_NAMES,
@@ -12,9 +17,10 @@ import {
 import type { BattlePokemon, BattleResult } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
 import { drawHand, draftRound, legendaryRound, type DraftRound } from "./draft";
+import { evolutionOf, trained } from "./items";
 import { levelStats } from "./damage";
 import { counterPick, generateOpponent } from "./opponents";
-import { pick, rngFrom, shuffle } from "./rng";
+import { hashString, pick, rngFrom, shuffle } from "./rng";
 import { simulateBattle } from "./simulate";
 import { battleStats, mvpIndex } from "./stats";
 import { teamBst, validateTeam } from "./team";
@@ -55,7 +61,13 @@ export const gymRunSchema = z.object({
     .optional(),
   seed: z.string().min(1).max(40),
   picks: z.array(z.string()).max(TEAM_SIZE),
-  rerollsUsed: z.number().int().min(0).max(REROLLS_PER_RUN),
+  rerollsUsed: z
+    .number()
+    .int()
+    .min(0)
+    .max(REROLLS_PER_RUN + MAX_BONUS_REROLLS),
+  /** Rerolls bought with valuables (Pepita, Pedaço de Estrela). */
+  bonusRerolls: z.number().int().min(0).max(MAX_BONUS_REROLLS).default(0),
   /** Team order chosen before the next battle (names). */
   order: z.array(z.string()).max(TEAM_SIZE),
   /** Index of the next battle (0-based). */
@@ -71,6 +83,24 @@ export const gymRunSchema = z.object({
   legendary: z.boolean().default(false),
   /** Practice: replays a seed (e.g. a past daily) without stats, rewards or daily results. */
   practice: z.boolean().default(false),
+  /** Trained Pokémon (names): attacks and speed up for the rest of the run. */
+  boosts: z.array(z.string()).max(TEAM_SIZE).default([]),
+  /** Evolutions during the run (items or the Rare Candy reward), in order. */
+  evolved: z
+    .array(z.object({ from: z.string(), to: z.string() }))
+    .max(12)
+    .default([]),
+  /** A won battle's reward, still to choose before the next battle. */
+  reward: z
+    .object({ battle: z.number().int().min(0), options: z.array(z.enum(BATTLE_REWARDS)) })
+    .optional(),
+  /** Battles whose hidden opponent was revealed by a "scout" reward. */
+  scouted: z.array(z.number().int().min(0)).default([]),
+  /**
+   * A battle in progress and your replacement picks so far. Saved so a reload resumes the same
+   * battle instead of letting you reorder after seeing it.
+   */
+  battling: z.object({ choices: z.array(z.number().int().min(0)).max(TEAM_SIZE) }).optional(),
 });
 
 export type GymRun = z.infer<typeof gymRunSchema>;
@@ -96,6 +126,10 @@ export function startRun(
     seed,
     picks: [],
     rerollsUsed: 0,
+    bonusRerolls: 0,
+    boosts: [],
+    evolved: [],
+    scouted: [],
     order: [],
     battle: 0,
     phase: "draft",
@@ -113,8 +147,13 @@ function resolve(names: readonly string[], pool: readonly BattlePokemon[]): Batt
   return names.flatMap((name) => map.get(name) ?? []);
 }
 
-export const playerTeam = (run: GymRun, pool: readonly BattlePokemon[]) =>
-  resolve(run.order.length === run.picks.length ? run.order : run.picks, pool);
+/** Your team in battle order, with training applied. */
+export function playerTeam(run: GymRun, pool: readonly BattlePokemon[]): BattlePokemon[] {
+  const team = resolve(run.order.length === run.picks.length ? run.order : run.picks, pool);
+  return run.boosts.length === 0
+    ? team
+    : team.map((p) => (run.boosts.includes(p.name) ? trained(p) : p));
+}
 
 export function currentDraft(run: GymRun, pool: readonly BattlePokemon[]): DraftRound {
   const rng = rngFrom(run.seed, "draft", run.picks.length, run.rerollsUsed);
@@ -160,10 +199,80 @@ export function teamHp(run: GymRun, pool: readonly BattlePokemon[]): number[] {
   return playerTeam(run, pool).map((p) => run.hp[p.name] ?? levelStats(p.stats).hp);
 }
 
+/** Rerolls left in the draft (the free one plus any bought). */
+export const rerollsLeft = (run: GymRun) => REROLLS_PER_RUN + run.bonusRerolls - run.rerollsUsed;
+
 export function reroll(run: GymRun): GymRun {
-  if (run.phase !== "draft" || run.rerollsUsed >= REROLLS_PER_RUN) return run;
+  if (run.phase !== "draft" || rerollsLeft(run) <= 0) return run;
   return { ...run, rerollsUsed: run.rerollsUsed + 1 };
 }
+
+/** One more reroll, bought with a valuable from the bag (the caller spends the item). */
+export function addBonusReroll(run: GymRun): GymRun {
+  if (run.phase !== "draft" || run.bonusRerolls >= MAX_BONUS_REROLLS) return run;
+  return { ...run, bonusRerolls: run.bonusRerolls + 1 };
+}
+
+/**
+ * Evolves a team member with `item` (between battles): same slot, same order, training kept. A
+ * no-op when it can't evolve with that item.
+ */
+export function evolveMember(
+  run: GymRun,
+  name: string,
+  item: RewardItemName,
+  pool: readonly BattlePokemon[],
+): GymRun {
+  const member = resolve([name], pool)[0];
+  if (run.phase !== "ready" || run.battling || !member || !run.picks.includes(name)) return run;
+  const next = evolutionOf(member, pool, item);
+  if (!next) return run;
+  const swap = (names: readonly string[]) => names.map((n) => (n === name ? next.name : n));
+  return {
+    ...run,
+    picks: swap(run.picks),
+    order: swap(run.order),
+    boosts: swap(run.boosts),
+    evolved: [...run.evolved, { from: name, to: next.name }],
+  };
+}
+
+/** The three rewards after a win: training, an item, and an evolution (or scouting when hidden). */
+export function rewardOptions(run: Pick<GymRun, "mode">): BattleReward[] {
+  return ["train", "item", gymOf(run).rules.reveal ? "evolve" : "scout"];
+}
+
+/** The item a reward gives (the same for a seed and battle). */
+export const rewardItem = (run: Pick<GymRun, "seed">, battle: number): RewardItemName =>
+  REWARD_ITEM_NAMES[hashString(`${run.seed}|reward|${battle}`) % REWARD_ITEM_NAMES.length] ??
+  "rare-candy";
+
+/**
+ * Takes (or skips, with `kind` undefined) the pending reward. Training and the Rare Candy need a
+ * `target` from the team; "item" changes nothing here (the bag lives outside the run).
+ */
+export function chooseReward(
+  run: GymRun,
+  kind: BattleReward | undefined,
+  pool: readonly BattlePokemon[],
+  target?: string,
+): GymRun {
+  if (!run.reward) return run;
+  const done = { ...run, reward: undefined };
+  if (kind === "train" && target && run.picks.includes(target) && !run.boosts.includes(target))
+    return { ...done, boosts: [...run.boosts, target] };
+  if (kind === "evolve" && target) {
+    const evolved = evolveMember(done, target, "rare-candy", pool);
+    return evolved === done ? run : evolved;
+  }
+  if (kind === "scout") return { ...done, scouted: [...run.scouted, run.battle] };
+  if (kind === "train" || kind === "evolve") return run;
+  return done;
+}
+
+/** Whether the opponent of the current battle shows (easy mode, or scouted in hard). */
+export const opponentRevealed = (run: GymRun) =>
+  gymOf(run).rules.reveal || run.scouted.includes(run.battle);
 
 export function reorder(run: GymRun, order: string[]): GymRun {
   const same = order.length === run.picks.length && order.every((name) => run.picks.includes(name));
@@ -272,13 +381,29 @@ export function battleFor(
 ): BattleResult {
   const team = playerTeam(run, pool);
   const opponent = opponentFor(run, run.battle, pool, relations);
+  const field = gymOf(run).field;
   return simulateBattle(
     team,
     opponent,
     relations,
     `${run.seed}|battle|${run.battle}|${run.order.join(",")}`,
-    isGauntlet(run) ? { playerHp: teamHp(run, pool) } : {},
+    {
+      ...(isGauntlet(run) ? { playerHp: teamHp(run, pool) } : {}),
+      ...(field ? { field } : {}),
+      choices: run.battling?.choices ?? [],
+    },
   );
+}
+
+/** Starts the battle (saved), or records your next replacement pick in it. */
+export const startBattle = (run: GymRun): GymRun =>
+  run.phase === "ready" && !run.reward
+    ? { ...run, battling: run.battling ?? { choices: [] } }
+    : run;
+
+export function chooseReplacementPick(run: GymRun, index: number): GymRun {
+  if (!run.battling) return run;
+  return { ...run, battling: { choices: [...run.battling.choices, index] } };
 }
 
 /** Applies a finished battle: records it, then moves to the next battle, the badge, or the end. */
@@ -317,7 +442,11 @@ export function applyResult(
         }),
       )
     : run.hp;
-  if (!record.won) return { ...run, history, hp, phase: "lost" };
+  const after = { ...run, history, hp, battling: undefined };
+  if (!record.won) return { ...after, phase: "lost" };
   const battle = run.battle + 1;
-  return { ...run, history, hp, battle, phase: battle >= battleCount(run) ? "won" : "ready" };
+  if (battle >= battleCount(run)) return { ...after, battle, phase: "won" };
+  // Between gym battles, a reward to choose (the gauntlet has none).
+  const reward = isGauntlet(run) ? undefined : { battle, options: rewardOptions(run) };
+  return { ...after, battle, phase: "ready", ...(reward ? { reward } : {}) };
 }

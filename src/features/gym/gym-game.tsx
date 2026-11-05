@@ -20,19 +20,26 @@ import {
   xpForRun,
 } from "@/lib/battle/progress";
 import {
+  addBonusReroll,
   applyResult,
   battleConfig,
   battleCount,
   battleFor,
   byName,
+  chooseReplacementPick,
+  chooseReward,
   countersLead,
   currentDraft,
+  evolveMember,
   gymOf,
   opponentFor,
+  opponentRevealed,
   pickPokemon,
   playerTeam,
   reorder,
   reroll,
+  rewardItem,
+  startBattle,
   startRun,
   trainerFor,
   type GymRun,
@@ -50,6 +57,7 @@ import { GymBadge } from "./gym-badge";
 import { GymPokemon } from "./gym-pokemon";
 import { GymHub, Section } from "./gym-hub";
 import { PreBattle } from "./pre-battle";
+import { BagButton, RewardPicker } from "./run-extras";
 import { RunPath } from "./run-path";
 import { resultLine, RunResultDialog } from "./run-result-dialog";
 import { ShareButton } from "./share-button";
@@ -59,8 +67,10 @@ import {
   recordAbandonedDaily,
   recordCatch,
   recordFinishedRun,
+  addItem,
   setGymFocus,
   sfx,
+  spendItem,
   takeMasterBall,
   useBadges,
   useGymHistory,
@@ -103,7 +113,7 @@ export function GymGame({
 }) {
   const { run, setRun } = useGymRun();
   const { badges, add: addBadge } = useBadges();
-  const { stats, days } = useGymProgress();
+  const { stats, days, bag } = useGymProgress();
   const { trainer } = useTrainer();
   const history = useGymHistory();
   const { today, secondsLeft } = useToday();
@@ -151,10 +161,20 @@ export function GymGame({
     newRun();
   }
 
+  /**
+   * Starts the battle. It is saved as "in progress" (with your replacement picks as you make them),
+   * so a reload resumes the same battle instead of letting you re-plan after seeing it.
+   */
   function fight(current: GymRun) {
+    sfx("send");
+    setRun(startBattle(current));
+    window.scrollTo({ top: 0 });
+  }
+
+  /** The battle has played out with your picks: apply it, record the run's end, show the ending. */
+  function finish(current: GymRun) {
     const result = battleFor(current, pool, relations);
     const next = applyResult(current, result, pool, relations);
-    // The outcome is saved before the animation: reloading can't re-roll a lost battle.
     setRun(next);
     const over = next.phase === "won" || next.phase === "lost";
     const badgeId = gymOf(next).badgeId;
@@ -163,7 +183,6 @@ export function GymGame({
     const { unlocked, streakBonus } = over ? recordFinishedRun(next, pool) : { unlocked: [] };
     const xp = over ? xpForRun(next) : 0;
     const after = levelFor(before.xp + xp);
-    window.scrollTo({ top: 0 });
     setBattle({
       result,
       team: playerTeam(current, pool),
@@ -177,13 +196,42 @@ export function GymGame({
     });
   }
 
+  // A battle in progress: it plays, pausing for your replacement picks, then `finish` applies it.
+  if (!battle && valid?.phase === "ready" && valid.battling) {
+    const live = valid;
+    const result = battleFor(live, pool, relations);
+    return (
+      <BattleView
+        key={`${live.seed}-${live.battle}-live`}
+        result={result}
+        team={playerTeam(live, pool)}
+        opponent={opponentFor(live, live.battle, pool, relations)}
+        trainer={trainerFor(live, live.battle)}
+        playerName={playerName}
+        heading={`${gymOf(live).name} · ${m.battleOf(live.battle + 1, battleCount(live))}`}
+        trainerImage={battleConfig(live, live.battle)?.image}
+        doneLabel={m.next}
+        badge={live.battle === battleCount(live) - 1 && result.winner === "player"}
+        relations={relations}
+        choicesMade={live.battling?.choices.length ?? 0}
+        onChoose={(index) => {
+          sfx("send");
+          setRun(chooseReplacementPick(live, index));
+        }}
+        onEnd={() => finish(live)}
+        onDone={() => undefined}
+      />
+    );
+  }
+
   if (battle) {
     const over = battle.next.phase !== "ready";
     const nextTrainer = trainerFor(battle.next, battle.next.battle);
     const index = battle.next.history.length - 1;
     return (
       <BattleView
-        key={`${battle.next.seed}-${battle.next.battle}-${battle.next.phase}`}
+        key={`${battle.next.seed}-${battle.next.battle}-${battle.next.phase}-done`}
+        startAtEnd
         result={battle.result}
         team={battle.team}
         opponent={battle.opponent}
@@ -194,7 +242,10 @@ export function GymGame({
         doneLabel={m.next}
         doneHint={over ? undefined : m.wonNext(nextTrainer)}
         badge={battle.next.phase === "won"}
-        onDone={() => setBattle(null)}
+        onDone={() => {
+          setBattle(null);
+          window.scrollTo({ top: 0 });
+        }}
       >
         {over ? (
           <RunResultDialog
@@ -315,6 +366,12 @@ export function GymGame({
             sfx("roll");
             setRun(reroll(valid));
           }}
+          bag={valid.practice ? {} : bag}
+          onBuyReroll={(item) => {
+            if (!spendItem(item)) return;
+            sfx("roll");
+            setRun(reroll(addBonusReroll(valid)));
+          }}
         />
       </>
     );
@@ -324,8 +381,25 @@ export function GymGame({
     return (
       <>
         {runBar}
+        {valid.reward && (
+          <div className="mb-5">
+            <RewardPicker
+              run={valid}
+              team={team}
+              pool={pool}
+              items={items}
+              onChoose={(kind, target) => {
+                sfx("pick");
+                if (kind === "item" && !valid.practice) addItem(rewardItem(valid, valid.battle));
+                setRun(chooseReward(valid, kind, pool, target));
+              }}
+            />
+          </div>
+        )}
         <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
           <PreBattle
+            revealed={opponentRevealed(valid)}
+            boosts={valid.boosts}
             battle={valid.battle}
             mode={valid.mode}
             trainer={trainerFor(valid, valid.battle)}
@@ -338,9 +412,27 @@ export function GymGame({
           <RunPath run={valid} pool={pool} />
         </div>
         <ActionBar
-          hint={team[0] && <p data-testid="lead-hint">{m.leadHint(formatName(team[0].name))}</p>}
+          hint={
+            valid.reward ? (
+              <p className="font-bold">{m.rewards.pending}</p>
+            ) : (
+              team[0] && <p data-testid="lead-hint">{m.leadHint(formatName(team[0].name))}</p>
+            )
+          }
         >
-          <Button onClick={() => fight(valid)}>
+          <BagButton
+            run={valid}
+            team={team}
+            pool={pool}
+            bag={bag}
+            items={items}
+            onUse={(item, member) => {
+              if (!spendItem(item)) return;
+              sfx("pick");
+              setRun(evolveMember(valid, member, item, pool));
+            }}
+          />
+          <Button onClick={() => fight(valid)} disabled={Boolean(valid.reward)}>
             <Swords aria-hidden className="size-4" />
             {m.fight}
           </Button>

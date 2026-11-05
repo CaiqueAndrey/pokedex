@@ -76,6 +76,7 @@ function attack(side: Side, attacker: number, defender: number, hpLeft: number):
 describe("battle stats", () => {
   const result: BattleResult = {
     winner: "player",
+    choicePoints: [],
     maxHp: { player: [100, 100], opponent: [50, 80] },
     startHp: { player: [100, 100], opponent: [50, 80] },
     finalHp: { player: [0, 100], opponent: [0, 0] },

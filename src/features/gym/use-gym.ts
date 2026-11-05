@@ -431,3 +431,17 @@ export function resetGymProgress() {
   rocketStore.set(EMPTY_ROCKET);
   resetQuiz();
 }
+
+/** Spends one of a bag item (using it in a run). Returns false when there is none. */
+export function spendItem(name: string): boolean {
+  const bag = bagStore.getSnapshot();
+  if ((bag[name] ?? 0) <= 0) return false;
+  bagStore.set({ ...bag, [name]: (bag[name] ?? 0) - 1 });
+  return true;
+}
+
+/** Adds an item to the bag (a reward between battles). */
+export function addItem(name: string) {
+  const bag = bagStore.getSnapshot();
+  bagStore.set({ ...bag, [name]: (bag[name] ?? 0) + 1 });
+}

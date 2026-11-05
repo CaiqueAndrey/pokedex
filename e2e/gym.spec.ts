@@ -43,9 +43,27 @@ async function draftStrongest(page: Page, pick: "first" | "last" = "last") {
   await expect(page.getByRole("button", { name: "Batalhar!" })).toBeVisible();
 }
 
+/**
+ * Fights the next battle and skips to its end. A pending reward is skipped first, and when one of
+ * your Pokémon faints with a choice to make, the recommended one goes in.
+ */
 async function fightAndSkip(page: Page) {
+  const skipReward = page.getByRole("button", { name: "Dispensar" });
+  if (await skipReward.isVisible()) await skipReward.click();
   await page.getByRole("button", { name: "Batalhar!" }).click();
-  await page.getByRole("button", { name: "Pular animação" }).click();
+  await playToEnd(page);
+}
+
+async function playToEnd(page: Page) {
+  const done = page.locator('[data-testid="battle"][data-finished]');
+  const skip = page.getByRole("button", { name: "Pular animação" });
+  const auto = page.getByTestId("choice-auto");
+  for (let i = 0; i < 12; i++) {
+    await expect(done.or(skip).or(auto).first()).toBeVisible();
+    if ((await done.count()) > 0) return;
+    if (await auto.isVisible()) await auto.click();
+    else if (await skip.isVisible()) await skip.click().catch(() => undefined);
+  }
 }
 
 async function loseFirstBattle(page: Page) {
@@ -548,5 +566,79 @@ test.describe("usability: next step, action bar, tips and reset", () => {
     await expect(page.getByRole("link", { name: "Surpreenda-me" })).toHaveCount(0);
     await page.goto("/");
     await expect(page.getByRole("link", { name: "Surpreenda-me" })).toBeVisible();
+  });
+});
+
+test.describe("game depth: choices, rewards, the bag and fields", () => {
+  test("a fainted Pokémon lets you choose who comes in", async ({ page }) => {
+    await page.goto("/gym?seed=e2e2");
+    await begin(page);
+    await draftStrongest(page, "first");
+    await page.getByRole("button", { name: "Batalhar!" }).click();
+    await page.getByRole("button", { name: "Pular animação" }).click();
+    const panel = page.getByTestId("replace");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("desmaiou! Quem entra?");
+    await expect(page.getByTestId("choice-auto")).toContainText("Recomendado");
+    await page.getByTestId("choice-option").first().click();
+    await expect(panel).toBeHidden();
+
+    // The battle is saved with the pick: a reload resumes it instead of the pre-battle screen.
+    await page.reload();
+    await expect(page.getByTestId("battle-header")).toBeVisible();
+    await playToEnd(page);
+    await expect(page.getByRole("dialog", { name: "Fim do desafio" })).toBeVisible();
+  });
+
+  test("a won battle offers a reward; training marks the Pokémon", async ({ page }) => {
+    await page.goto("/gym?seed=e2e2");
+    await begin(page);
+    await draftStrongest(page);
+    await fightAndSkip(page);
+    await page.getByRole("button", { name: "Próxima batalha" }).click();
+    const reward = page.getByTestId("battle-reward");
+    await expect(reward).toBeVisible();
+    await expect(page.getByRole("button", { name: "Batalhar!" })).toBeDisabled();
+    await reward.getByTestId("reward-train").click();
+    await reward.getByTestId("reward-target").first().click();
+    await expect(reward).toBeHidden();
+    await expect(page.getByTestId("trained")).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Batalhar!" })).toBeEnabled();
+  });
+
+  test("bag items: a Rare Candy evolves, a Nugget buys a reroll", async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("bag-seeded")) return;
+      sessionStorage.setItem("bag-seeded", "1");
+      localStorage.setItem("pokedex:gym-bag:v1", JSON.stringify({ "rare-candy": 1, nugget: 1 }));
+    });
+    await page.goto("/gym?seed=e2e2");
+    await begin(page);
+    const reroll = page.getByRole("button", { name: /Rolar de novo/ });
+    await reroll.click();
+    const buy = page.getByRole("button", { name: "Usar Pepita: +1 rolagem" });
+    await expect(buy).toBeVisible();
+    await buy.click();
+    await expect(buy).toHaveCount(0);
+    await expect(reroll).toBeDisabled();
+
+    await draftStrongest(page, "first");
+    await page.getByTestId("bag-button").click();
+    const use = page.getByTestId("bag-use").first();
+    const text = await use.innerText();
+    await use.click();
+    const evolvedTo = text.split("→").at(-1)?.trim() ?? "";
+    await expect(page.getByTestId("order-item").filter({ hasText: evolvedTo })).toHaveCount(1);
+    await expect(page.getByTestId("bag-button")).toHaveCount(0);
+  });
+
+  test("each gym has its field, shown on the hub and before battles", async ({ page }) => {
+    await page.goto("/gym?seed=e2e2");
+    await hydrated(page);
+    await expect(page.getByTestId("field-easy")).toContainText("Terreno rochoso");
+    await expect(page.getByTestId("field-hard")).toContainText("Chuva");
+    await begin(page);
+    await draftStrongest(page);
+    await expect(page.getByTestId("field")).toContainText("Pedra e Terra");
   });
 });

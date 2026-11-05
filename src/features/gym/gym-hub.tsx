@@ -165,6 +165,11 @@ function ModeCard({
       <div className="grid gap-1">
         <p className="text-muted text-xs">{h.youFace}</p>
         <p className="text-sm">{h.face[mode]}</p>
+        {gym.field && (
+          <p className="text-sm" data-testid={`field-${mode}`}>
+            <strong>{m.fields[mode].label}:</strong> {m.fields[mode].text}
+          </p>
+        )}
       </div>
       <Prize mode={mode} item={item} />
       <div className="text-sm">{status}</div>

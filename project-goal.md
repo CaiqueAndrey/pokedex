@@ -884,6 +884,11 @@ chamam a PokeAPI real.
 ficaram na faixa de 10–25% de times vencedores, testando em média ~3 seeds por dia (~30 ms). Detalhes
 em `docs/phases/14-rocket-ambush.md`.
 
+**Resultado da Fase 15:** campos de Pewter (Pedra/Terra ×1,2) e Cerulean (chuva: Água ×1,2, Fogo
+×0,8). Com as recompensas, o "experiente" vence ~42% no Fácil e ~15% no Difícil (sem elas, 32% e
+7%); o teste de equilíbrio ganhou a 4ª estratégia com tetos. Detalhes em
+`docs/phases/15-game-depth.md`.
+
 ---
 
 # 9. Design

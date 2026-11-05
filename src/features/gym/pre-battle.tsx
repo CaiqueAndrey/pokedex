@@ -91,6 +91,8 @@ export function PreBattle({
   counters,
   health,
   defeated,
+  revealed,
+  boosts = [],
   onReorder,
 }: {
   battle: number;
@@ -105,11 +107,16 @@ export function PreBattle({
   health?: { hp: number; max: number }[];
   /** Gauntlet: trainers beaten so far. */
   defeated?: number;
+  /** The opponent shows (easy mode, or scouted); defaults to the mode's rule. */
+  revealed?: boolean;
+  /** Trained Pokémon (names). */
+  boosts?: readonly string[];
   onReorder: (order: string[]) => void;
 }) {
   const gym = gymOf({ mode });
   const config = battleConfig({ mode }, battle);
-  const reveal = gym.rules.reveal;
+  const reveal = revealed ?? gym.rules.reveal;
+  const fieldInfo = gym.field ? m.fields[mode] : undefined;
   const [selected, setSelected] = useState<number | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
@@ -179,6 +186,11 @@ export function PreBattle({
         <p className="text-muted text-sm" data-testid="scout-hint">
           {m.scoutHint(trainer)}
         </p>
+        {fieldInfo && (
+          <p className="text-sm" data-testid="field">
+            <strong>{fieldInfo.label}:</strong> {fieldInfo.text}
+          </p>
+        )}
         {reveal ? (
           <>
             <ol className="grid grid-cols-3 gap-2 lg:grid-cols-6">
@@ -299,6 +311,14 @@ export function PreBattle({
                         ))}
                       </span>
                       {opponentLead && <MatchupTag fit={matchup(pokemon)} against={opponentLead} />}
+                      {boosts.includes(pokemon.name) && (
+                        <span
+                          className="rounded-md bg-amber-500 px-1.5 py-0.5 text-xs font-bold text-black"
+                          data-testid="trained"
+                        >
+                          {m.rewards.trained}
+                        </span>
+                      )}
                     </div>
                     {health?.[i] && (
                       <div data-testid="member-hp">

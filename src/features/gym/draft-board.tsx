@@ -3,10 +3,18 @@
 import { Dices } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TYPE_LABELS, messages } from "@/config/messages";
-import { DRAFT_ROUNDS, GYMS, REROLLS_PER_RUN, TEAM_SIZE } from "@/config/gym";
+import {
+  DRAFT_ROUNDS,
+  GYMS,
+  MAX_BONUS_REROLLS,
+  REWARD_ITEMS,
+  TEAM_SIZE,
+  type RewardItemName,
+} from "@/config/gym";
 import { cn } from "@/components/ui/cn";
 import { TYPE_STYLES } from "@/config/pokemon-types";
-import { currentDraft, type GymRun } from "@/lib/battle/run";
+import { rerollItems } from "@/lib/battle/items";
+import { currentDraft, rerollsLeft, type GymRun } from "@/lib/battle/run";
 import { budgetPlan } from "@/lib/battle/team";
 import { formatName } from "@/lib/format";
 import { sharedWeaknesses, teamCoverage } from "@/lib/type-effectiveness";
@@ -26,6 +34,8 @@ export function DraftBoard({
   relations,
   onPick,
   onReroll,
+  bag = {},
+  onBuyReroll,
 }: {
   run: GymRun;
   pool: BattlePokemon[];
@@ -33,6 +43,9 @@ export function DraftBoard({
   relations: TypeRelations;
   onPick: (name: string) => void;
   onReroll: () => void;
+  /** The bag, for valuables that buy a reroll (empty in practice runs). */
+  bag?: Record<string, number>;
+  onBuyReroll?: (item: RewardItemName) => void;
 }) {
   const round = currentDraft(run, pool);
   // A mode without a cap (budget null) hides the panel and the per-offer budget lines.
@@ -40,7 +53,9 @@ export function DraftBoard({
   const plan = budget === null ? null : budgetPlan(team, pool, budget);
   const pct = (value: number) => `${(value / (budget ?? 1)) * 100}%`;
   const typesCovered = new Set(team.flatMap((p) => p.types));
-  const rerollsLeft = REROLLS_PER_RUN - run.rerollsUsed;
+  const left = rerollsLeft(run);
+  const valuable =
+    left <= 0 && run.bonusRerolls < MAX_BONUS_REROLLS ? rerollItems(bag)[0] : undefined;
   const die = TYPE_STYLES[round.type];
   const shared =
     team.length > 1
@@ -59,10 +74,17 @@ export function DraftBoard({
           <h2 id="draft-title" className="text-xs sm:text-sm">
             {m.draftTitle(run.picks.length + 1, DRAFT_ROUNDS)}
           </h2>
-          <Button variant="secondary" disabled={rerollsLeft <= 0} onClick={onReroll}>
-            <Dices aria-hidden className="size-4" />
-            {m.reroll} ({m.rerollLeft(rerollsLeft)})
-          </Button>
+          {valuable && onBuyReroll ? (
+            <Button variant="secondary" onClick={() => onBuyReroll(valuable)}>
+              <Dices aria-hidden className="size-4" />
+              {m.bag.reroll(REWARD_ITEMS[valuable])}
+            </Button>
+          ) : (
+            <Button variant="secondary" disabled={left <= 0} onClick={onReroll}>
+              <Dices aria-hidden className="size-4" />
+              {m.reroll} ({m.rerollLeft(left)})
+            </Button>
+          )}
         </div>
 
         {round.legendary ? (

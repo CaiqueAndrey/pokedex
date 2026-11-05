@@ -62,8 +62,18 @@ for (const theme of ["light", "dark"] as const) {
         .click();
     }
     await page.getByRole("button", { name: "Batalhar!" }).click();
-    await page.getByRole("button", { name: "Pular animação" }).click();
-    await expect(page.getByRole("dialog", { name: "Fim do desafio" })).toBeVisible();
+    // Skip to the end; when a Pokémon faints with a choice, send the recommended one.
+    const dialog = page.getByRole("dialog", { name: "Fim do desafio" });
+    for (let i = 0; i < 12 && !(await dialog.isVisible()); i++) {
+      const auto = page.getByTestId("choice-auto");
+      if (await auto.isVisible()) await auto.click();
+      else
+        await page
+          .getByRole("button", { name: "Pular animação" })
+          .click({ timeout: 2000 })
+          .catch(() => undefined);
+    }
+    await expect(dialog).toBeVisible();
     const results = await new AxeBuilder({ page })
       .include("dialog")
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
