@@ -17,11 +17,13 @@ import {
   idFromUrl,
   romanToNumber,
 } from "./format";
-import { normalizeText, parseQuery } from "./search";
+import { levenshtein, normalizeText, parseQuery, suggestNames, toSlug } from "./search";
 import { readStorage, writeStorage } from "./storage";
 import {
+  attackMatchups,
   computeMatchups,
   groupMatchups,
+  offensiveGaps,
   sharedWeaknesses,
   teamCoverage,
 } from "./type-effectiveness";
@@ -52,6 +54,22 @@ describe("search", () => {
     expect(parseQuery("25")).toEqual({ kind: "number", number: 25 });
     expect(parseQuery("  ")).toEqual({ kind: "empty" });
     expect(parseQuery("Char")).toEqual({ kind: "text", text: "char" });
+  });
+  it("turns what a person types into a PokeAPI slug", () => {
+    expect(toSlug("Mr. Mime")).toBe("mr-mime");
+    expect(toSlug(" #025 ")).toBe("25");
+    expect(toSlug("Charizard Mega X")).toBe("charizard-mega-x");
+    expect(toSlug("Farfetch'd")).toBe("farfetchd");
+    expect(toSlug("Nidoran ♀")).toBe("nidoran-f");
+    expect(toSlug("Flabébé")).toBe("flabebe");
+  });
+  it("suggests close names for typos", () => {
+    const names = ["pikachu", "raichu", "charmander", "charizard", "charizard-mega-x"];
+    expect(levenshtein("pikachu", "pikachu")).toBe(0);
+    expect(levenshtein("pikahcu", "pikachu")).toBe(2);
+    expect(suggestNames("Pikahcu", names)).toEqual(["pikachu"]);
+    expect(suggestNames("chariz", names)).toEqual(["charizard", "charizard-mega-x"]);
+    expect(suggestNames("xyz", names)).toEqual([]);
   });
 });
 
@@ -138,6 +156,18 @@ describe("paginate", () => {
 });
 
 describe("type effectiveness", () => {
+  it("describes what an attacking type hits", async () => {
+    const relations = await service.getTypeRelations();
+    expect(attackMatchups("electric", relations)).toEqual({
+      superEffective: ["water", "flying"],
+      notVeryEffective: ["electric", "grass", "dragon"],
+      noEffect: ["ground"],
+    });
+    // Fire + Water hit grass/ice/bug/steel and fire/ground/rock: nothing else is 2×.
+    expect(offensiveGaps(["fire", "water"], relations)).not.toContain("rock");
+    expect(offensiveGaps(["fire", "water"], relations)).toContain("dragon");
+    expect(offensiveGaps(["normal"], relations)).toHaveLength(18);
+  });
   it("handles the classic cases", async () => {
     const relations = await service.getTypeRelations();
     expect(computeMatchups(["fire", "flying"], relations).rock).toBe(4);

@@ -1,5 +1,6 @@
 import { TEAM_BUDGET, TEAM_SIZE } from "@/config/gym";
 import type { BattlePokemon } from "@/types/battle";
+import type { PokemonDetail, StatName } from "@/types/pokemon";
 
 export type TeamError = "size" | "duplicate" | "family";
 
@@ -10,6 +11,23 @@ export function validateTeam(team: readonly BattlePokemon[], size = TEAM_SIZE): 
   if (new Set(team.map((p) => p.name)).size !== team.length) errors.push("duplicate");
   if (new Set(team.map((p) => p.family)).size !== team.length) errors.push("family");
   return errors;
+}
+
+/** Any Pokémon (forms included) as a fighter, from its detail: for battles outside the draft pool. */
+export function toBattlePokemon(detail: PokemonDetail): BattlePokemon {
+  const stats = Object.fromEntries(detail.stats.map((s) => [s.name, s.base])) as Record<
+    StatName,
+    number
+  >;
+  return {
+    id: detail.id,
+    name: detail.name,
+    family: detail.evolutionChainId,
+    baby: false,
+    types: detail.types,
+    stats,
+    bst: detail.stats.reduce((sum, s) => sum + s.base, 0),
+  };
 }
 
 export const teamBst = (team: readonly BattlePokemon[]) => team.reduce((sum, p) => sum + p.bst, 0);

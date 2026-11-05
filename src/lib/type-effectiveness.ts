@@ -65,3 +65,36 @@ export function teamCoverage(
 export function sharedWeaknesses(rows: TeamCoverageRow[], threshold = 3): PokemonTypeName[] {
   return rows.filter((row) => row.weak >= threshold).map((row) => row.type);
 }
+
+export interface AttackMatchups {
+  superEffective: PokemonTypeName[];
+  notVeryEffective: PokemonTypeName[];
+  noEffect: PokemonTypeName[];
+}
+
+/** What a move of the attacking type does to each single defending type. */
+export function attackMatchups(
+  attacker: PokemonTypeName,
+  relations: TypeRelations,
+): AttackMatchups {
+  const pick = (predicate: (value: number) => boolean) =>
+    POKEMON_TYPES.filter((defender) => predicate(relations[attacker][defender] ?? 1));
+  return {
+    superEffective: pick((v) => v > 1),
+    notVeryEffective: pick((v) => v > 0 && v < 1),
+    noEffect: pick((v) => v === 0),
+  };
+}
+
+/**
+ * Defending types that none of the attacking types hits super effectively (single-type
+ * defenders): the gaps in a team's same-type (STAB) offense.
+ */
+export function offensiveGaps(
+  attackers: readonly PokemonTypeName[],
+  relations: TypeRelations,
+): PokemonTypeName[] {
+  return POKEMON_TYPES.filter((defender) =>
+    attackers.every((attacker) => (relations[attacker][defender] ?? 1) <= 1),
+  );
+}

@@ -13,7 +13,8 @@ describe("type colors", () => {
 });
 
 describe("framework-independent core", () => {
-  const roots = ["src/server/pokeapi", "src/server/pokedex", "src/lib"];
+  // src/mcp runs in plain Node (stdio), so it follows the same rules as the core.
+  const roots = ["src/server/pokeapi", "src/server/pokedex", "src/lib", "src/mcp"];
   const allowed = new Set(["next-cache.ts"]);
 
   function walk(dir: string): string[] {
@@ -28,6 +29,16 @@ describe("framework-independent core", () => {
       .flatMap(walk)
       .filter((file) => /\.tsx?$/.test(file) && !allowed.has(path.basename(file)))
       .filter((file) => /from\s+["'](next(\/|["'])|server-only)/.test(readFileSync(file, "utf8")));
+    expect(offenders).toEqual([]);
+  });
+
+  it("never writes to stdout (it belongs to the MCP protocol)", () => {
+    const offenders = roots
+      .flatMap(walk)
+      .filter((file) => /\.tsx?$/.test(file) && !file.endsWith(".test.ts"))
+      .filter((file) =>
+        /console\.(log|info|debug)\(|process\.stdout\.write/.test(readFileSync(file, "utf8")),
+      );
     expect(offenders).toEqual([]);
   });
 });

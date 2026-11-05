@@ -15,4 +15,4 @@ Roadmap from `project-goal.md` §11. Each phase ends with a learning note in `do
 | 08  | Gym mode (draft, battles) | Done        | [08-gym-mode](docs/phases/08-gym-mode.md)                          |
 | 09  | Gym mode 2.0              | Done        | [09-gym-mode-2](docs/phases/09-gym-mode-2.md)                      |
 | 10  | Deploy (Vercel)           | In progress | [10-deploy](docs/phases/10-deploy.md) (done before MCP, by choice) |
-| 11  | MCP server                | Planned     | —                                                                  |
+| 11  | MCP server                | Done        | [11-mcp-server](docs/phases/11-mcp-server.md)                      |
