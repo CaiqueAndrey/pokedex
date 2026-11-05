@@ -6,6 +6,7 @@ import { displayName, formatNumber } from "@/lib/format";
 import type { PokemonSummary } from "@/types/pokemon";
 import { FavoriteButton } from "../favorites/favorite-button";
 import { TeamIconButton } from "../team/team-icon-button";
+import { DexMark } from "./dex-progress";
 import { PokemonImage } from "./pokemon-image";
 
 export function PokemonCard({
@@ -42,6 +43,7 @@ export function PokemonCard({
       >
         <span className="font-display text-muted text-[0.6rem]">
           {formatNumber(pokemon.speciesId)}
+          {pokemon.isDefault && <DexMark id={pokemon.speciesId} />}
         </span>
         <div className="relative mx-auto my-1 aspect-square w-full max-w-44 transition-transform duration-300 group-hover:scale-110 motion-safe:group-hover:-rotate-3">
           <PokemonImage

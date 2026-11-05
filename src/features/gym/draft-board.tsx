@@ -20,6 +20,7 @@ import { formatName } from "@/lib/format";
 import { sharedWeaknesses, teamCoverage } from "@/lib/type-effectiveness";
 import type { BattlePokemon } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
+import { useFavorites } from "../favorites/use-favorites";
 import { PokemonImage } from "../pokedex/pokemon-image";
 import { BallIcon } from "./ball-icon";
 import { GymPokemon } from "./gym-pokemon";
@@ -48,6 +49,7 @@ export function DraftBoard({
   onBuyReroll?: (item: RewardItemName) => void;
 }) {
   const round = currentDraft(run, pool);
+  const { names: favorites } = useFavorites();
   // A mode without a cap (budget null) hides the panel and the per-offer budget lines.
   const { player: budget, reveal } = GYMS[run.mode].rules;
   const plan = budget === null ? null : budgetPlan(team, pool, budget);
@@ -133,6 +135,11 @@ export function DraftBoard({
                   row
                   className={cn("h-full", blocked && "opacity-60 grayscale")}
                 >
+                  {favorites.includes(offer.name) && (
+                    <span className="text-primary-600 text-xs font-bold" data-testid="favorite-tag">
+                      {m.favoriteTag}
+                    </span>
+                  )}
                   {plan && budget !== null && (
                     <span
                       className={cn("text-xs", blocked ? "font-bold" : "text-muted")}

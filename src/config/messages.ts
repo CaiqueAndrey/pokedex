@@ -99,6 +99,40 @@ export const messages = {
     end: (n: number) => `Fim da lista · ${n} Pokémon`,
   },
   card: { open: (name: string) => `Ver detalhes de ${name}` },
+  dex: {
+    title: "Sua Pokédex",
+    summary: (seen: number, used: number, total: number) =>
+      `${seen} vistos · ${used} usados de ${total}`,
+    empty:
+      "Jogue o Ginásio, a Emboscada e o Quem é? para preencher: quem você enfrenta ou adivinha fica visto, quem entra no seu time fica usado.",
+    byGeneration: "Por geração",
+    seen: "Visto",
+    used: "Usado",
+    seenLabel: "Visto nos jogos",
+    usedLabel: "Usado no seu time",
+    generationRow: (generation: number, seen: number, total: number) =>
+      `${generation}ª geração: ${seen} de ${total}`,
+  },
+  facts: {
+    title: "Nos jogos",
+    usedTimes: (n: number) => (n === 1 ? "Usado 1 vez no Ginásio" : `Usado ${n} vezes no Ginásio`),
+    never: "Ainda não apareceu nos seus jogos.",
+    compareWith: "Comparar com…",
+  },
+  friendly: {
+    title: "Batalha amistosa",
+    description:
+      "Leve o seu time contra o Brock ou a Misty, com as regras do Modo Ginásio (nível 50, campo do ginásio). Não vale recompensa: é para testar o time.",
+    against: (leader: string) => `Enfrentar ${leader}`,
+    needTeam: "Adicione pelo menos 1 Pokémon ao time para batalhar.",
+    loading: "Preparando a batalha…",
+    error: "Não foi possível preparar a batalha agora.",
+    heading: (gym: string) => `Amistoso · ${gym}`,
+    won: "Vitória no amistoso!",
+    lost: "Derrota no amistoso. Ajuste o time e tente de novo.",
+    again: "Jogar de novo",
+    close: "Voltar ao time",
+  },
   detail: {
     height: "Altura",
     weight: "Peso",
@@ -377,6 +411,25 @@ export const messages = {
     achievementsTitle: "Conquistas",
     achievementCount: (n: number, total: number) => `${n} de ${total}`,
     achievementLocked: "Bloqueada",
+    achievementSecret: "Conquista secreta: descubra jogando.",
+    achievementProgress: (n: number, total: number) => `${n}/${total}`,
+    favoriteTag: "♥ Favorito",
+    missions: {
+      title: "Missões da semana",
+      hint: (days: number) =>
+        days === 1 ? "Novas missões amanhã." : `Novas missões em ${days} dias.`,
+      claim: "Resgatar",
+      claimed: "Resgatada",
+      reward: "Grande Bola + 30 XP",
+      items: {
+        battles: (n: number) => `Vença ${n} batalhas de ginásio`,
+        badge: () => "Conquiste uma insígnia",
+        quiz: (n: number) => `Acerte o Quem é? em ${n} dias`,
+        ambush: (n: number) => `Vença a Emboscada Rocket ${n} vezes`,
+        evolve: (n: number) => `Evolua ${n} Pokémon durante desafios`,
+        endless: (n: number) => `Acerte ${n} seguidos no Quem é? infinito`,
+      },
+    },
     achievements: {
       "first-win": { label: "Primeira vitória", description: "Vença uma batalha." },
       badge: {
@@ -596,6 +649,9 @@ export const messages = {
       legends: "Lendários",
       achievements: "Conquistas",
       favorite: "Parceiro",
+      partnerLabel: "Parceiro (dos seus favoritos)",
+      partnerAuto: "O mais usado no Ginásio",
+      partnerHint: "Favorite Pokémon na Pokédex para escolher um parceiro.",
       reset: {
         title: "Zona de perigo",
         text: "Recomece do zero neste navegador. Não dá para desfazer.",
@@ -607,6 +663,7 @@ export const messages = {
           "conquistas, nível e XP",
           "histórico, estatísticas e sequência de dias (desafio do dia e Quem é?)",
           "o desafio em andamento e o seu nome de treinador",
+          "Quem é?, missões da semana e os Pokémon vistos e usados",
         ],
         keep: "Favoritos, Meu time, tema, som e velocidade continuam.",
         confirmLabel: "Digite APAGAR para confirmar",

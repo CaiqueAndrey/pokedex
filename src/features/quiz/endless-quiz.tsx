@@ -10,7 +10,8 @@ import { generationLabel, messages } from "@/config/messages";
 import { QUIZ_ENDLESS_GUESSES } from "@/config/quiz";
 import { formatName } from "@/lib/format";
 import { quizStatus, type QuizEntry } from "@/lib/quiz";
-import { sfx } from "../gym/use-gym";
+import { recordMission, sfx } from "../gym/use-gym";
+import { markDex } from "../pokedex/use-dex-progress";
 import { GuessList, Hints } from "./clues";
 import { GuessForm } from "./guess-form";
 import { Silhouette } from "./silhouette";
@@ -92,9 +93,11 @@ export function EndlessQuiz({ pool }: { pool: readonly QuizEntry[] }) {
     const after = quizStatus(updated, answer, QUIZ_ENDLESS_GUESSES);
     sfx(entry.name === answer.name ? "reveal" : "wrong");
     setRound({ answer, guesses: updated });
+    if (after !== "playing") markDex({ seen: [answer.id] });
     if (after === "solved") {
       setStreak(streak + 1);
       saveBest(streak + 1);
+      recordMission("endless", streak + 1, "max");
     }
   }
 

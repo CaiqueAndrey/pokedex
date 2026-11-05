@@ -40,6 +40,8 @@ export const STORAGE_KEYS = {
   playedDays: "pokedex:played-days:v1",
   quiz: "pokedex:quiz:v1",
   rocket: "pokedex:rocket:v1",
+  dexProgress: "pokedex:dex-progress:v1",
+  missions: "pokedex:missions:v1",
 } as const;
 
 export const nameListSchema = z.array(z.string().min(1).max(80)).max(2000);

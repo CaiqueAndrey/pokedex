@@ -5,7 +5,9 @@ A Pokédex built with the [PokeAPI](https://pokeapi.co/): all 1025 species plus 
 evolutions, weaknesses), favorites, a team builder with coverage analysis, and a side-by-side
 comparison, plus two games: a **gym mode** (`/gym`), where you draft a team and win five simulated
 battles against Brock (easy) or Misty (hard), or solve the daily Team Rocket ambush puzzle, and **"Quem é esse
-Pokémon?"** (`/quiz`), a daily silhouette guessing game with an endless mode. The UI is in
+Pokémon?"** (`/quiz`), a daily silhouette guessing game with an endless mode. The games feed the
+Pokédex back: species you've seen and used, weekly missions, a friendly battle for your team, and
+link previews for every Pokémon. The UI is in
 Portuguese; code and docs are in English.
 
 This is a study project. The plan lives in [`project-goal.md`](project-goal.md) (Portuguese), the

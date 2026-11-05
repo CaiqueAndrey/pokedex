@@ -20,4 +20,4 @@ Roadmap from `project-goal.md` §11. Each phase ends with a learning note in `do
 | 13  | Daily quiz                | Done        | [13-daily-quiz](docs/phases/13-daily-quiz.md)                      |
 | 14  | Rocket ambush (daily)     | Done        | [14-rocket-ambush](docs/phases/14-rocket-ambush.md)                |
 | 15  | Game depth                | Done        | [15-game-depth](docs/phases/15-game-depth.md)                      |
-| 16  | Connected Pokédex         | Planned     |                                                                    |
+| 16  | Connected Pokédex         | Done        | [16-connected-pokedex](docs/phases/16-connected-pokedex.md)        |

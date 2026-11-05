@@ -25,6 +25,8 @@ import { formatName } from "@/lib/format";
 import type { BattlePokemon, BattleResult } from "@/types/battle";
 import type { GameItem } from "@/types/item";
 import type { TypeRelations } from "@/types/pokemon";
+import { useFavorites } from "../favorites/use-favorites";
+import { markDex } from "../pokedex/use-dex-progress";
 import { BallIcon } from "./ball-icon";
 import { BattleView } from "./battle-view";
 import { GymPokemon } from "./gym-pokemon";
@@ -106,6 +108,7 @@ export function RocketAmbush({
   const { today } = useToday();
   const { trainer } = useTrainer();
   const progress = useRocketProgress();
+  const { names: favorites } = useFavorites();
   const date = day ?? today;
   const puzzle = useMemo(
     () => (date ? calibrate(pool, relations, date) : undefined),
@@ -169,6 +172,7 @@ export function RocketAmbush({
     const result = attemptBattle(puzzle, team, relations);
     const attempt = toAttempt(team, puzzle.opponent, result);
     if (official) {
+      markDex({ used: team.map((p) => p.id), seen: puzzle.opponent.map((p) => p.id) });
       setOutcome(recordRocketAttempt(date, attempt).outcome);
     } else {
       const base = { days: practiceDay ? [practiceDay] : [] };
@@ -368,6 +372,14 @@ export function RocketAmbush({
                       )}
                     >
                       <GymPokemon pokemon={pokemon} showStats className="h-full">
+                        {favorites.includes(pokemon.name) && (
+                          <span
+                            className="text-primary-600 text-xs font-bold"
+                            data-testid="favorite-tag"
+                          >
+                            {m.favoriteTag}
+                          </span>
+                        )}
                         {selected ? (
                           <span className="bg-primary-600 text-on-primary mt-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold">
                             <Check aria-hidden className="size-3" />

@@ -9,7 +9,9 @@ import { messages } from "@/config/messages";
 import { favoritePick, formatDailyDate, levelFor, totalXp } from "@/lib/battle/progress";
 import { formatName } from "@/lib/format";
 import type { BattlePokemon } from "@/types/battle";
+import { useFavorites } from "../favorites/use-favorites";
 import { PokemonImage } from "../pokedex/pokemon-image";
+import { usePokemonSummaries } from "../pokedex/use-pokemon-summaries";
 import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
 import { ResetProgress } from "./reset-progress";
@@ -43,14 +45,23 @@ export function XpBar({ into, needed, label }: { into: number; needed: number; l
  * the level and rank from XP, and the collection at a glance.
  */
 export function TrainerCard({ pool }: { pool: BattlePokemon[] }) {
-  const { trainer, rename } = useTrainer();
+  const { trainer, rename, setPartner } = useTrainer();
+  const { names: favorites } = useFavorites();
+  const chosen =
+    trainer?.partner && favorites.includes(trainer.partner) ? trainer.partner : undefined;
+  const { results: chosenSummary } = usePokemonSummaries(chosen ? [chosen] : []);
   const { stats, achievements } = useGymProgress();
   const { badges } = useBadges();
   const [draft, setDraft] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const progress = levelFor(totalXp(stats));
   const favorite = favoritePick(stats);
-  const partner = favorite ? pool.find((p) => p.name === favorite) : undefined;
+  const picked = chosenSummary[0];
+  const partner = picked
+    ? { id: picked.id, name: picked.name }
+    : favorite
+      ? pool.find((p) => p.name === favorite)
+      : undefined;
   const known = new Set<string>(ACHIEVEMENTS);
   const unlocked = achievements.filter((id) => known.has(id)).length;
   const value = draft ?? trainer?.name ?? "";
@@ -180,6 +191,28 @@ export function TrainerCard({ pool }: { pool: BattlePokemon[] }) {
         </form>
         <p className="text-muted text-sm">{t.description}</p>
         <p className="text-muted text-sm">{t.xpHow}</p>
+        {trainer && (
+          <label className="grid gap-1">
+            <span className="font-display text-[0.6rem]">{t.partnerLabel}</span>
+            {favorites.length > 0 ? (
+              <select
+                value={chosen ?? ""}
+                onChange={(event) => setPartner(event.target.value || undefined)}
+                className="border-border bg-background min-h-11 rounded-xl border-2 px-3 text-base"
+                data-testid="partner-select"
+              >
+                <option value="">{t.partnerAuto}</option>
+                {favorites.map((name) => (
+                  <option key={name} value={name}>
+                    {formatName(name)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-muted text-sm">{t.partnerHint}</span>
+            )}
+          </label>
+        )}
       </Card>
       <div className="lg:col-start-2">
         <ResetProgress />

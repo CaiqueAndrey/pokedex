@@ -53,6 +53,8 @@ export const gymStatsSchema = z.object({
   lastMode: z.enum(["easy", "hard"]).optional(),
   /** Daily "Quem é esse Pokémon?" solved (XP). */
   quizSolved: count.default(0),
+  /** Weekly missions claimed (XP). */
+  missions: count.default(0),
 });
 
 export type GymStats = z.infer<typeof gymStatsSchema>;
@@ -69,6 +71,7 @@ export const EMPTY_STATS: GymStats = {
   used: {},
   caught: [],
   quizSolved: 0,
+  missions: 0,
 };
 
 /** Spends a Master Ball (for a legendary encounter); a no-op without one. */
@@ -177,6 +180,22 @@ export function achievementsFor(
   return ACHIEVEMENTS.filter((id) => unlocked[id]);
 }
 
+/** Progress towards achievements that build up over time, as [current, target]. */
+export function achievementProgress(
+  id: AchievementId,
+  stats: GymStats,
+  badges: readonly string[],
+): [number, number] | undefined {
+  if (id === "streak-3") return [Math.min(stats.streak, 3), 3];
+  if (id === "both-badges") {
+    const earned = (["easy", "hard"] as const).filter((mode) =>
+      badges.includes(GYMS[mode].badgeId ?? ""),
+    ).length;
+    return [earned, 2];
+  }
+  return undefined;
+}
+
 /** Local calendar date as YYYY-MM-DD: the daily challenge changes at the player's midnight. */
 export function dailyKey(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -255,6 +274,8 @@ export function pastDays(key: string, count: number): string[] {
 
 export const trainerSchema = z.object({
   name: z.string().trim().min(1).max(TRAINER_NAME_MAX),
+  /** A favorite chosen as partner on the Trainer Card (else the most used). */
+  partner: z.string().min(1).max(80).optional(),
   /** Five digits, like the trainer ID on a Trainer Card. */
   id: z.string().regex(/^\d{5}$/),
   /** When the card was issued (YYYY-MM-DD). */
@@ -280,7 +301,8 @@ export function totalXp(stats: GymStats): number {
     stats.cleared.hard * XP.clear.hard +
     stats.cleared.daily * XP.clear.daily +
     stats.caught.length * XP.legendary +
-    stats.quizSolved * QUIZ_XP
+    stats.quizSolved * QUIZ_XP +
+    stats.missions * XP.mission
   );
 }
 

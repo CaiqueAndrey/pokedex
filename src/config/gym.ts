@@ -404,6 +404,13 @@ export const ACHIEVEMENTS = [
 ] as const;
 export type AchievementId = (typeof ACHIEVEMENTS)[number];
 
+/** Achievements whose description stays a surprise until unlocked. */
+export const SECRET_ACHIEVEMENTS: readonly AchievementId[] = [
+  "sharp-eye",
+  "flawless-leader",
+  "baby-champion",
+];
+
 /** "Budget champion": win the badge with a team at or under this strength. */
 export const BUDGET_CHAMPION_BST = 2300;
 /** "Variety champion": win the badge with a team covering at least this many types. */
@@ -416,6 +423,7 @@ export const XP = {
   battle: 10,
   clear: { easy: 50, hard: 100, daily: 100 },
   legendary: 30,
+  mission: 30,
 } as const;
 /** Trainer ranks by level (labels in messages.gym.trainer.ranks). */
 export const RANKS = [

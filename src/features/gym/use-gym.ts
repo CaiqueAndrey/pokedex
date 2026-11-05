@@ -11,6 +11,7 @@ import {
   addToHistory,
   bagSchema,
   cleanTrainerName,
+  battlesWon,
   catchLegendary,
   dailyItem,
   dailyKey,
@@ -43,6 +44,16 @@ import type { BattlePokemon } from "@/types/battle";
 import { createListStore } from "@/lib/list-store";
 import { STORAGE_KEYS } from "@/lib/storage";
 import { createValueStore } from "@/lib/value-store";
+import {
+  addProgress,
+  claimMission,
+  forWeek,
+  missionStateSchema,
+  weekKey,
+  type MissionId,
+  type MissionState,
+} from "@/lib/missions";
+import { markDex, resetDex } from "../pokedex/use-dex-progress";
 import { resetQuiz } from "../quiz/use-quiz";
 import { playTune, vibrate } from "./sound";
 
@@ -154,6 +165,42 @@ export function useRocketProgress() {
   );
 }
 
+const missionStore = createValueStore<MissionState | null>(
+  STORAGE_KEYS.missions,
+  missionStateSchema.nullable(),
+  null,
+);
+
+/** Feeds a game event to this week's missions. */
+export function recordMission(id: MissionId, amount: number, how: "add" | "max" = "add") {
+  missionStore.set(addProgress(missionStore.getSnapshot(), weekKey(new Date()), id, amount, how));
+}
+
+/** This week's mission state (a new week starts empty). */
+export function useMissions(week: string) {
+  const state = useSyncExternalStore(
+    missionStore.subscribe,
+    missionStore.getSnapshot,
+    missionStore.getServerSnapshot,
+  );
+  return useMemo(() => forWeek(state, week), [state, week]);
+}
+
+/** Claims a finished mission: a Great Ball and mission XP. Returns false if it can't be claimed. */
+export function claimMissionReward(id: MissionId): boolean {
+  const current = forWeek(missionStore.getSnapshot(), weekKey(new Date()));
+  const claimed = claimMission(current, id);
+  if (claimed === current) return false;
+  missionStore.set(claimed);
+  const stats = statsStore.getSnapshot();
+  statsStore.set({
+    ...stats,
+    missions: stats.missions + 1,
+    balls: { ...stats.balls, great: stats.balls.great + 1 },
+  });
+  return true;
+}
+
 const trainerStore = createValueStore<Trainer | null>(
   STORAGE_KEYS.trainer,
   trainerSchema.nullable(),
@@ -214,6 +261,7 @@ export function recordQuizDay(
   const bonus = markPlayed(date);
   let stats = statsStore.getSnapshot();
   if (ball) {
+    recordMission("quiz", 1);
     stats = {
       ...stats,
       quizSolved: stats.quizSolved + 1,
@@ -253,6 +301,15 @@ export function recordFinishedRun(
   // Practice runs still show up in the history (flagged), but change nothing else.
   historyStore.set(addToHistory(historyStore.getSnapshot(), run, new Date().toISOString()));
   if (run.practice) return { unlocked: [] };
+  const map = new Map(pool.map((p) => [p.name, p.id]));
+  const idsOf = (names: readonly string[]) => names.flatMap((name) => map.get(name) ?? []);
+  markDex({
+    used: idsOf(run.picks),
+    seen: idsOf(run.history.flatMap((record) => record.opponent)),
+  });
+  recordMission("battles", battlesWon(run));
+  if (run.phase === "won" && run.mode !== "daily") recordMission("badge", 1);
+  recordMission("evolve", run.evolved.length);
   let stats = recordRun(statsStore.getSnapshot(), run);
   const bonus = recordDailyWithStreak(run);
   if (bonus) stats = addStreakBall(stats);
@@ -306,6 +363,7 @@ export function recordRocketAttempt(
     };
     if (ball) outcome.ball = ball;
     if (won) {
+      recordMission("ambush", 1);
       const item = dailyItem(date);
       const bag = bagStore.getSnapshot();
       bagStore.set({ ...bag, [item]: (bag[item] ?? 0) + 1 });
@@ -380,9 +438,18 @@ export function useTrainer() {
       name: clean,
       id: current?.id ?? String(Math.floor(Math.random() * 100_000)).padStart(5, "0"),
       since: current?.since ?? dailyKey(new Date()),
+      ...(current?.partner ? { partner: current.partner } : {}),
     });
   }
-  return { trainer, rename };
+  /** Picks a favorite as the card's partner (undefined: the most used). Needs a named trainer. */
+  function setPartner(partner: string | undefined) {
+    const current = trainerStore.getSnapshot();
+    if (!current) return;
+    const next = { ...current, partner };
+    if (!partner) delete next.partner;
+    trainerStore.set(next);
+  }
+  return { trainer, rename, setPartner };
 }
 
 // ---- Focus: while a run or a battle is on screen, the gym's own tabs step aside ----
@@ -429,7 +496,9 @@ export function resetGymProgress() {
   tipStore.clear();
   playedStore.set(NO_DAYS);
   rocketStore.set(EMPTY_ROCKET);
+  missionStore.set(null);
   resetQuiz();
+  resetDex();
 }
 
 /** Spends one of a bag item (using it in a run). Returns false when there is none. */

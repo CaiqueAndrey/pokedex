@@ -35,6 +35,7 @@ import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
 import { ItemIcon } from "./item-icon";
 import { QuizHubCard } from "../quiz/quiz-hub-card";
+import { MissionsCard } from "./missions-card";
 import { HistoryCard } from "./gym-history";
 import { RocketDuo } from "./run-result-dialog";
 import { useRocketProgress } from "./use-gym";
@@ -282,6 +283,7 @@ export function GymHub({
           onStart={onStart}
         />
       )}
+      {today && <MissionsCard today={today} />}
 
       {lastRun && (
         <Section id="ultimo" title={h.lastRun}>

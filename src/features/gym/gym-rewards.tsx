@@ -10,10 +10,17 @@ import {
   GYMS,
   REWARD_ITEM_NAMES,
   REWARD_ITEMS,
+  SECRET_ACHIEVEMENTS,
   SELECTABLE_MODES,
 } from "@/config/gym";
 import { messages } from "@/config/messages";
-import { badgeCount, favoritePick, type Bag, type GymStats } from "@/lib/battle/progress";
+import {
+  achievementProgress,
+  badgeCount,
+  favoritePick,
+  type Bag,
+  type GymStats,
+} from "@/lib/battle/progress";
 import { formatName } from "@/lib/format";
 import { spriteUrl } from "@/lib/sprites";
 import type { BattlePokemon } from "@/types/battle";
@@ -22,7 +29,8 @@ import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
 import { Section } from "./gym-hub";
 import { ItemIcon } from "./item-icon";
-import { useBadges, useGymProgress } from "./use-gym";
+import { MissionsCard } from "./missions-card";
+import { useBadges, useGymProgress, useToday } from "./use-gym";
 
 const m = messages.gym;
 const h = m.hub;
@@ -192,6 +200,8 @@ export function GymRewards({
             {ACHIEVEMENTS.map((id) => {
               const done = unlocked.has(id);
               const Icon = done ? Trophy : Lock;
+              const secret = !done && SECRET_ACHIEVEMENTS.includes(id);
+              const progress = done ? undefined : achievementProgress(id, stats, badges);
               return (
                 <li
                   key={id}
@@ -203,9 +213,17 @@ export function GymRewards({
                     className={cn("mt-0.5 size-4 shrink-0", done && "text-amber-500")}
                   />
                   <span>
-                    <strong>{m.achievements[id].label}</strong>
+                    <strong>{secret ? "???" : m.achievements[id].label}</strong>
                     <span className="sr-only">{done ? "" : ` (${m.achievementLocked})`}</span>:{" "}
-                    {m.achievements[id].description}
+                    {secret ? m.achievementSecret : m.achievements[id].description}
+                    {progress && (
+                      <span
+                        className="ml-1 font-bold tabular-nums"
+                        data-testid="achievement-progress"
+                      >
+                        ({m.achievementProgress(progress[0], progress[1])})
+                      </span>
+                    )}
                   </span>
                 </li>
               );
@@ -243,14 +261,22 @@ export function GymRewardsPage({
 }) {
   const { stats, achievements, bag } = useGymProgress();
   const { badges } = useBadges();
+  const { today } = useToday();
   return (
-    <GymRewards
-      stats={stats}
-      badges={badges}
-      achievements={achievements}
-      bag={bag}
-      items={items}
-      legendaries={legendaries}
-    />
+    <>
+      {today && (
+        <div className="mb-8">
+          <MissionsCard today={today} />
+        </div>
+      )}
+      <GymRewards
+        stats={stats}
+        badges={badges}
+        achievements={achievements}
+        bag={bag}
+        items={items}
+        legendaries={legendaries}
+      />
+    </>
   );
 }

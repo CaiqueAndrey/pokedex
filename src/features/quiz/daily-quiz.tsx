@@ -21,6 +21,7 @@ import {
 import { BallIcon } from "../gym/ball-icon";
 import { ShareButton } from "../gym/share-button";
 import { recordQuizDay, sfx, useToday } from "../gym/use-gym";
+import { markDex } from "../pokedex/use-dex-progress";
 import { GuessList, Hints } from "./clues";
 import { GuessForm } from "./guess-form";
 import { Silhouette } from "./silhouette";
@@ -70,6 +71,7 @@ export function DailyQuiz({
     const saved = saveGuess(today, entry.name, answer);
     sfx(entry.name === answer.name ? "reveal" : "wrong");
     if (!saved?.result) return;
+    markDex({ seen: [answer.id] });
     const solved = saved.result === "solved";
     setOutcome(
       recordQuizDay(

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { messages } from "@/config/messages";
 import { GymBanner } from "@/features/gym/gym-banner";
 import { QuizBanner } from "@/features/quiz/quiz-banner";
+import { DexProgressCard } from "@/features/pokedex/dex-progress";
 import { Filters } from "@/features/pokedex/filters";
 import { InfiniteGrid } from "@/features/pokedex/infinite-grid";
 import { ViewToggle } from "@/features/pokedex/view-toggle";
@@ -67,6 +68,7 @@ export default async function HomePage({
         <>
           <GymBanner />
           <QuizBanner />
+          <DexProgressCard />
         </>
       )}
       <Filters hasActiveFilters={hasActiveFilters} />

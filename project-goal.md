@@ -889,6 +889,12 @@ em `docs/phases/14-rocket-ambush.md`.
 7%); o teste de equilíbrio ganhou a 4ª estratégia com tetos. Detalhes em
 `docs/phases/15-game-depth.md`.
 
+**Resultado da Fase 16:** a Pokédex marca vistos (olho) e usados (estrela) com progresso por
+geração; Meu time faz batalha amistosa contra Brock ou Misty; favoritos aparecem no draft e na
+Emboscada e viram o Parceiro do Cartão; "Comparar com…" na página do Pokémon; 3 missões por semana
+ISO (Grande Bola + XP); conquistas secretas e com progresso; prévias `next/og` da home, ginásio,
+quiz e de cada Pokémon. Detalhes em `docs/phases/16-connected-pokedex.md`.
+
 ---
 
 # 9. Design
