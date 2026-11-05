@@ -2,6 +2,7 @@
 
 import { ArrowRight, CalendarDays, Check, Dumbbell, History, Sparkles, Swords } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import {
   DAILY_ARCHIVE_DAYS,
   GYMS,
   REWARD_ITEMS,
+  ROCKET_PUZZLE,
   SELECTABLE_MODES,
   type GymMode,
 } from "@/config/gym";
@@ -21,12 +23,11 @@ import {
   formatDailyDate,
   nextStep,
   pastDays,
-  resultGrid,
   topBall,
-  type DailyResult,
   type GymStats,
   type HistoryEntry,
 } from "@/lib/battle/progress";
+import { rocketGrid } from "@/lib/battle/puzzle";
 import type { StartOptions } from "@/lib/battle/run";
 import { formatCountdown } from "@/lib/format";
 import type { GameItem } from "@/types/item";
@@ -36,6 +37,7 @@ import { ItemIcon } from "./item-icon";
 import { QuizHubCard } from "../quiz/quiz-hub-card";
 import { HistoryCard } from "./gym-history";
 import { RocketDuo } from "./run-result-dialog";
+import { useRocketProgress } from "./use-gym";
 import type { BattlePokemon } from "@/types/battle";
 
 const m = messages.gym;
@@ -46,7 +48,6 @@ export interface HubProps {
   lastMode: GymMode | undefined;
   stats: GymStats;
   badges: string[];
-  daily: DailyResult[];
   /** Days with any daily game played (gym daily or quiz): the streak. */
   days: { date: string }[];
   today: string;
@@ -177,20 +178,19 @@ function NextStepCard({
   stats,
   badges,
   playedToday,
-  today,
   onStart,
 }: {
   stats: GymStats;
   badges: string[];
   playedToday: boolean;
-  today: string;
   onStart: HubProps["onStart"];
 }) {
   const step = nextStep({ stats, badges, playedToday });
   const copy =
     step.kind === "gym" ? h.next[step.reason === "again" ? "again" : step.mode] : h.next[step.kind];
+  const router = useRouter();
   const start = () => {
-    if (step.kind === "daily") onStart("daily", { daily: today });
+    if (step.kind === "daily") router.push("/gym/emboscada");
     else if (step.kind === "legendary") onStart("easy", { legendary: true });
     else onStart(step.mode);
   };
@@ -219,7 +219,6 @@ export function GymHub({
   lastMode,
   stats,
   badges,
-  daily,
   days,
   today,
   secondsLeft,
@@ -232,10 +231,11 @@ export function GymHub({
   const masterBalls = stats.balls.master;
   const withLegendary = legendary && masterBalls > 0;
   const itemsByName = new Map(items.map((item) => [item.name, item]));
-  const todayResult = daily.find((entry) => entry.date === today);
+  const rocket = useRocketProgress();
+  const todayRocket = rocket.days.find((entry) => entry.date === today);
+  const playedToday = days.some((entry) => entry.date === today);
   const todayItem = today ? itemsByName.get(dailyItem(today)) : undefined;
   const archive = today ? pastDays(today, DAILY_ARCHIVE_DAYS) : [];
-  const dailyTotal = GYMS.daily.battles.length;
   const streak = today ? dailyStreak(days, today) : 0;
 
   return (
@@ -273,8 +273,7 @@ export function GymHub({
         <NextStepCard
           stats={stats}
           badges={badges}
-          playedToday={Boolean(todayResult)}
-          today={today}
+          playedToday={Boolean(todayRocket)}
           onStart={onStart}
         />
       )}
@@ -343,15 +342,19 @@ export function GymHub({
               today ? (
                 <div className="grid gap-1" data-testid="daily">
                   <p className="font-display text-[0.6rem]">{h.today(formatDailyDate(today))}</p>
-                  {todayResult ? (
+                  {todayRocket?.result ? (
                     <p data-testid="daily-played">
-                      {resultGrid(todayResult.battlesWon, todayResult.won, dailyTotal)}{" "}
-                      {h.dailyPlayed(todayResult.battlesWon)}
+                      {rocketGrid(todayRocket.attempts, ROCKET_PUZZLE.opponents).join(" ")}{" "}
+                      {h.dailyPlayed(todayRocket.result === "won", todayRocket.attempts.length)}
+                    </p>
+                  ) : todayRocket ? (
+                    <p data-testid="daily-played">
+                      {h.dailyInProgress(ROCKET_PUZZLE.attempts - todayRocket.attempts.length)}
                     </p>
                   ) : null}
                   <p className="font-bold" data-testid="daily-streak">
                     {streak > 0 && `${h.streak(streak)} · `}
-                    {h.streakHint(playsToStreakBonus(days, today), Boolean(todayResult))}
+                    {h.streakHint(playsToStreakBonus(days, today), playedToday)}
                   </p>
                   <p className="text-muted">{h.dailyOnce}</p>
                   <p className="font-bold tabular-nums" data-testid="daily-countdown">
@@ -362,20 +365,16 @@ export function GymHub({
             }
           >
             {today &&
-              (todayResult ? (
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => onStart("daily", { daily: today, practice: true })}
-                >
+              (todayRocket?.result ? (
+                <LinkButton href="/gym/emboscada" variant="secondary" className="w-full">
                   <Dumbbell aria-hidden className="size-4" />
-                  {h.practice}
-                </Button>
+                  {h.seeDaily}
+                </LinkButton>
               ) : (
-                <Button className="w-full" onClick={() => onStart("daily", { daily: today })}>
+                <LinkButton href="/gym/emboscada" className="w-full">
                   <CalendarDays aria-hidden className="size-4" />
-                  {h.play.daily}
-                </Button>
+                  {todayRocket ? h.continueDaily : h.play.daily}
+                </LinkButton>
               ))}
           </ModeCard>
         </div>
@@ -404,10 +403,7 @@ export function GymHub({
                     <li className="flex items-start gap-2">
                       <BallIcon ball="master" earned={false} className="size-5 shrink-0" />
                       <span>
-                        {h.legendaryPaths.streak(
-                          playsToStreakBonus(days, today),
-                          Boolean(todayResult),
-                        )}
+                        {h.legendaryPaths.streak(playsToStreakBonus(days, today), playedToday)}
                       </span>
                     </li>
                   )}
@@ -439,7 +435,7 @@ export function GymHub({
             <p className="text-muted mt-2 text-sm">{h.archiveHint}</p>
             <ul className="mt-3 grid gap-2">
               {archive.map((day) => {
-                const result = daily.find((entry) => entry.date === day);
+                const result = rocket.days.find((entry) => entry.date === day)?.result;
                 return (
                   <li
                     key={day}
@@ -447,17 +443,12 @@ export function GymHub({
                   >
                     <span className="font-display text-[0.6rem]">{formatDailyDate(day)}</span>
                     <span className="text-sm">
-                      {result
-                        ? `${resultGrid(result.battlesWon, result.won, dailyTotal)} ${result.battlesWon}/${dailyTotal}`
-                        : h.archiveNotPlayed}
+                      {result ? h.archiveResult(result === "won") : h.archiveNotPlayed}
                     </span>
-                    <Button
-                      variant="ghost"
-                      onClick={() => onStart("daily", { daily: day, practice: true })}
-                    >
+                    <LinkButton href={`/gym/emboscada?dia=${day}`} variant="ghost">
                       <Dumbbell aria-hidden className="size-4" />
                       {h.archivePractice(formatDailyDate(day))}
-                    </Button>
+                    </LinkButton>
                   </li>
                 );
               })}

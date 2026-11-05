@@ -880,6 +880,10 @@ decisões abaixo. Ficam fora por enquanto: novas Ligas/ginásios e vibração.
 Tudo continua sem backend: `localStorage` versionado + Zod, funções puras no núcleo e testes que nunca
 chamam a PokeAPI real.
 
+**Resultado da Fase 14:** limite de 1.250 para os 3 da mão; em 60 dias simulados, todos os dias
+ficaram na faixa de 10–25% de times vencedores, testando em média ~3 seeds por dia (~30 ms). Detalhes
+em `docs/phases/14-rocket-ambush.md`.
+
 ---
 
 # 9. Design

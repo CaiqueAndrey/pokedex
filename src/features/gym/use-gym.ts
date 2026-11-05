@@ -12,6 +12,7 @@ import {
   bagSchema,
   cleanTrainerName,
   catchLegendary,
+  dailyItem,
   dailyKey,
   dailyResultsSchema,
   playedDays,
@@ -28,6 +29,14 @@ import {
   type HistoryEntry,
   type Trainer,
 } from "@/lib/battle/progress";
+import {
+  EMPTY_ROCKET,
+  addAttempt,
+  rocketProgressSchema,
+  rocketReward,
+  type RocketAttempt,
+  type RocketDay,
+} from "@/lib/battle/puzzle";
 import { gymRunSchema, type GymRun } from "@/lib/battle/run";
 import type { TuneName } from "@/lib/sound/tunes";
 import type { BattlePokemon } from "@/types/battle";
@@ -134,6 +143,17 @@ const playedStore = createValueStore<string[]>(
   z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(DAILY_HISTORY * 2),
   NO_DAYS,
 );
+const rocketStore = createValueStore(STORAGE_KEYS.rocket, rocketProgressSchema, EMPTY_ROCKET);
+
+/** The daily Rocket ambush: each day's attempts and result. */
+export function useRocketProgress() {
+  return useSyncExternalStore(
+    rocketStore.subscribe,
+    rocketStore.getSnapshot,
+    rocketStore.getServerSnapshot,
+  );
+}
+
 const trainerStore = createValueStore<Trainer | null>(
   STORAGE_KEYS.trainer,
   trainerSchema.nullable(),
@@ -247,6 +267,57 @@ export function recordFinishedRun(
   return bonus ? { unlocked, streakBonus: bonus } : { unlocked };
 }
 
+export interface RocketOutcome {
+  ball?: Ball;
+  /** The day's item (a win only). */
+  item?: string;
+  streakBonus?: number;
+  unlocked: AchievementId[];
+}
+
+/**
+ * Saves an official attempt at today's ambush. The first attempt counts the day for the streak;
+ * the attempt that closes the day (a win, or the last miss) pays out: a ball by attempt, the day's
+ * item and "Decolando de novo" for a win. Returns the day and what was earned now.
+ */
+export function recordRocketAttempt(
+  date: string,
+  attempt: RocketAttempt,
+): { day: RocketDay | undefined; outcome: RocketOutcome } {
+  const next = addAttempt(rocketStore.getSnapshot(), date, attempt);
+  rocketStore.set(next);
+  const day = next.days.find((d) => d.date === date);
+  const bonus = markPlayed(date);
+  let stats = statsStore.getSnapshot();
+  const unlocked: AchievementId[] = [];
+  const outcome: RocketOutcome = { unlocked };
+  if (bonus) {
+    stats = addStreakBall(stats);
+    outcome.streakBonus = bonus;
+    if (achievementStore.add("master-ball")) unlocked.push("master-ball");
+  }
+  if (day?.result) {
+    const won = day.result === "won";
+    const ball = rocketReward(day.attempts.length, won);
+    stats = {
+      ...stats,
+      cleared: { ...stats.cleared, daily: stats.cleared.daily + (won ? 1 : 0) },
+      balls: ball ? { ...stats.balls, [ball]: stats.balls[ball] + 1 } : stats.balls,
+    };
+    if (ball) outcome.ball = ball;
+    if (won) {
+      const item = dailyItem(date);
+      const bag = bagStore.getSnapshot();
+      bagStore.set({ ...bag, [item]: (bag[item] ?? 0) + 1 });
+      outcome.item = item;
+      if (achievementStore.add("daily-badge")) unlocked.push("daily-badge");
+      if (achievementStore.add("first-win")) unlocked.push("first-win");
+    }
+  }
+  statsStore.set(stats);
+  return { day, outcome };
+}
+
 /** Records a daily attempt; returns the streak when it completes a Master Ball bonus. */
 function recordDailyWithStreak(run: GymRun): number | undefined {
   if (!run.daily || run.practice) return undefined;
@@ -357,5 +428,6 @@ export function resetGymProgress() {
   trainerStore.set(null);
   tipStore.clear();
   playedStore.set(NO_DAYS);
+  rocketStore.set(EMPTY_ROCKET);
   resetQuiz();
 }

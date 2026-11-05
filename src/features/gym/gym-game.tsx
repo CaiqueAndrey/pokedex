@@ -19,7 +19,6 @@ import {
   totalXp,
   xpForRun,
 } from "@/lib/battle/progress";
-import { levelStats } from "@/lib/battle/damage";
 import {
   applyResult,
   battleConfig,
@@ -29,16 +28,12 @@ import {
   countersLead,
   currentDraft,
   gymOf,
-  handFor,
-  isGauntlet,
   opponentFor,
-  pickHand,
   pickPokemon,
   playerTeam,
   reorder,
   reroll,
   startRun,
-  teamHp,
   trainerFor,
   type GymRun,
   type StartOptions,
@@ -54,7 +49,6 @@ import { DraftBoard } from "./draft-board";
 import { GymBadge } from "./gym-badge";
 import { GymPokemon } from "./gym-pokemon";
 import { GymHub, Section } from "./gym-hub";
-import { HandBoard } from "./hand-board";
 import { PreBattle } from "./pre-battle";
 import { RunPath } from "./run-path";
 import { resultLine, RunResultDialog } from "./run-result-dialog";
@@ -109,7 +103,7 @@ export function GymGame({
 }) {
   const { run, setRun } = useGymRun();
   const { badges, add: addBadge } = useBadges();
-  const { stats, daily, days } = useGymProgress();
+  const { stats, days } = useGymProgress();
   const { trainer } = useTrainer();
   const history = useGymHistory();
   const { today, secondsLeft } = useToday();
@@ -231,7 +225,6 @@ export function GymGame({
           lastMode={stats.lastMode}
           stats={stats}
           badges={badges}
-          daily={daily}
           days={days}
           today={today}
           secondsLeft={secondsLeft}
@@ -304,21 +297,6 @@ export function GymGame({
     </div>
   );
 
-  if (valid.phase === "draft" && isGauntlet(valid)) {
-    return (
-      <>
-        {runBar}
-        <HandBoard
-          hand={handFor(valid, pool)}
-          onConfirm={(picks) => {
-            sfx("pick");
-            setRun(pickHand(valid, picks, pool));
-          }}
-        />
-      </>
-    );
-  }
-
   if (valid.phase === "draft") {
     return (
       <>
@@ -355,15 +333,6 @@ export function GymGame({
             opponent={opponentFor(valid, valid.battle, pool, relations)}
             relations={relations}
             counters={gymOf(valid).rules.reveal && countersLead(valid, valid.battle)}
-            {...(isGauntlet(valid)
-              ? {
-                  health: teamHp(valid, pool).map((hp, i) => ({
-                    hp,
-                    max: team[i] ? levelStats(team[i].stats).hp : hp,
-                  })),
-                  defeated: battlesWon(valid),
-                }
-              : {})}
             onReorder={(order) => setRun(reorder(valid, order))}
           />
           <RunPath run={valid} pool={pool} />

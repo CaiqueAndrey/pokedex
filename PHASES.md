@@ -18,6 +18,6 @@ Roadmap from `project-goal.md` §11. Each phase ends with a learning note in `do
 | 11  | MCP server                | Done        | [11-mcp-server](docs/phases/11-mcp-server.md)                      |
 | 12  | Usability and clarity     | Done        | [12-usability](docs/phases/12-usability.md)                        |
 | 13  | Daily quiz                | Done        | [13-daily-quiz](docs/phases/13-daily-quiz.md)                      |
-| 14  | Rocket ambush (daily)     | Planned     |                                                                    |
+| 14  | Rocket ambush (daily)     | Done        | [14-rocket-ambush](docs/phases/14-rocket-ambush.md)                |
 | 15  | Game depth                | Planned     |                                                                    |
 | 16  | Connected Pokédex         | Planned     |                                                                    |

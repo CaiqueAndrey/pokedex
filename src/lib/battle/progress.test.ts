@@ -231,9 +231,7 @@ describe("daily challenge", () => {
   it("builds the share text for daily and seeded runs", () => {
     expect(
       shareText({ mode: "daily", battlesWon: 2, won: false, daily: "2026-11-05" }, "https://x.dev"),
-    ).toBe(
-      "Esconderijo da Equipe Rocket · Desafio do dia 05/11\n🟩🟩🟥⬛⬛ 2/5\nhttps://x.dev/gym",
-    );
+    ).toBe("Emboscada da Equipe Rocket · Desafio do dia 05/11\n🟩🟩🟥⬛⬛ 2/5\nhttps://x.dev/gym");
     expect(
       shareText({ mode: "hard", battlesWon: 5, won: true, seed: "abc" }, "https://x.dev"),
     ).toBe(

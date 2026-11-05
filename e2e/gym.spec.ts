@@ -15,6 +15,20 @@ async function begin(page: Page, mode: "Fácil" | "Difícil" = "Fácil") {
   await page.getByRole("button", { name: `Jogar no ${mode}` }).click();
 }
 
+/** A fixed day, so the daily ambush (calibrated from the date) is the same on every run. */
+const DAY = new Date(2026, 10, 5, 12, 0, 0);
+
+/** The ambush hand is sorted by strength: the three weakest always fit the cap. */
+async function pickWeakestThree(page: Page) {
+  for (let i = 0; i < 3; i++) {
+    await page
+      .getByTestId("rocket-ambush")
+      .getByRole("button", { name: /^Escolher / })
+      .first()
+      .click();
+  }
+}
+
 /** The start screen: the hub with the challenges. */
 const hub = (page: Page) => page.getByRole("heading", { name: "Escolha seu desafio" });
 
@@ -156,28 +170,28 @@ test("the team order can be changed before a battle", async ({ page }) => {
   await expect(first).not.toHaveText(before);
 });
 
-test("the daily challenge counts once a day", async ({ page }) => {
+test("the daily ambush: attempts are saved and count for the streak", async ({ page }) => {
+  await page.clock.setFixedTime(DAY);
   await page.goto("/gym");
   await hydrated(page);
-  await page.getByRole("button", { name: "Jogar o desafio de hoje" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Esconderijo da Equipe Rocket", level: 1 }),
-  ).toBeVisible();
+  await page.getByRole("link", { name: "Jogar o desafio de hoje" }).click();
+  const ambush = page.getByTestId("rocket-ambush");
+  await expect(ambush).toBeVisible();
   await expect(page.getByText(/^Desafio do dia \d\d\/\d\d$/)).toBeVisible();
-  await expect(page.getByTestId("hand-board")).toBeVisible();
-  await page.getByRole("button", { name: "Abandonar desafio" }).click();
-  const dialog = page.getByRole("dialog", { name: "Abandonar o desafio?" });
-  await expect(dialog).toContainText("desafio do dia");
-  await dialog.getByRole("button", { name: "Abandonar", exact: true }).click();
+  await expect(page.getByTestId("rocket-opponent")).toHaveCount(4);
+  await pickWeakestThree(page);
+  await page.getByRole("button", { name: /^Atacar!/ }).click();
+  await page.getByRole("button", { name: "Pular animação" }).click();
+  await page.getByRole("button", { name: "Voltar ao quebra-cabeça" }).click();
+  await expect(page.getByTestId("rocket-attempt")).toHaveCount(1);
 
-  // Already played today: the result, the countdown and a practice run instead of a new attempt.
-  await expect(page.getByTestId("daily-played")).toContainText("0 de 5");
-  // Playing counts for the streak, whatever the result.
+  // Back on the hub: today's progress, the streak and the countdown.
+  await page.goto("/gym");
+  await hydrated(page);
+  await expect(page.getByTestId("daily-played")).toContainText(/Faltam 2 tentativas|Você venceu/);
   await expect(page.getByTestId("daily-streak")).toContainText("Sequência: 1 dia");
   await expect(page.getByTestId("daily-countdown")).toContainText(/Novo desafio em \d\d:\d\d:\d\d/);
-  await expect(page.getByRole("button", { name: "Jogar o desafio de hoje" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Treinar (não vale)" }).click();
-  await expect(page.getByText(/^Treino · Desafio do dia/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Jogar o desafio de hoje" })).toHaveCount(0);
 });
 
 test.describe("modes, history and controls", () => {
@@ -339,7 +353,7 @@ test.describe("hub, rewards and legendaries", () => {
     await expect(page.getByTestId("prize-easy")).toContainText("Ultra Bola");
     await expect(page.getByTestId("prize-hard")).toContainText("Master Ball");
     await expect(page.getByTestId("prize-daily")).toContainText("Ultra Bola");
-    await expect(page.getByTestId("mode-card-daily")).toContainText("5: Ultra Bola");
+    await expect(page.getByTestId("mode-card-daily")).toContainText("1ª tentativa: Ultra Bola");
     // Without a Master Ball the legendary encounter only explains how to get one.
     await expect(page.getByTestId("legendary-option")).toContainText("Ganhe uma Master Ball");
     await page.getByRole("link", { name: "Recompensas", exact: true }).click();
@@ -353,11 +367,12 @@ test.describe("hub, rewards and legendaries", () => {
     await hydrated(page);
     await page.getByText("Desafios anteriores").click();
     await page
-      .getByRole("button", { name: /^Treinar \d\d\/\d\d$/ })
+      .getByRole("link", { name: /^Treinar \d\d\/\d\d$/ })
       .first()
       .click();
     await expect(page.getByText(/^Treino · Desafio do dia/)).toBeVisible();
-    await expect(page.getByTestId("hand-board")).toBeVisible();
+    await expect(page.getByText("Treino: não vale recompensas")).toBeVisible();
+    await expect(page.getByTestId("rocket-ambush")).toBeVisible();
   });
 
   test("a Master Ball opens a legendary encounter and catches the pick", async ({ page }) => {
@@ -439,28 +454,26 @@ test.describe("trainer, history, gauntlet and navigation", () => {
     await expect(page.getByTestId("path-lost")).toHaveCount(1);
   });
 
-  test("the daily gauntlet: pick 6 from the hand, HP carries over", async ({ page }) => {
-    await page.goto("/gym");
-    await hydrated(page);
-    await page.getByRole("button", { name: "Jogar o desafio de hoje" }).click();
-    const hand = page.getByTestId("hand-board");
-    await expect(hand.getByRole("button", { name: /^Escolher / })).toHaveCount(12);
-    const confirm = page.getByRole("button", { name: "Enfrentar a Equipe Rocket" });
-    await expect(confirm).toBeDisabled();
-    // The hand is sorted by strength: the six weakest always fit the cap.
-    for (let i = 0; i < 6; i++) {
-      await hand
-        .getByRole("button", { name: /^Escolher / })
-        .first()
-        .click();
+  test("the ambush puzzle: pick 3 in order, the same plan can't be retried", async ({ page }) => {
+    await page.clock.setFixedTime(DAY);
+    await page.goto("/gym/emboscada");
+    const hand = page.getByTestId("rocket-ambush");
+    await expect(hand.getByRole("button", { name: /^Escolher / })).toHaveCount(8);
+    const attack = page.getByRole("button", { name: /^Atacar!/ });
+    await expect(attack).toBeDisabled();
+    await pickWeakestThree(page);
+    await expect(page.getByTestId("rocket-slot")).toHaveCount(3);
+    await expect(page.getByTestId("rocket-strength")).toContainText("/ 1250");
+    await attack.click();
+    await expect(page.getByTestId("battle-header")).toContainText("Tentativa 1 de 3");
+    await page.getByRole("button", { name: "Pular animação" }).click();
+    await page.getByRole("button", { name: "Voltar ao quebra-cabeça" }).click();
+    const won = await page.getByTestId("rocket-result").count();
+    if (won === 0) {
+      // The team stays picked to tweak it; the same three in the same order would lose the same way.
+      await expect(page.getByText("Você já tentou esse time nessa ordem")).toBeVisible();
+      await expect(attack).toBeDisabled();
     }
-    await expect(page.getByTestId("hand-count")).toHaveText("6 de 6 escolhidos");
-    await confirm.click();
-    await expect(page.getByTestId("gauntlet-status")).toContainText("Derrotados: 0 de 5");
-    await expect(page.getByTestId("member-hp")).toHaveCount(6);
-    await expect(page.getByTestId("trainer")).toContainText("Recruta Rocket");
-    await fightAndSkip(page);
-    await expect(page.getByTestId("battle-header")).toContainText("Batalha 1 de 5");
   });
 });
 

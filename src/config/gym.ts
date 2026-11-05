@@ -206,7 +206,7 @@ export const GYMS: Record<GymMode, Gym> = {
   daily: {
     format: "gauntlet",
     badgeId: null,
-    name: "Esconderijo da Equipe Rocket",
+    name: "Emboscada da Equipe Rocket",
     leader: "Jessie",
     leaderImage: "/img/jessie.png",
     badge: null,
@@ -250,6 +250,39 @@ export const GYMS: Record<GymMode, Gym> = {
   },
 };
 
+/**
+ * The daily Team Rocket ambush (project-goal.md §8.10, Phase 14): a puzzle with open information.
+ *
+ * - `hand`, `pick`, `cap`: the day's hand, how many you take (in order) and their strength cap.
+ * - `opponents`, `opponentBudget`, `signatures`: Jessie and James's revealed team.
+ * - `attempts`: tries per day; `rewards[n]` is the ball for winning on attempt n + 1.
+ * - `winRange`: the share of legal ordered teams that must win for a seed to be the day's puzzle;
+ *   `maxSeeds` seeds are tried (then the closest one wins). Tuning in docs/phases/14-rocket-ambush.md.
+ */
+export const ROCKET_PUZZLE = {
+  hand: 8,
+  pick: 3,
+  cap: 1250,
+  opponents: 4,
+  opponentBudget: 1800,
+  signatures: ["arbok", "weezing"],
+  attempts: 3,
+  rewards: ["ultra", "great", "poke"],
+  winRange: [0.1, 0.25],
+  maxSeeds: 30,
+} as const satisfies {
+  hand: number;
+  pick: number;
+  cap: number;
+  opponents: number;
+  opponentBudget: number;
+  signatures: readonly string[];
+  attempts: number;
+  rewards: readonly Ball[];
+  winRange: readonly [number, number];
+  maxSeeds: number;
+};
+
 /** Pokéballs won at the end of a run, from the worst to the best. */
 export const BALLS = ["poke", "great", "ultra", "master"] as const;
 export type Ball = (typeof BALLS)[number];
@@ -288,7 +321,7 @@ export const DAILY_ARCHIVE_DAYS = 7;
  * Bumped whenever a rule change would alter the opponents or battles derived from a saved seed:
  * runs saved under other rules are discarded instead of changing mid-run.
  */
-export const RULES_VERSION = 2;
+export const RULES_VERSION = 3;
 
 /** Default player cap when one applies (hard mode). */
 export const TEAM_BUDGET = 2500;

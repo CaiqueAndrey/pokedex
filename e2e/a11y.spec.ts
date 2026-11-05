@@ -13,6 +13,7 @@ const pages = [
   "/gym/recompensas",
   "/gym/historico",
   "/gym/treinador",
+  "/gym/emboscada",
   "/quiz",
 ];
 

@@ -4,7 +4,7 @@ A Pokédex built with the [PokeAPI](https://pokeapi.co/): all 1025 species plus 
 (regional, Mega, Gigantamax), with search and filters in the URL, a rich detail page (stats,
 evolutions, weaknesses), favorites, a team builder with coverage analysis, and a side-by-side
 comparison, plus two games: a **gym mode** (`/gym`), where you draft a team and win five simulated
-battles against Brock (easy), Misty (hard) or Team Rocket (daily challenge), and **"Quem é esse
+battles against Brock (easy) or Misty (hard), or solve the daily Team Rocket ambush puzzle, and **"Quem é esse
 Pokémon?"** (`/quiz`), a daily silhouette guessing game with an endless mode. The UI is in
 Portuguese; code and docs are in English.
 

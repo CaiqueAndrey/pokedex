@@ -185,7 +185,7 @@ export const messages = {
       "Você pode rolar o dado de novo uma vez por desafio.",
       "Batalhas no nível 50: o mais rápido ataca primeiro e cada Pokémon usa o seu tipo mais efetivo.",
       "Uma derrota encerra o desafio. 3 vitórias valem uma Poké Bola, 4 uma Grande Bola, e vencer as 5 dá a insígnia e uma Ultra Bola (Master Ball no Difícil).",
-      "Desafio do dia, no Esconderijo da Equipe Rocket: todo mundo recebe a mesma mão de 12 Pokémon e escolhe 6. Depois, 5 batalhas rápidas sem cura completa (quem sobrevive recupera 50% do PS). Jogue 3 dias seguidos para ganhar uma Master Ball.",
+      "Desafio do dia, a Emboscada da Equipe Rocket: Jessie e James mostram o time deles, todo mundo recebe a mesma mão de 8 Pokémon e escolhe 3 em ordem. São 3 tentativas, e vencer mais cedo vale mais. Jogue 3 dias seguidos (desafio do dia ou Quem é?) para ganhar uma Master Ball.",
     ],
     start: "Começar desafio",
     resume: "Continuar desafio",
@@ -217,9 +217,9 @@ export const messages = {
         title: "Quem abre a batalha?",
         text: "O primeiro da lista entra primeiro. Ponha quem leva vantagem sobre o titular adversário. Toque em dois Pokémon para trocá-los de lugar e depois aperte Batalhar!",
       },
-      hand: {
-        title: "A mão do dia",
-        text: "Todo mundo recebe os mesmos Pokémon hoje. Escolha os seus sem passar do limite de força e enfrente a Equipe Rocket.",
+      ambush: {
+        title: "Um quebra-cabeça",
+        text: "Você vê o time de Jessie e James na ordem em que lutam. Escolha 3 da mão (o primeiro abre a batalha) e ataque. O mesmo time na mesma ordem sempre luta igual: se perder, mude o plano.",
       },
     },
     yourTeam: "Seu time",
@@ -272,7 +272,7 @@ export const messages = {
       daily: {
         label: "Desafio do dia",
         description:
-          "Recrutas, James e Jessie da Equipe Rocket. Mesma semente para todo mundo hoje e só a primeira tentativa conta.",
+          "Um quebra-cabeça contra Jessie e James, igual para todo mundo hoje: 3 Pokémon, 3 tentativas.",
       },
     },
     modeBadge: (mode: string) => `Modo ${mode}`,
@@ -320,8 +320,7 @@ export const messages = {
     loading: "Preparando o ginásio…",
     startSelected: (mode: string) => `Começar desafio: ${mode}`,
     daily: "Desafio do dia",
-    dailyHint:
-      "A Equipe Rocket está à solta: enfrente recrutas, James e Jessie. Mesma semente para todo mundo hoje; só a primeira tentativa conta.",
+    dailyHint: "Jessie e James armaram uma emboscada: um quebra-cabeça igual para todo mundo hoje.",
     dailyBadge: "Desafio do dia",
     outdatedRun: "As regras do ginásio mudaram e o seu desafio anterior foi encerrado.",
     abandonTitle: "Abandonar o desafio?",
@@ -362,7 +361,7 @@ export const messages = {
     stats: {
       runs: "Desafios",
       badges: "Insígnias",
-      rocket: "Esconderijo completo",
+      rocket: "Emboscadas vencidas",
       dailyBest: "Recorde no esconderijo",
       battlesWon: "Batalhas vencidas",
       best: "Melhor resultado",
@@ -386,7 +385,7 @@ export const messages = {
       },
       "daily-badge": {
         label: "Decolando de novo",
-        description: "Derrote a Equipe Rocket num desafio do dia.",
+        description: "Vença a Emboscada da Equipe Rocket num desafio do dia.",
       },
       "both-badges": { label: "Colecionador", description: "Tenha as duas insígnias." },
       "budget-badge": {
@@ -428,7 +427,7 @@ export const messages = {
     },
     ballsTitle: "Suas Pokébolas",
     ballsHintModes:
-      "Fácil: 3, 4 e 5 vitórias dão Poké, Grande e Ultra Bola. Difícil: a 5ª vitória dá Master Ball. Esconderijo Rocket: 1, 3 e 5 derrotados, e uma Master Ball a cada 3 dias seguidos.",
+      "Fácil: 3, 4 e 5 vitórias dão Poké, Grande e Ultra Bola. Difícil: a 5ª vitória dá Master Ball. Emboscada Rocket: vencer na 1ª, 2ª ou 3ª tentativa dá Ultra, Grande ou Poké Bola. Quem é?: Grande ou Poké Bola. E uma Master Ball a cada 3 dias seguidos jogando.",
     ballWon: (ball: string) => `Você ganhou uma ${ball}!`,
     ballCount: (ball: string, n: number) => `${ball}: ${n}`,
     hub: {
@@ -460,16 +459,24 @@ export const messages = {
         easy: "4 treinadores do ginásio e o Brock, com o Onix.",
         hard: "4 treinadores, com o time escondido, e a Misty, com a Starmie.",
         daily:
-          "5 batalhas rápidas: recrutas, James (Weezing) e Jessie (Arbok). O PS não volta todo entre as batalhas: quantos você derrota?",
+          "Jessie (Arbok) e James (Weezing), com o time à mostra. Escolha 3 da mão do dia, em ordem, e vença em até 3 tentativas.",
       },
       play: { easy: "Jogar no Fácil", hard: "Jogar no Difícil", daily: "Jogar o desafio de hoje" },
       practice: "Treinar (não vale)",
+      seeDaily: "Ver a emboscada de hoje",
+      continueDaily: "Continuar a emboscada",
+      archiveResult: (won: boolean) => (won ? "Vencida" : "Escaparam"),
       badgeEarned: "Insígnia conquistada",
       badgeMissing: "Ainda sem a insígnia",
       clears: (n: number) => (n === 1 ? "Vencido 1 vez" : `Vencido ${n} vezes`),
-      dailyPlayed: (won: number) =>
-        `Você já enfrentou a Equipe Rocket hoje: ${won} de 5 derrotados.`,
-      dailyLadder: "1 derrotado: Poké Bola · 3: Grande Bola e o item do dia · 5: Ultra Bola",
+      dailyPlayed: (won: boolean, attempts: number) =>
+        won
+          ? `Você venceu a emboscada de hoje na ${attempts}ª tentativa.`
+          : "Jessie e James escaparam hoje.",
+      dailyInProgress: (left: number) =>
+        left === 1 ? "Falta 1 tentativa hoje." : `Faltam ${left} tentativas hoje.`,
+      dailyLadder:
+        "Vencer na 1ª tentativa: Ultra Bola · 2ª: Grande Bola · 3ª: Poké Bola. Vencer dá o item do dia.",
       streak: (days: number) =>
         days === 1 ? "🔥 Sequência: 1 dia" : `🔥 Sequência: ${days} dias seguidos`,
       streakHint: (plays: number, playedToday: boolean) =>
@@ -482,7 +489,7 @@ export const messages = {
       trainerChip: (name: string, level: number) => `${name} · Nível ${level}`,
       chooseName: "Escolha seu nome de treinador",
       dailyOnce:
-        "Só a primeira tentativa do dia vale. Treinos usam a mesma semente, mas não dão recompensas.",
+        "As tentativas ficam salvas: o dia vale uma vez. Treinos usam a mesma mão, mas não dão recompensas.",
       nextDaily: (time: string) => `Novo desafio em ${time}`,
       todayPrize: "Prêmio de hoje",
       today: (date: string) => `Hoje · ${date}`,
@@ -616,6 +623,38 @@ export const messages = {
       details: "Ver batalhas",
       won: "Completo",
       lost: "Derrota",
+    },
+    rocket: {
+      title: "Emboscada da Equipe Rocket",
+      day: (date: string) => `Desafio do dia ${date}`,
+      practiceLabel: "Treino: não vale recompensas",
+      opponentTitle: "Jessie e James (lutam nesta ordem)",
+      handTitle: "A mão do dia",
+      handHint: (cap: number) =>
+        `Escolha 3 sem passar de ${cap} de força. O primeiro escolhido abre a batalha.`,
+      teamTitle: "Seu time",
+      emptySlot: (n: number) => `Vaga ${n}`,
+      select: (name: string) => `Escolher ${name}`,
+      unselect: (name: string) => `Tirar ${name}`,
+      noFit: "Não cabe",
+      strength: (used: number, cap: number) => `Força: ${used} / ${cap}`,
+      attempt: (n: number, total: number) => `Tentativa ${n} de ${total}`,
+      go: (n: number, total: number) => `Atacar! (${n} de ${total})`,
+      repeated: "Você já tentou esse time nessa ordem: o resultado seria o mesmo.",
+      difficulty: (pct: number) => `Hoje, cerca de ${pct}% dos times possíveis vencem.`,
+      attemptsTitle: "Suas tentativas",
+      attemptWon: "Vitória!",
+      attemptLost: (knocked: number, total: number) => `Derrota: derrubou ${knocked} de ${total}`,
+      nemesis: (name: string) => `${name} segurou o seu time.`,
+      wonTitle: "A Equipe Rocket decolou de novo!",
+      wonIn: (n: number) => (n === 1 ? "Venceu de primeira!" : `Venceu na ${n}ª tentativa.`),
+      lostTitle: "Jessie e James escaparam…",
+      lostText: "Amanhã tem outra emboscada. Treine com a mesma mão para achar a solução.",
+      trainer: "Jessie e James",
+      back: "Voltar ao quebra-cabeça",
+      practice: "Treinar (não vale)",
+      backToGym: "Voltar ao ginásio",
+      shareTitle: "Emboscada Rocket",
     },
     gauntlet: {
       handTitle: "A mão do dia",
