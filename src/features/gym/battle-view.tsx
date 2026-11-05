@@ -1,7 +1,7 @@
 "use client";
 
 import { FastForward } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TypeBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
@@ -9,9 +9,11 @@ import { TYPE_LABELS, messages } from "@/config/messages";
 import { formatName } from "@/lib/format";
 import type { BattleEvent, BattlePokemon, BattleResult, Side } from "@/types/battle";
 import { BATTLE_SPEEDS } from "@/config/gym";
+import { battleEventTune } from "@/lib/sound/tunes";
 import { PokemonImage } from "../pokedex/pokemon-image";
+import { SoundToggle } from "./sound-toggle";
 import { SpeedToggle } from "./speed-toggle";
-import { useBattleSpeed } from "./use-gym";
+import { haptic, sfx, useBattleSpeed } from "./use-gym";
 
 const m = messages.gym;
 
@@ -172,6 +174,9 @@ export function BattleView({
   trainer,
   onDone,
   doneLabel,
+  doneHint,
+  badge = false,
+  children,
 }: {
   result: BattleResult;
   team: BattlePokemon[];
@@ -179,17 +184,42 @@ export function BattleView({
   trainer: string;
   onDone: () => void;
   doneLabel: string;
+  /** Shown next to the "done" button (e.g. who's next). */
+  doneHint?: string;
+  /** This battle wins the badge: the ending plays the fanfare instead of the victory jingle. */
+  badge?: boolean;
+  /** Replaces the "done" button once the battle ends (the end-of-run dialog); null keeps it. */
+  children?: ReactNode;
 }) {
   const [step, setStep] = useState(0);
   const { speed } = useBattleSpeed();
   const total = result.events.length;
   const finished = step >= total;
+  const played = useRef(0);
 
   useEffect(() => {
     if (finished) return;
     const timer = setTimeout(() => setStep((s) => s + 1), BATTLE_SPEEDS[speed]);
     return () => clearTimeout(timer);
   }, [finished, step, speed]);
+
+  // One effect per new event; skipping jumps straight to the ending sound.
+  useEffect(() => {
+    if (step <= played.current) return;
+    const skipped = step - played.current > 1;
+    played.current = step;
+    const event = result.events[step - 1];
+    if (!event) return;
+    if (event.kind === "end") {
+      sfx(event.winner === "player" ? (badge ? "badge" : "battleWon") : "battleLost");
+      return;
+    }
+    if (skipped) return;
+    const tune = battleEventTune(event);
+    if (tune) sfx(tune);
+    if (event.kind === "faint" && event.side === "player") haptic(120);
+    if (event.kind === "attack" && event.critical) haptic([30, 40, 30]);
+  }, [step, result.events, badge]);
 
   const teams = { player: team, opponent };
   const view = replay(result, step, teams, trainer);
@@ -233,11 +263,23 @@ export function BattleView({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <SpeedToggle />
+        <div className="flex flex-wrap items-center gap-2">
+          <SpeedToggle />
+          <SoundToggle />
+        </div>
         {finished ? (
-          <Button onClick={onDone} className="animate-pop">
-            {doneLabel}
-          </Button>
+          (children ?? (
+            <div className="flex flex-wrap items-center gap-3">
+              {doneHint && (
+                <p className="font-display text-[0.6rem]" role="status">
+                  {doneHint}
+                </p>
+              )}
+              <Button onClick={onDone} className="animate-pop">
+                {doneLabel}
+              </Button>
+            </div>
+          ))
         ) : (
           <Button variant="secondary" onClick={() => setStep(total)}>
             <FastForward aria-hidden className="size-4" />

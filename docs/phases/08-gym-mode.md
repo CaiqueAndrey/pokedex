@@ -10,7 +10,7 @@ Pewter Gym to earn the Boulder Badge. Fun first; not a faithful battle simulator
 - `server/pokedex/battle-pool.ts`: the draft pool (generations 1–4, no legendaries/mythicals: 458
   Pokémon, 212 evolution families) from **one GraphQL request**, Zod-validated, memoized for a day,
   with a recorded snapshot (`data/battle-pool.json`, `yarn battle-pool:record`) as fallback.
-- `lib/battle/` (pure, framework-free, reusable by the phase 9 MCP server):
+- `lib/battle/` (pure, framework-free, reusable by the phase 11 MCP server):
   - `rng.ts`: mulberry32 + FNV-1a string hashing; every random choice derives from the run seed.
   - `damage.ts`: level-50 stats, "best own type" attack (STAB), simplified game damage formula,
     criticals, Struggle when immune.

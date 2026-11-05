@@ -6,11 +6,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { messages } from "@/config/messages";
-import { GYM } from "@/config/gym";
-import type { GymMode } from "@/lib/battle/run";
+import { matchupScore } from "@/lib/battle/damage";
+import { battleConfig, gymOf, type GymMode } from "@/lib/battle/run";
 import { teamBst } from "@/lib/battle/team";
 import { formatName } from "@/lib/format";
 import type { BattlePokemon } from "@/types/battle";
+import type { TypeRelations } from "@/types/pokemon";
 import { GymPokemon, HiddenPokemon, MiniStats } from "./gym-pokemon";
 
 const m = messages.gym;
@@ -23,26 +24,70 @@ export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
   return copy;
 }
 
+type Fit = "good" | "bad" | "even";
+
+const FIT_LABEL: Record<Fit, string> = {
+  good: `▲ ${m.matchupGood}`,
+  bad: `▼ ${m.matchupBad}`,
+  even: m.matchupEven,
+};
+
+function MatchupTag({ fit, against }: { fit: Fit | null; against: BattlePokemon }) {
+  if (!fit) return null;
+  const label = m.matchupAgainst(formatName(against.name));
+  return (
+    <span
+      className={cn(
+        "rounded-md px-1.5 py-0.5 text-xs font-bold",
+        fit === "good" && "bg-green-600 text-white",
+        fit === "bad" && "bg-primary-600 text-on-primary",
+        fit === "even" && "bg-border",
+      )}
+      title={label}
+      data-testid={`matchup-${fit}`}
+    >
+      {FIT_LABEL[fit]}
+      <span className="sr-only"> · {label}</span>
+    </span>
+  );
+}
+
 export function PreBattle({
   battle,
   mode,
+  trainer,
   team,
   opponent,
+  relations,
+  counters,
   onReorder,
   onFight,
 }: {
   battle: number;
   mode: GymMode;
+  trainer: string;
   team: BattlePokemon[];
   opponent: BattlePokemon[];
+  relations: TypeRelations;
+  /** The trainer picks its lead after seeing yours (its order follows your first slot). */
+  counters: boolean;
   onReorder: (order: string[]) => void;
   onFight: () => void;
 }) {
-  const config = GYM.battles[battle];
+  const gym = gymOf({ mode });
+  const config = battleConfig({ mode }, battle);
+  const reveal = gym.rules.reveal;
   const [selected, setSelected] = useState<number | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
   const names = team.map((p) => p.name);
+  const opponentLead = opponent[0];
+  // Easy mode coaching: how each of yours fares against the opponent's lead.
+  const matchup = (pokemon: BattlePokemon): Fit | null => {
+    if (!reveal || !opponentLead) return null;
+    const score = matchupScore(pokemon, opponentLead, relations);
+    return score > 0 ? "good" : score < 0 ? "bad" : "even";
+  };
 
   const move = (from: number, to: number) => {
     if (from === to) return;
@@ -64,21 +109,27 @@ export function PreBattle({
     <div className="grid gap-6">
       <div className="animate-fade-up flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {config?.leader && (
-            <Image
-              src="/img/Brock.png"
-              alt={GYM.leader}
-              width={244}
-              height={478}
-              className="animate-fade-up h-32 w-auto drop-shadow-[0_8px_10px_rgba(0,0,0,0.3)]"
-            />
+          {config?.image && (
+            <div className="animate-fade-up relative h-32 w-24 shrink-0 drop-shadow-[0_8px_10px_rgba(0,0,0,0.3)]">
+              <Image
+                src={config.image}
+                alt={trainer}
+                fill
+                sizes="96px"
+                className="object-contain object-bottom"
+              />
+            </div>
           )}
           <div>
-            <p className="text-muted text-sm">{m.battleOf(battle + 1, GYM.battles.length)}</p>
+            <p className="text-muted text-sm">
+              {gym.name} · {m.battleOf(battle + 1, gym.battles.length)}
+            </p>
             <h2 className="text-xs sm:text-sm" data-testid="trainer">
-              {m.versus(config?.trainer ?? "")}
+              {m.versus(trainer)}
             </h2>
-            {config?.leader && <p className="text-sm font-bold">⭐ {m.leader}</p>}
+            {config?.leader && (
+              <p className="text-sm font-bold">⭐ {mode === "daily" ? m.boss : m.leader}</p>
+            )}
           </div>
         </div>
         <Button onClick={onFight} className="motion-safe:animate-pulse">
@@ -92,13 +143,16 @@ export function PreBattle({
           <h3 id="opponent-title" className="text-[0.65rem]">
             {m.opponentTeam}
           </h3>
-          {mode === "easy" && (
+          {reveal && (
             <span className="text-sm" data-testid="opponent-power">
               {m.opponentPower(teamBst(opponent))}
             </span>
           )}
         </div>
-        {mode === "easy" ? (
+        <p className="text-sm" data-testid="scout-hint">
+          {m.scoutHint(trainer)}
+        </p>
+        {reveal ? (
           <>
             <ol className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {opponent.map((pokemon, i) => (
@@ -122,6 +176,11 @@ export function PreBattle({
               ))}
             </ol>
             <p className="text-muted text-sm">{m.opponentHint}</p>
+            {counters && (
+              <p className="text-sm font-bold" data-testid="counter-hint">
+                {m.counterHint(trainer)}
+              </p>
+            )}
           </>
         ) : (
           <>
@@ -191,11 +250,12 @@ export function PreBattle({
                   showTypes
                   className="w-28 shrink-0 border-0"
                 />
-                {mode === "easy" && (
+                {reveal && (
                   <div className="min-w-36 flex-1">
                     <MiniStats pokemon={pokemon} />
                   </div>
                 )}
+                {opponentLead && <MatchupTag fit={matchup(pokemon)} against={opponentLead} />}
               </button>
               <div className="flex shrink-0 flex-col sm:flex-row">
                 <Button

@@ -1,26 +1,38 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { GYM, TEAM_BUDGET, TEAM_SIZE } from "@/config/gym";
+import {
+  BATTLES_PER_RUN,
+  GYMS,
+  RULES_VERSION,
+  TEAM_BUDGET,
+  TEAM_SIZE,
+  type GymMode,
+} from "@/config/gym";
 import { createFixtureClient } from "@/server/pokeapi/fixtures";
 import { snapshotPool } from "@/server/pokedex/battle-pool";
 import { createPokedexService } from "@/server/pokedex/service";
 import type { BattlePokemon } from "@/types/battle";
 import type { TypeRelations } from "@/types/pokemon";
-import { bestAttack, levelStats, rollDamage } from "./damage";
+import { bestAttack, levelStats, matchupScore, rollDamage } from "./damage";
 import { draftRound } from "./draft";
-import { generateOpponent } from "./opponents";
+import { counterPick, generateOpponent, scoutScore } from "./opponents";
 import { hashString, mulberry32, rngFrom, shuffle } from "./rng";
 import {
   applyResult,
   battleFor,
+  countersLead,
   currentDraft,
+  gymRunSchema,
+  opponentBudget,
   opponentFor,
   pickPokemon,
   reorder,
   reroll,
   startRun,
+  trainersFor,
   type GymRun,
 } from "./run";
 import { simulateBattle } from "./simulate";
+import { sharedWeaknesses, teamCoverage } from "../type-effectiveness";
 import { budgetPlan, fitsBudget, teamBst, validateTeam } from "./team";
 
 const pool = snapshotPool();
@@ -235,6 +247,17 @@ describe("opponents", () => {
     // Every type shows up, including fairy: the API uses modern typings (Clefairy is Fairy).
     expect(types.size).toBe(18);
   });
+
+  it("counter-pick opens with the best answer to your lead and keeps the rest in order", () => {
+    const team = ["pidgey", "geodude", "squirtle", "caterpie"].map(get);
+    // Against Charmander (fire), Geodude (rock) and Squirtle (water) both hit 2× and resist fire:
+    // the tie keeps the generated order, so Geodude opens.
+    const picked = counterPick(team, get("charmander"), relations);
+    expect(picked.map((p) => p.name)).toEqual(["geodude", "pidgey", "squirtle", "caterpie"]);
+    // Against Bulbasaur (grass), only Pidgey (flying) has the edge.
+    expect(counterPick(team, get("bulbasaur"), relations)[0]?.name).toBe("pidgey");
+    expect(counterPick(team, undefined, relations)).toEqual(team);
+  });
 });
 
 describe("gym run", () => {
@@ -252,8 +275,9 @@ describe("gym run", () => {
     let run = draftAll(startRun("abc"), (offers) => offers.at(-1) as BattlePokemon);
     expect(run.phase).toBe("ready");
     expect(run.picks).toHaveLength(6);
-    expect(opponentFor(run, 0, pool)).toHaveLength(6);
-    while (run.phase === "ready") run = applyResult(run, battleFor(run, pool, relations), pool);
+    expect(opponentFor(run, 0, pool, relations)).toHaveLength(6);
+    while (run.phase === "ready")
+      run = applyResult(run, battleFor(run, pool, relations), pool, relations);
     expect(["won", "lost"]).toContain(run.phase);
     // Every battle fought is recorded; only the last one can be a defeat.
     expect(run.history.length).toBe(run.phase === "won" ? 5 : run.battle + 1);
@@ -276,46 +300,184 @@ describe("gym run", () => {
     expect(reorder(run, ["pikachu"])).toBe(run);
   });
 
-  function badgeRate(mode: "easy" | "hard", strategy: "random" | "strongest", runs = 150) {
-    let firstWins = 0;
-    let badges = 0;
-    for (let i = 0; i < runs; i++) {
-      const rng = rngFrom("balance", mode, strategy, i);
-      let run = draftAll(startRun(`balance-${i}`, mode), (offers) =>
-        strategy === "strongest"
-          ? (offers.at(-1) as BattlePokemon)
-          : (offers[Math.floor(rng() * offers.length)] as BattlePokemon),
-      );
-      run = applyResult(run, battleFor(run, pool, relations), pool);
-      if (run.battle >= 1) firstWins++;
-      while (run.phase === "ready") run = applyResult(run, battleFor(run, pool, relations), pool);
-      if (run.phase === "won") badges++;
-    }
-    return { first: firstWins / runs, badge: badges / runs };
+  type Strategy = "random" | "strongest" | "expert";
+
+  /** What a thoughtful player drafts: strong, new types, no stacked weaknesses. */
+  function expertPick(team: BattlePokemon[], offers: BattlePokemon[]) {
+    const value = (p: BattlePokemon) => {
+      const covered = new Set(team.flatMap((t) => t.types));
+      const fresh = p.types.filter((t) => !covered.has(t)).length;
+      const shared = sharedWeaknesses(
+        teamCoverage(
+          [...team, p].map((t) => t.types),
+          relations,
+        ),
+      ).length;
+      return p.bst + 40 * fresh - 50 * shared;
+    };
+    return offers.reduce((best, p) => (value(p) > value(best) ? p : best));
   }
 
-  it("is balanced per mode, and drafting well beats random picks", () => {
-    const easyRandom = badgeRate("easy", "random");
-    const easyStrong = badgeRate("easy", "strongest");
-    const hardRandom = badgeRate("hard", "random");
-    const hardStrong = badgeRate("hard", "strongest");
-    console.error(
-      `balance: easy ${easyRandom.badge} random / ${easyStrong.badge} strongest; ` +
-        `hard ${hardRandom.badge} random / ${hardStrong.badge} strongest`,
-    );
-    expect(easyRandom.first).toBeGreaterThanOrEqual(0.7);
-    expect(easyRandom.badge).toBeGreaterThanOrEqual(0.15);
-    expect(easyRandom.badge).toBeLessThanOrEqual(0.55);
-    expect(hardStrong.badge).toBeGreaterThanOrEqual(0.08);
-    expect(hardStrong.badge).toBeLessThan(easyStrong.badge);
-    expect(hardRandom.badge).toBeLessThan(easyRandom.badge);
-    // The budget is a real trade-off: using it well (strongest that fits) pays off.
-    expect(easyStrong.badge).toBeGreaterThan(easyRandom.badge);
-    expect(hardStrong.badge).toBeGreaterThan(hardRandom.badge);
-  }, 180_000);
+  /**
+   * Clear rate for a strategy: random picks; always the strongest legal offer; or "expert" (drafts
+   * for coverage, then opens each battle with the best matchup against the opponent's lead,
+   * enumerating every lead so counter-picking trainers are accounted for).
+   */
+  function clearRate(mode: GymMode, strategy: Strategy, runs = 60) {
+    const map = new Map(pool.map((p) => [p.name, p]));
+    let firstWins = 0;
+    let cleared = 0;
+    for (let i = 0; i < runs; i++) {
+      const rng = rngFrom("balance", mode, strategy, i);
+      let run = startRun(`balance-${i}`, mode);
+      while (run.phase === "draft") {
+        const round = currentDraft(run, pool);
+        const legal = round.offers.filter((o) => !round.blocked.includes(o.name));
+        const team = run.picks.map(get);
+        const choice =
+          strategy === "random"
+            ? (legal[Math.floor(rng() * legal.length)] as BattlePokemon)
+            : strategy === "expert"
+              ? expertPick(team, legal)
+              : (legal.at(-1) as BattlePokemon);
+        run = pickPokemon(run, choice.name, pool);
+      }
+      while (run.phase === "ready") {
+        if (strategy === "expert") {
+          const ready = run;
+          const options = run.picks.map((lead) =>
+            reorder(ready, [lead, ...ready.picks.filter((name) => name !== lead)]),
+          );
+          const score = (option: GymRun) => {
+            const lead = map.get(option.order[0] ?? "") as BattlePokemon;
+            const opponentLead = opponentFor(option, option.battle, pool, relations)[0];
+            return opponentLead ? matchupScore(lead, opponentLead, relations) * 1000 + lead.bst : 0;
+          };
+          run = options.reduce((best, option) => (score(option) > score(best) ? option : best));
+        }
+        run = applyResult(run, battleFor(run, pool, relations), pool, relations);
+        if (run.battle === 1 && run.history.length === 1) firstWins++;
+      }
+      if (run.phase === "won") cleared++;
+    }
+    return { first: firstWins / runs, cleared: cleared / runs };
+  }
 
-  it("uses the five configured battles, Brock last", () => {
-    expect(GYM.battles).toHaveLength(5);
-    expect(GYM.battles.at(-1)).toMatchObject({ trainer: "Brock", leader: true });
+  it("is a real challenge in every mode, and playing well pays off", () => {
+    const modes = ["easy", "hard", "daily"] as const;
+    const strategies = ["random", "strongest", "expert"] as const;
+    const rates = Object.fromEntries(
+      modes.flatMap((mode) =>
+        strategies.map((strategy) => [`${mode}-${strategy}`, clearRate(mode, strategy)]),
+      ),
+    ) as Record<`${GymMode}-${Strategy}`, { first: number; cleared: number }>;
+    console.error(
+      "balance:",
+      Object.entries(rates)
+        .map(([key, rate]) => `${key} ${Math.round(rate.cleared * 100)}%`)
+        .join(", "),
+    );
+    // Targets from project-goal.md §8.9 (bands, with slack for 60 runs per row).
+    expect(rates["easy-random"].first).toBeGreaterThanOrEqual(0.5);
+    expect(rates["easy-random"].cleared).toBeLessThanOrEqual(0.15);
+    expect(rates["easy-expert"].cleared).toBeGreaterThanOrEqual(0.15);
+    expect(rates["easy-expert"].cleared).toBeLessThanOrEqual(0.5);
+    expect(rates["hard-expert"].cleared).toBeLessThanOrEqual(0.25);
+    expect(rates["daily-expert"].cleared).toBeLessThanOrEqual(0.4);
+    for (const mode of modes) {
+      // Nobody clears a mode by drafting at random, and thinking beats random drafting.
+      expect(rates[`${mode}-random`].cleared).toBeLessThanOrEqual(0.15);
+      expect(rates[`${mode}-expert`].cleared).toBeGreaterThan(rates[`${mode}-random`].cleared);
+    }
+    // Easy is the easiest for anyone playing with intent.
+    expect(rates["hard-expert"].cleared).toBeLessThan(rates["easy-expert"].cleared);
+    expect(rates["daily-expert"].cleared).toBeLessThan(rates["easy-expert"].cleared);
+  }, 600_000);
+
+  it("opponents scale per battle and leaders counter your lead", () => {
+    const run = draftAll(startRun("follow", "easy"), (offers) => offers.at(-1) as BattlePokemon);
+    const rules = GYMS.easy.rules;
+    const team = teamBst(run.picks.map(get));
+    const expected = rules.opponents + rules.follow * (team - rules.opponents);
+    expect(opponentBudget(run, 3, pool)).toBe(
+      Math.round(expected * (GYMS.easy.battles[3]?.budgetFactor ?? 1)),
+    );
+    // Battle 5 (Brock) counter-picks in easy mode too; battle 1 doesn't.
+    expect(countersLead(run, 4)).toBe(true);
+    expect(countersLead(run, 0)).toBe(false);
+    expect(countersLead({ ...run, mode: "hard" }, 0)).toBe(true);
+  });
+
+  it("leaders and bosses bring their signature Pokémon", () => {
+    for (const mode of ["easy", "hard", "daily"] as const) {
+      const run = draftAll(
+        startRun(`sig-${mode}`, mode),
+        (offers) => offers.at(-1) as BattlePokemon,
+      );
+      GYMS[mode].battles.forEach((battle, index) => {
+        const opponent = opponentFor(run, index, pool, relations);
+        expect(validateTeam(opponent)).toEqual([]);
+        if (battle.signature) expect(opponent.map((p) => p.name)).toContain(battle.signature);
+      });
+    }
+  });
+
+  it("scouting trainers build teams that counter yours", () => {
+    const team = ["charizard", "arcanine", "rapidash", "ninetales", "magmar", "flareon"].map(get);
+    let random = 0;
+    let scouted = 0;
+    for (let seed = 0; seed < 40; seed++) {
+      const plain = generateOpponent(pool, 2500, rngFrom("scout", seed));
+      const studied = generateOpponent(pool, 2500, rngFrom("scout", seed), TEAM_SIZE, {
+        scouting: { team, relations, focus: 1 },
+      });
+      random += plain.reduce((sum, p) => sum + scoutScore(p, team, relations), 0);
+      scouted += studied.reduce((sum, p) => sum + scoutScore(p, team, relations), 0);
+      expect(validateTeam(studied)).toEqual([]);
+      expect(teamBst(studied)).toBeLessThanOrEqual(2500);
+    }
+    expect(scouted).toBeGreaterThan(random * 2);
+  });
+
+  it("names trainers per run: fixed leaders, drawn classes and names, no repeats", () => {
+    const a = trainersFor(startRun("names-a", "easy"));
+    const b = trainersFor(startRun("names-b", "easy"));
+    expect(a).toHaveLength(5);
+    expect(a.at(-1)).toBe("Brock");
+    expect(new Set(a).size).toBe(5);
+    expect(a).not.toEqual(b);
+    expect(trainersFor(startRun("names-a", "easy"))).toEqual(a);
+    const rocket = trainersFor(startRun("dia-2026-11-05", "daily"));
+    expect(rocket.slice(-2)).toEqual(["James", "Jessie"]);
+    expect(rocket[0]).toMatch(/^Recruta Rocket /);
+    expect(trainersFor(startRun("x", "hard")).at(-1)).toBe("Misty");
+  });
+
+  it("starts runs under the current rules version", () => {
+    expect(startRun("v").rules).toBe(RULES_VERSION);
+    // Saved v1 runs (no version) parse as version 1, so the UI can discard them.
+    const legacy: Partial<GymRun> = startRun("old");
+    delete legacy.rules;
+    expect(gymRunSchema.parse(legacy).rules).toBe(1);
+  });
+
+  it("records damage and the opponent's MVP for every battle", () => {
+    let run = draftAll(startRun("mvp"), (offers) => offers.at(-1) as BattlePokemon);
+    run = applyResult(run, battleFor(run, pool, relations), pool, relations);
+    const record = run.history[0];
+    expect(Object.keys(record?.damage ?? {})).toHaveLength(6);
+    expect(Object.values(record?.damage ?? {}).reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+  });
+
+  it("every mode has five battles with its leader last", () => {
+    expect(GYMS.easy.battles.at(-1)).toMatchObject({ trainer: "Brock", leader: true });
+    expect(GYMS.hard.battles.at(-1)).toMatchObject({ trainer: "Misty", leader: true });
+    expect(GYMS.daily.battles.at(-1)).toMatchObject({ trainer: "Jessie", leader: true });
+    for (const gym of Object.values(GYMS)) {
+      expect(gym.battles).toHaveLength(BATTLES_PER_RUN);
+      for (const battle of gym.battles) {
+        if (battle.signature) expect(pool.some((p) => p.name === battle.signature)).toBe(true);
+      }
+    }
   });
 });

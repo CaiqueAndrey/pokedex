@@ -3,7 +3,7 @@
 import { Dices } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TYPE_LABELS, messages } from "@/config/messages";
-import { DRAFT_ROUNDS, MODE_BUDGETS, REROLLS_PER_RUN, TEAM_SIZE } from "@/config/gym";
+import { DRAFT_ROUNDS, GYMS, REROLLS_PER_RUN, TEAM_SIZE } from "@/config/gym";
 import { cn } from "@/components/ui/cn";
 import { TYPE_STYLES } from "@/config/pokemon-types";
 import { currentDraft, type GymRun } from "@/lib/battle/run";
@@ -32,8 +32,8 @@ export function DraftBoard({
   onReroll: () => void;
 }) {
   const round = currentDraft(run, pool);
-  // Easy mode has no cap (budget null): the panel and the per-offer budget lines are hidden.
-  const budget = MODE_BUDGETS[run.mode].player;
+  // A mode without a cap (budget null) hides the panel and the per-offer budget lines.
+  const { player: budget, reveal } = GYMS[run.mode].rules;
   const plan = budget === null ? null : budgetPlan(team, pool, budget);
   const pct = (value: number) => `${(value / (budget ?? 1)) * 100}%`;
   const typesCovered = new Set(team.flatMap((p) => p.types));
@@ -119,11 +119,7 @@ export function DraftBoard({
             </ul>
             <p className="text-muted text-sm">{m.budgetHelp}</p>
           </div>
-        ) : (
-          <p className="text-muted text-sm" data-testid="easy-hint">
-            {m.easyDraftHint}
-          </p>
-        )}
+        ) : null}
 
         <ul className="grid gap-3 sm:grid-cols-3">
           {round.offers.map((offer, index) => {
@@ -136,7 +132,7 @@ export function DraftBoard({
               >
                 <GymPokemon
                   pokemon={offer}
-                  showStats={run.mode === "easy"}
+                  showStats={reveal}
                   className={cn("h-full", blocked && "opacity-60 grayscale")}
                 >
                   {plan && budget !== null && (
