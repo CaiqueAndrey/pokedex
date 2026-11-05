@@ -1,7 +1,8 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { RotateCcw, Swords } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ActionBar } from "@/components/ui/action-bar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
@@ -43,6 +44,7 @@ import {
   type StartOptions,
 } from "@/lib/battle/run";
 import { newSeed } from "@/lib/battle/rng";
+import { formatName } from "@/lib/format";
 import type { BattlePokemon, BattleResult } from "@/types/battle";
 import type { GameItem } from "@/types/item";
 import type { TypeRelations } from "@/types/pokemon";
@@ -63,6 +65,7 @@ import {
   recordAbandonedDaily,
   recordCatch,
   recordFinishedRun,
+  setGymFocus,
   sfx,
   takeMasterBall,
   useBadges,
@@ -120,6 +123,12 @@ export function GymGame({
   const outdated = run !== null && run.rules !== RULES_VERSION;
   const valid = run && !outdated && run.picks.every((name) => names.has(name)) ? run : null;
   const team = valid ? playerTeam(valid, pool) : [];
+  // While drafting, ordering or battling, the gym's tabs step aside (see GymTabs).
+  const focus = Boolean(battle) || valid?.phase === "draft" || valid?.phase === "ready";
+  useEffect(() => {
+    setGymFocus(focus);
+    return () => setGymFocus(false);
+  }, [focus]);
   const itemFor = (run: GymRun) => {
     if (!earnsDailyItem(run) || !run.daily) return undefined;
     const name = dailyItem(run.daily);
@@ -232,11 +241,16 @@ export function GymGame({
         />
         <Section id="regras" title={m.rulesTitle}>
           <Card className="grid gap-4">
-            <ol className="grid list-decimal gap-2 pl-5 text-base">
-              {m.rules.map((rule) => (
-                <li key={rule}>{rule}</li>
-              ))}
-            </ol>
+            <details data-testid="rules">
+              <summary className="font-display cursor-pointer text-[0.6rem] leading-relaxed">
+                {m.rulesToggle}
+              </summary>
+              <ol className="mt-3 grid list-decimal gap-2 pl-5 text-base">
+                {m.rules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ol>
+            </details>
             <h3 className="text-[0.6rem]">{m.hub.settingsTitle}</h3>
             <div className="flex flex-wrap items-center gap-2">
               <SpeedToggle />
@@ -350,10 +364,17 @@ export function GymGame({
                 }
               : {})}
             onReorder={(order) => setRun(reorder(valid, order))}
-            onFight={() => fight(valid)}
           />
           <RunPath run={valid} pool={pool} />
         </div>
+        <ActionBar
+          hint={team[0] && <p data-testid="lead-hint">{m.leadHint(formatName(team[0].name))}</p>}
+        >
+          <Button onClick={() => fight(valid)}>
+            <Swords aria-hidden className="size-4" />
+            {m.fight}
+          </Button>
+        </ActionBar>
       </>
     );
   }
@@ -385,21 +406,6 @@ export function GymGame({
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <ShareButton
-            result={{
-              mode: valid.mode,
-              battlesWon: wins,
-              won,
-              daily: valid.daily,
-              seed: valid.seed,
-            }}
-          />
-          <Button onClick={newRun}>
-            <RotateCcw aria-hidden className="size-4" />
-            {m.newRun}
-          </Button>
-        </div>
         <ul className="grid w-full grid-cols-3 gap-2 sm:grid-cols-6">
           {team.map((pokemon) => (
             <li key={pokemon.name}>
@@ -409,6 +415,21 @@ export function GymGame({
         </ul>
       </Card>
       <RunPath run={valid} pool={pool} />
+      <ActionBar className="mt-4">
+        <ShareButton
+          result={{
+            mode: valid.mode,
+            battlesWon: wins,
+            won,
+            daily: valid.daily,
+            seed: valid.seed,
+          }}
+        />
+        <Button onClick={newRun}>
+          <RotateCcw aria-hidden className="size-4" />
+          {m.newRun}
+        </Button>
+      </ActionBar>
     </>
   );
 }

@@ -12,6 +12,7 @@ import type { BattlePokemon } from "@/types/battle";
 import { PokemonImage } from "../pokedex/pokemon-image";
 import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
+import { ResetProgress } from "./reset-progress";
 import { useBadges, useGymProgress, useTrainer } from "./use-gym";
 
 const m = messages.gym;
@@ -180,6 +181,9 @@ export function TrainerCard({ pool }: { pool: BattlePokemon[] }) {
         <p className="text-muted text-sm">{t.description}</p>
         <p className="text-muted text-sm">{t.xpHow}</p>
       </Card>
+      <div className="lg:col-start-2">
+        <ResetProgress />
+      </div>
     </div>
   );
 }

@@ -55,6 +55,7 @@ export const messages = {
     random: "Aleatório",
     gym: "Ginásio",
     main: "Navegação principal",
+    menu: "Menu",
     skip: "Pular para o conteúdo",
   },
   theme: { toggle: "Alternar tema", light: "Tema claro", dark: "Tema escuro" },
@@ -168,7 +169,7 @@ export const messages = {
     swap: "Trocar posições",
     change: "Trocar Pokémon",
   },
-  random: { label: "Pokémon aleatório" },
+  random: { label: "Pokémon aleatório", surprise: "Surpreenda-me" },
   gym: {
     title: "Modo Ginásio",
     description:
@@ -201,6 +202,25 @@ export const messages = {
     pick: "Escolher",
     bst: "Força",
     budget: (used: number, total: number) => `Orçamento: ${used} / ${total}`,
+    budgetHow: "Como funciona o limite?",
+    teamCount: (n: number, total: number) => `Seu time (${n}/${total})`,
+    leadHint: (name: string) => `Abre a batalha: ${name}. Reordene acima se quiser.`,
+    rulesToggle: "Ver todas as regras",
+    tipDismiss: "Entendi",
+    tips: {
+      draft: {
+        title: "Como funciona o draft",
+        text: "O dado sorteia um tipo e oferece 3 Pokémon: fraco, médio e forte. Escolha 1 por rodada até ter 6. Os fortes gastam mais do limite de força do time: equilibre e cubra tipos diferentes.",
+      },
+      order: {
+        title: "Quem abre a batalha?",
+        text: "O primeiro da lista entra primeiro. Ponha quem leva vantagem sobre o titular adversário. Toque em dois Pokémon para trocá-los de lugar e depois aperte Batalhar!",
+      },
+      hand: {
+        title: "A mão do dia",
+        text: "Todo mundo recebe os mesmos Pokémon hoje. Escolha os seus sem passar do limite de força e enfrente a Equipe Rocket.",
+      },
+    },
     yourTeam: "Seu time",
     emptySlot: "Vaga",
     sharedWeakness: (types: string) => `Fraquezas compartilhadas: ${types}`,
@@ -391,7 +411,8 @@ export const messages = {
       },
       "master-ball": {
         label: "A bola definitiva",
-        description: "Ganhe uma Master Ball (Difícil ou desafio do dia completo).",
+        description:
+          "Ganhe uma Master Ball (Difícil completo ou 3 dias seguidos de desafio do dia).",
       },
     },
     balls: {
@@ -403,8 +424,6 @@ export const messages = {
     ballsTitle: "Suas Pokébolas",
     ballsHintModes:
       "Fácil: 3, 4 e 5 vitórias dão Poké, Grande e Ultra Bola. Difícil: a 5ª vitória dá Master Ball. Esconderijo Rocket: 1, 3 e 5 derrotados, e uma Master Ball a cada 3 dias seguidos.",
-    ballsHint:
-      "3 vitórias: Poké Bola · 4: Grande Bola · Fácil completo: Ultra Bola · Difícil ou desafio do dia completo: Master Ball.",
     ballWon: (ball: string) => `Você ganhou uma ${ball}!`,
     ballCount: (ball: string, n: number) => `${ball}: ${n}`,
     hub: {
@@ -468,8 +487,45 @@ export const messages = {
       legendaryToggle: (n: number) => `Usar uma Master Ball (você tem ${n})`,
       legendaryHelp:
         "A primeira rodada do draft oferece 3 lendários. O escolhido entra no time e conta no limite de força. A Master Ball é gasta ao começar. Não vale no desafio do dia.",
-      legendaryLocked:
-        "Ganhe uma Master Ball, vencendo o Difícil ou o desafio do dia, para ter um encontro lendário.",
+      legendaryLocked: "Ganhe uma Master Ball para ter um encontro lendário. Há dois caminhos:",
+      legendaryPaths: {
+        hard: (clears: number) =>
+          clears > 0
+            ? `Vença a Misty no Difícil de novo: cada vitória completa dá uma Master Ball (você já venceu ${clears}).`
+            : "Vença a Misty no Difícil: as 5 vitórias dão uma Master Ball.",
+        streak: (plays: number, playedToday: boolean) =>
+          plays === 1 && !playedToday
+            ? "Jogue o desafio do dia hoje: é o 3º dia seguido e vale uma Master Ball."
+            : `Jogue o desafio do dia 3 dias seguidos, com qualquer resultado: ${plays === 1 ? "falta 1 dia" : `faltam ${plays} dias`}.`,
+      },
+      next: {
+        label: "Próximo passo",
+        easy: {
+          title: "Comece pelo Ginásio de Pewter",
+          text: "O modo Fácil mostra o time adversário e dicas de vantagem. Vença o Brock para ganhar a Insígnia da Rocha.",
+          cta: "Começar no Fácil",
+        },
+        hard: {
+          title: "Agora a Insígnia da Cascata",
+          text: "No Difícil o time adversário fica escondido e a Misty responde ao seu titular. Vencer dá uma Master Ball.",
+          cta: "Encarar a Misty",
+        },
+        daily: {
+          title: "O desafio de hoje está esperando",
+          text: "Igual para todo mundo e vale recompensa garantida. Jogar 3 dias seguidos dá uma Master Ball.",
+          cta: "Jogar o desafio do dia",
+        },
+        legendary: {
+          title: "Você tem uma Master Ball!",
+          text: "Use num encontro lendário: a primeira rodada do draft oferece 3 lendários e o escolhido fica na sua coleção.",
+          cta: "Encontro lendário no Fácil",
+        },
+        again: {
+          title: "Bora mais uma?",
+          text: "Cada desafio sorteia dados e treinadores novos. Vencer de novo rende Pokébolas e XP.",
+          cta: "Jogar de novo",
+        },
+      },
       archiveTitle: "Desafios anteriores",
       archiveHint:
         "Treine com a semente dos últimos dias. Treinos não valem recompensas nem estatísticas.",
@@ -523,6 +579,25 @@ export const messages = {
       legends: "Lendários",
       achievements: "Conquistas",
       favorite: "Parceiro",
+      reset: {
+        title: "Zona de perigo",
+        text: "Recomece do zero neste navegador. Não dá para desfazer.",
+        button: "Apagar todo o progresso",
+        dialogTitle: "Apagar todo o progresso?",
+        lose: "Você vai perder:",
+        items: [
+          "insígnias, Pokébolas, Mochila e lendários capturados",
+          "conquistas, nível e XP",
+          "histórico, estatísticas e sequência do desafio do dia",
+          "o desafio em andamento e o seu nome de treinador",
+        ],
+        keep: "Favoritos, Meu time, tema, som e velocidade continuam.",
+        confirmLabel: "Digite APAGAR para confirmar",
+        word: "APAGAR",
+        confirm: "Apagar tudo",
+        cancel: "Cancelar",
+        done: "Progresso apagado. Bom recomeço!",
+      },
     },
     xpGained: (n: number) => `+${n} XP`,
     streakBonus: (days: number) => `🔥 ${days} dias seguidos: você ganhou uma Master Ball!`,

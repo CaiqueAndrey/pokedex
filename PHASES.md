@@ -16,3 +16,8 @@ Roadmap from `project-goal.md` §11. Each phase ends with a learning note in `do
 | 09  | Gym mode 2.0              | Done        | [09-gym-mode-2](docs/phases/09-gym-mode-2.md)                      |
 | 10  | Deploy (Vercel)           | In progress | [10-deploy](docs/phases/10-deploy.md) (done before MCP, by choice) |
 | 11  | MCP server                | Done        | [11-mcp-server](docs/phases/11-mcp-server.md)                      |
+| 12  | Usability and clarity     | Done        | [12-usability](docs/phases/12-usability.md)                        |
+| 13  | Daily quiz                | Planned     |                                                                    |
+| 14  | Rocket ambush (daily)     | Planned     |                                                                    |
+| 15  | Game depth                | Planned     |                                                                    |
+| 16  | Connected Pokédex         | Planned     |                                                                    |

@@ -21,12 +21,16 @@ export function MiniStats({ pokemon }: { pokemon: BattlePokemon }) {
   );
 }
 
-/** Compact Pokémon tile used across the gym screens. */
+/**
+ * Compact Pokémon tile used across the gym screens. `row` lays it out sideways on phones (picture
+ * left, details right), so a list of offers fits on one screen; from `sm` up it is a card again.
+ */
 export function GymPokemon({
   pokemon,
   compact = false,
   showTypes = !compact,
   showStats = false,
+  row = false,
   className,
   children,
 }: {
@@ -34,6 +38,7 @@ export function GymPokemon({
   compact?: boolean;
   showTypes?: boolean;
   showStats?: boolean;
+  row?: boolean;
   className?: string;
   children?: React.ReactNode;
 }) {
@@ -42,6 +47,8 @@ export function GymPokemon({
     <div
       className={cn(
         "border-border relative flex flex-col items-center rounded-2xl border-2 p-2 text-center",
+        row &&
+          "flex-row items-start gap-3 text-left sm:flex-col sm:items-center sm:gap-0 sm:text-center",
         pokemon.legendary && "border-amber-500",
         className,
       )}
@@ -50,32 +57,51 @@ export function GymPokemon({
       }}
       data-testid="gym-pokemon"
     >
-      <div className={cn("relative", compact ? "size-14" : "size-24")}>
+      <div
+        className={cn(
+          "relative shrink-0",
+          compact ? "size-14" : row ? "size-20 sm:size-24" : "size-24",
+        )}
+      >
         <PokemonImage id={pokemon.id} alt="" sizes={compact ? "56px" : "96px"} />
       </div>
-      {!compact && (
-        <span className="text-muted font-display text-[0.55rem]">{formatNumber(pokemon.id)}</span>
-      )}
-      <span className="font-display text-[0.6rem] leading-relaxed">{formatName(pokemon.name)}</span>
-      {pokemon.legendary && (
-        <span className="rounded-md bg-amber-500 px-1.5 text-[0.65rem] font-bold text-black">
-          ✦ {messages.gym.legendaryTag}
+      <div
+        className={cn(
+          "flex w-full flex-col items-center",
+          row && "min-w-0 flex-1 items-start sm:items-center",
+        )}
+      >
+        {!compact && (
+          <span className="text-muted font-display text-[0.55rem]">{formatNumber(pokemon.id)}</span>
+        )}
+        <span className="font-display text-[0.6rem] leading-relaxed">
+          {formatName(pokemon.name)}
         </span>
-      )}
-      {showTypes && (
-        <div className="mt-1 flex flex-wrap justify-center gap-1">
-          {pokemon.types.map((type) => (
-            <TypeBadge key={type} type={type} className={compact ? "px-2 text-[0.65rem]" : ""} />
-          ))}
-        </div>
-      )}
-      {!compact && (
-        <span className="mt-1 text-sm">
-          {messages.gym.bst}: <strong>{pokemon.bst}</strong>
-        </span>
-      )}
-      {showStats && <MiniStats pokemon={pokemon} />}
-      {children}
+        {pokemon.legendary && (
+          <span className="rounded-md bg-amber-500 px-1.5 text-[0.65rem] font-bold text-black">
+            ✦ {messages.gym.legendaryTag}
+          </span>
+        )}
+        {showTypes && (
+          <div
+            className={cn(
+              "mt-1 flex flex-wrap justify-center gap-1",
+              row && "justify-start sm:justify-center",
+            )}
+          >
+            {pokemon.types.map((type) => (
+              <TypeBadge key={type} type={type} className={compact ? "px-2 text-[0.65rem]" : ""} />
+            ))}
+          </div>
+        )}
+        {!compact && (
+          <span className="mt-1 text-sm">
+            {messages.gym.bst}: <strong>{pokemon.bst}</strong>
+          </span>
+        )}
+        {showStats && <MiniStats pokemon={pokemon} />}
+        {children}
+      </div>
     </div>
   );
 }

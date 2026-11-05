@@ -45,6 +45,17 @@ const runStore = createValueStore<GymRun | null>(
   null,
 );
 const badgeStore = createListStore(STORAGE_KEYS.badges);
+const tipStore = createListStore(STORAGE_KEYS.gymTips);
+
+/** First-run tips already dismissed (ids). */
+export function useTips() {
+  const seen = useSyncExternalStore(
+    tipStore.subscribe,
+    tipStore.getSnapshot,
+    tipStore.getServerSnapshot,
+  );
+  return { seen, dismiss: tipStore.add };
+}
 
 export function useGymRun() {
   const run = useSyncExternalStore(
@@ -249,4 +260,48 @@ export function useTrainer() {
     });
   }
   return { trainer, rename };
+}
+
+// ---- Focus: while a run or a battle is on screen, the gym's own tabs step aside ----
+
+let focused = false;
+const focusListeners = new Set<() => void>();
+
+function subscribeFocus(listener: () => void) {
+  focusListeners.add(listener);
+  return () => {
+    focusListeners.delete(listener);
+  };
+}
+
+/** Set by the game: true while drafting, before a battle or during one. Not persisted. */
+export function setGymFocus(value: boolean) {
+  if (focused === value) return;
+  focused = value;
+  focusListeners.forEach((listener) => listener());
+}
+
+export function useGymFocus() {
+  return useSyncExternalStore(
+    subscribeFocus,
+    () => focused,
+    () => false,
+  );
+}
+
+/**
+ * Wipes the game's progress in this browser: the run, badges, balls, bag, legendaries, achievements,
+ * stats, history, daily results, the trainer and the first-run tips. Favorites, the team, theme,
+ * sound and speed are the Pokédex's and the player's settings: they stay.
+ */
+export function resetGymProgress() {
+  runStore.set(null);
+  badgeStore.clear();
+  statsStore.set(EMPTY_STATS);
+  achievementStore.clear();
+  dailyStore.set(NO_DAILY);
+  bagStore.set(EMPTY_BAG);
+  historyStore.set(NO_HISTORY);
+  trainerStore.set(null);
+  tipStore.clear();
 }

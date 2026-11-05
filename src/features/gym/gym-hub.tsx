@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, Dumbbell, History, Sparkles, Swords } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Dumbbell, History, Sparkles, Swords } from "lucide-react";
 import Image from "next/image";
 import { useState, type ReactNode } from "react";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
   dailyStreak,
   playsToStreakBonus,
   formatDailyDate,
+  nextStep,
   pastDays,
   resultGrid,
   topBall,
@@ -168,6 +169,49 @@ function ModeCard({
   );
 }
 
+/** One clear suggestion at the top of the hub: what to play now, and why. */
+function NextStepCard({
+  stats,
+  badges,
+  playedToday,
+  today,
+  onStart,
+}: {
+  stats: GymStats;
+  badges: string[];
+  playedToday: boolean;
+  today: string;
+  onStart: HubProps["onStart"];
+}) {
+  const step = nextStep({ stats, badges, playedToday });
+  const copy =
+    step.kind === "gym" ? h.next[step.reason === "again" ? "again" : step.mode] : h.next[step.kind];
+  const start = () => {
+    if (step.kind === "daily") onStart("daily", { daily: today });
+    else if (step.kind === "legendary") onStart("easy", { legendary: true });
+    else onStart(step.mode);
+  };
+  return (
+    <section
+      aria-labelledby="next-step-title"
+      className="border-primary-600 bg-surface grid gap-3 rounded-3xl border-2 p-4 shadow-[4px_4px_0_0_var(--primary-700)]"
+      data-testid="next-step"
+    >
+      <p className="bg-primary-600 text-on-primary font-display w-fit rounded-md px-1.5 py-0.5 text-[0.55rem]">
+        {h.next.label}
+      </p>
+      <h2 id="next-step-title" className="text-[0.7rem] leading-relaxed sm:text-xs">
+        {copy.title}
+      </h2>
+      <p className="text-base">{copy.text}</p>
+      <Button onClick={start} className="w-full sm:w-fit">
+        {copy.cta}
+        <ArrowRight aria-hidden className="size-4" />
+      </Button>
+    </section>
+  );
+}
+
 export function GymHub({
   lastMode,
   stats,
@@ -192,30 +236,44 @@ export function GymHub({
 
   return (
     <div className="grid gap-10">
-      {/* Hero, in the spirit of 7a0: the pitch, three steps, and where to go next. */}
-      <header className="animate-fade-up grid gap-4">
+      {/* Hero, in the spirit of 7a0: the full pitch on a first visit, the title afterwards. */}
+      <header className="animate-fade-up grid gap-3">
         <h1 className="text-base sm:text-lg">{m.title}</h1>
         <p className="font-display text-primary-600 text-[0.7rem] leading-relaxed sm:text-xs">
           {h.tagline}
         </p>
-        <p className="max-w-3xl text-base">{h.intro}</p>
-        <ol className="grid grid-cols-3 gap-2 sm:gap-3">
-          {h.steps.map((step, index) => (
-            <li
-              key={step.title}
-              className="border-border bg-surface rounded-2xl border-2 p-2 sm:p-3"
-            >
-              <p className="font-display text-[0.6rem]">
-                <span className="bg-primary-600 text-on-primary rounded-md px-1">
-                  {String(index + 1).padStart(2, "0")}
-                </span>{" "}
-                {step.title}
-              </p>
-              <p className="text-muted mt-1 text-xs sm:text-sm">{step.text}</p>
-            </li>
-          ))}
-        </ol>
+        {stats.runs === 0 && (
+          <>
+            <p className="max-w-3xl text-base">{h.intro}</p>
+            <ol className="grid grid-cols-3 gap-2 sm:gap-3">
+              {h.steps.map((step, index) => (
+                <li
+                  key={step.title}
+                  className="border-border bg-surface rounded-2xl border-2 p-2 sm:p-3"
+                >
+                  <p className="font-display text-[0.6rem]">
+                    <span className="bg-primary-600 text-on-primary rounded-md px-1">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>{" "}
+                    {step.title}
+                  </p>
+                  <p className="text-muted mt-1 text-xs sm:text-sm">{step.text}</p>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
       </header>
+
+      {today && (
+        <NextStepCard
+          stats={stats}
+          badges={badges}
+          playedToday={Boolean(todayResult)}
+          today={today}
+          onStart={onStart}
+        />
+      )}
 
       {lastRun && (
         <Section id="ultimo" title={h.lastRun}>
@@ -259,7 +317,10 @@ export function GymHub({
                   </p>
                 }
               >
-                <Button onClick={() => onStart(mode, { legendary: withLegendary })}>
+                <Button
+                  className="w-full"
+                  onClick={() => onStart(mode, { legendary: withLegendary })}
+                >
                   <Swords aria-hidden className="size-4" />
                   {h.play[mode]}
                 </Button>
@@ -300,13 +361,14 @@ export function GymHub({
               (todayResult ? (
                 <Button
                   variant="secondary"
+                  className="w-full"
                   onClick={() => onStart("daily", { daily: today, practice: true })}
                 >
                   <Dumbbell aria-hidden className="size-4" />
                   {h.practice}
                 </Button>
               ) : (
-                <Button onClick={() => onStart("daily", { daily: today })}>
+                <Button className="w-full" onClick={() => onStart("daily", { daily: today })}>
                   <CalendarDays aria-hidden className="size-4" />
                   {h.play.daily}
                 </Button>
@@ -322,9 +384,30 @@ export function GymHub({
               <Sparkles aria-hidden className="size-4 text-amber-500" />
               {h.legendaryTitle}
             </p>
-            <p className="text-muted text-sm">
-              {masterBalls > 0 ? h.legendaryHelp : h.legendaryLocked}
-            </p>
+            {masterBalls > 0 ? (
+              <p className="text-muted text-sm">{h.legendaryHelp}</p>
+            ) : (
+              <div className="grid gap-1 text-sm" data-testid="legendary-paths">
+                <p className="text-muted">{h.legendaryLocked}</p>
+                <ul className="grid gap-1">
+                  <li className="flex items-start gap-2">
+                    <BallIcon ball="master" earned={false} className="size-5 shrink-0" />
+                    <span>{h.legendaryPaths.hard(stats.cleared.hard)}</span>
+                  </li>
+                  {today && (
+                    <li className="flex items-start gap-2">
+                      <BallIcon ball="master" earned={false} className="size-5 shrink-0" />
+                      <span>
+                        {h.legendaryPaths.streak(
+                          playsToStreakBonus(daily, today),
+                          Boolean(todayResult),
+                        )}
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
           {masterBalls > 0 && (
             <label className="flex min-h-11 items-center gap-2 text-sm font-bold">

@@ -1,3 +1,4 @@
+import { Shuffle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { LinkButton } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -50,7 +51,15 @@ export default async function HomePage({
       <PageHeader
         title={messages.appName}
         description={messages.appDescription}
-        actions={<ViewToggle />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <LinkButton href="/random" prefetch={false} variant="secondary">
+              <Shuffle aria-hidden className="size-4" />
+              {messages.random.surprise}
+            </LinkButton>
+            <ViewToggle />
+          </div>
+        }
       />
       {/* The gym mode's front door; out of the way once the user is searching. */}
       {!hasActiveFilters && <GymBanner />}

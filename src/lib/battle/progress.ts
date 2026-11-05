@@ -352,3 +352,33 @@ export const addStreakBall = (stats: GymStats): GymStats => ({
   ...stats,
   balls: { ...stats.balls, master: stats.balls.master + 1 },
 });
+
+// ---- What to do next: one clear suggestion on the hub ----
+
+export type NextStep =
+  | { kind: "daily" }
+  | { kind: "legendary" }
+  | { kind: "gym"; mode: "easy" | "hard"; reason: "first" | "badge" | "again" };
+
+/**
+ * The hub's "next step": a first visit starts in the easy gym; then today's daily challenge until it
+ * is played; a Master Ball in hand asks for a legendary encounter; otherwise the missing badge, or
+ * the last gym played.
+ */
+export function nextStep({
+  stats,
+  badges,
+  playedToday,
+}: {
+  stats: GymStats;
+  badges: readonly string[];
+  playedToday: boolean;
+}): NextStep {
+  if (stats.runs === 0) return { kind: "gym", mode: "easy", reason: "first" };
+  if (!playedToday) return { kind: "daily" };
+  if (stats.balls.master > 0) return { kind: "legendary" };
+  const has = (mode: "easy" | "hard") => badges.includes(GYMS[mode].badgeId ?? "");
+  if (!has("easy")) return { kind: "gym", mode: "easy", reason: "badge" };
+  if (!has("hard")) return { kind: "gym", mode: "hard", reason: "badge" };
+  return { kind: "gym", mode: stats.lastMode ?? "easy", reason: "again" };
+}

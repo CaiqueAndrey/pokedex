@@ -3,6 +3,7 @@
 import { FastForward } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ActionBar } from "@/components/ui/action-bar";
 import { TypeBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
@@ -321,25 +322,29 @@ export function BattleView({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <SpeedToggle />
-          <SoundToggle />
-        </div>
-        {finished ? (
-          (children ?? (
-            <div className="flex flex-wrap items-center gap-3">
-              {doneHint && (
-                <p className="font-display text-[0.6rem]" role="status">
+      <div className="flex flex-wrap items-center gap-2">
+        <SpeedToggle />
+        <SoundToggle />
+      </div>
+
+      {finished ? (
+        (children ?? (
+          <ActionBar
+            hint={
+              doneHint && (
+                <p className="font-display text-[0.6rem] leading-relaxed" role="status">
                   {doneHint}
                 </p>
-              )}
-              <Button onClick={onDone} className="animate-pop">
-                {doneLabel}
-              </Button>
-            </div>
-          ))
-        ) : (
+              )
+            }
+          >
+            <Button onClick={onDone} className="animate-pop" autoFocus>
+              {doneLabel}
+            </Button>
+          </ActionBar>
+        ))
+      ) : (
+        <ActionBar>
           <Button
             variant="secondary"
             onClick={() => {
@@ -350,8 +355,8 @@ export function BattleView({
             <FastForward aria-hidden className="size-4" />
             {m.skip}
           </Button>
-        )}
-      </div>
+        </ActionBar>
+      )}
     </div>
   );
 }

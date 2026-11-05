@@ -463,3 +463,77 @@ test.describe("trainer, history, gauntlet and navigation", () => {
     await expect(page.getByTestId("battle-header")).toContainText("Batalha 1 de 5");
   });
 });
+
+test.describe("usability: next step, action bar, tips and reset", () => {
+  test("a first visit suggests the easy gym; the action bar holds the fight button", async ({
+    page,
+  }) => {
+    await page.goto("/gym?seed=e2e2");
+    await hydrated(page);
+    const next = page.getByTestId("next-step");
+    await expect(next).toContainText("Comece pelo Ginásio de Pewter");
+    await next.getByRole("button", { name: "Começar no Fácil" }).click();
+    await expect(page.getByRole("heading", { name: "Draft · rodada 1 de 6" })).toBeVisible();
+    // The gym tabs step aside during a run; a first-run tip explains the draft.
+    await expect(page.getByRole("navigation", { name: "Seções do Modo Ginásio" })).toHaveCount(0);
+    await expect(page.getByTestId("tip-draft")).toBeVisible();
+    await page.getByTestId("tip-draft").getByRole("button", { name: "Entendi" }).click();
+    await expect(page.getByTestId("tip-draft")).toHaveCount(0);
+    await draftStrongest(page);
+    const bar = page.getByTestId("action-bar");
+    await expect(bar.getByRole("button", { name: "Batalhar!" })).toBeInViewport();
+    await expect(page.getByTestId("lead-hint")).toContainText("Abre a batalha");
+  });
+
+  test("the hub explains both ways to a Master Ball", async ({ page }) => {
+    await page.goto("/gym");
+    await hydrated(page);
+    const paths = page.getByTestId("legendary-paths");
+    await expect(paths).toContainText("Vença a Misty no Difícil");
+    await expect(paths).toContainText("3 dias seguidos");
+  });
+
+  test("resetting progress asks for the confirmation word and clears everything", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded")) return;
+      sessionStorage.setItem("seeded", "1");
+      localStorage.setItem("pokedex:badges:v1", JSON.stringify(["boulder"]));
+      localStorage.setItem(
+        "pokedex:trainer:v1",
+        JSON.stringify({ name: "Misty Fã", id: "12345", since: "2026-11-01" }),
+      );
+      localStorage.setItem("pokedex:favorites:v1", JSON.stringify(["pikachu"]));
+    });
+    await page.goto("/gym/treinador");
+    await expect(page.getByTestId("trainer-name")).toHaveText("Misty Fã");
+    await page.getByRole("button", { name: "Apagar todo o progresso" }).click();
+    const dialog = page.getByRole("dialog", { name: "Apagar todo o progresso?" });
+    await expect(dialog).toContainText("insígnias, Pokébolas");
+    const confirm = dialog.getByRole("button", { name: "Apagar tudo" });
+    await expect(confirm).toBeDisabled();
+    await dialog.getByLabel("Digite APAGAR para confirmar").fill("apagar");
+    await confirm.click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("Progresso apagado. Bom recomeço!")).toBeVisible();
+    await expect(page.getByTestId("trainer-name")).toHaveText("Escolha seu nome de treinador");
+    // Favorites belong to the Pokédex: they stay.
+    const favorites = await page.evaluate(() => localStorage.getItem("pokedex:favorites:v1"));
+    expect(favorites).toContain("pikachu");
+    await page.getByRole("link", { name: "Recompensas", exact: true }).click();
+    await expect(
+      page.getByTestId("badges").getByRole("img", { name: "Insígnia da Rocha" }).locator(".."),
+    ).toHaveClass(/grayscale/);
+  });
+
+  test("phones get a one-line header with a menu", async ({ page }) => {
+    await page.goto("/gym");
+    await page.getByTestId("mobile-menu").locator("summary").click();
+    await page.getByRole("link", { name: "Meu time" }).click();
+    await expect(page).toHaveURL(/\/team$/);
+    await expect(page.getByRole("link", { name: "Surpreenda-me" })).toHaveCount(0);
+    await page.goto("/");
+    await expect(page.getByRole("link", { name: "Surpreenda-me" })).toBeVisible();
+  });
+});

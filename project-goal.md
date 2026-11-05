@@ -831,6 +831,55 @@ Tudo continua sem backend: estatísticas e conquistas em `localStorage` (version
 desafio do dia é só uma seed derivada da data, e as regras de conquista são funções puras sobre o
 histórico da corrida.
 
+## 8.10 Próximos passos pós-produção: usabilidade, Diário, profundidade e Pokédex conectada
+
+**Contexto (05/11/2026):** jogando no celular, os botões principais ("Batalhar!", "Novo desafio")
+ficavam escondidos entre textos e alinhados à esquerda, e o header fixo ocupava boa parte da tela.
+O desafio do dia parecia impossível, os lendários não tinham um caminho claro e Favoritos, Meu time e
+Aleatório pareciam soltos do resto. Medições e capturas de tela num Pixel 7 (412 px) guiaram as
+decisões abaixo. Ficam fora por enquanto: novas Ligas/ginásios e vibração.
+
+### Diagnóstico (medido)
+
+- **Primeira tela do celular:** header em duas linhas (~14% da altura) + abas do ginásio 2×2 + chip
+  de nível (~30%). No draft as 3 ofertas não apareciam sem rolar; na pré-batalha o "Batalhar!"
+  ficava no topo e o seu time ocupava ~3 telas abaixo.
+- **Desafio do dia:** simulando todos os times possíveis (6 dos 12 da mão, com o melhor titular a
+  cada batalha), a parcela que vence as 5 batalhas variou de **3% a 48%** entre 23/10 e 05/11
+  (05/11: 10%). O limite de força quase não pesava (≈ 909 de 924 combinações cabiam) e o mesmo
+  time na mesma ordem sempre dá o mesmo resultado.
+- **Lendários:** o texto dizia que completar o desafio do dia dá Master Ball, mas ele dá Ultra Bola.
+  Os caminhos reais (vencer a Misty, ou 3 dias seguidos de desafio do dia) não apareciam.
+
+### Fases
+
+1. **Fase 12 — Usabilidade e clareza:** barra de ação fixa embaixo (um botão principal, largura
+   total no celular), header de uma linha com menu e que se esconde ao rolar, abas do ginásio
+   compactas e fora da tela durante a corrida, draft com as ofertas primeiro, pré-batalha em linhas
+   compactas, cartão "Próximo passo" na tela inicial, dicas da primeira corrida, "Zona de perigo"
+   para apagar o progresso, caminho claro até a Master Ball e o texto corrigido. "Aleatório" sai do
+   header e vira "Surpreenda-me" na Pokédex.
+2. **Fase 13 — Diário: "Quem é esse Pokémon?":** silhueta da arte oficial, palpite com
+   autocompletar, dicas em sequência (tipo → geração → primeira letra), revelação com jingle 8-bit;
+   modo do dia (igual para todos, compartilhável) e sequência infinita com recorde. A imagem do dia
+   vem por uma rota nossa sem o número do Pokémon na URL. Jogar conta para a sequência de dias.
+3. **Fase 14 — Emboscada Rocket (o novo desafio do dia):** um quebra-cabeça com informação aberta.
+   Jessie e James com 4 Pokémon revelados na ordem, uma mão de 8, escolher 3 e a ordem, 3
+   tentativas. O dia é **calibrado**: só vale uma seed em que uma faixa dos times possíveis vence.
+   Recompensa por tentativa, compartilhamento estilo Wordle. Substitui a maratona de 5 batalhas.
+4. **Fase 15 — Profundidade do jogo:** Mochila útil (pedras e Doce Raro evoluem um Pokémon da
+   corrida; Pepita e Pedaço de Estrela dão uma rolagem), recompensa entre batalhas (escolher 1 de 3),
+   escolher quem entra depois de um desmaio, e uma regra de campo por ginásio (ex.: chuva em
+   Cerulean). Metas de equilíbrio revalidadas com as estratégias de teste.
+5. **Fase 16 — Pokédex conectada:** Pokémon **vistos** (enfrentados, revelados no quiz) e **usados**
+   (no seu time) marcados na Pokédex com progresso por geração; **Meu time** ganha a batalha amistosa
+   contra o Brock ou a Misty; **Favoritos** marcados no draft e escolhendo o Parceiro do Cartão de
+   Treinador; "Comparar com…" na página do Pokémon; missões semanais; conquistas com progresso e
+   secretas; imagens de prévia (`next/og`) para links compartilhados.
+
+Tudo continua sem backend: `localStorage` versionado + Zod, funções puras no núcleo e testes que nunca
+chamam a PokeAPI real.
+
 ---
 
 # 9. Design
@@ -888,7 +937,9 @@ acessibilidade básica, documentado, commit em inglês.
 ```text
 00 Setup → 01 Camada PokeAPI → 02 Shell & Design → 03 Pokédex (lista) →
 04 Busca & Filtros → 05 Detalhes → 06 Favoritos & Time → 07 Comparação & Polimento →
-08 Modo Ginásio → 09 Modo Ginásio 2.0 → 10 Deploy → 11 Servidor MCP
+08 Modo Ginásio → 09 Modo Ginásio 2.0 → 10 Deploy → 11 Servidor MCP →
+12 Usabilidade → 13 Diário: Quem é esse Pokémon? → 14 Emboscada Rocket →
+15 Profundidade do jogo → 16 Pokédex conectada
 ```
 
 Cada fase termina com a nota de aprendizado `docs/phases/NN-nome.md` (template do polyglot-lab).
@@ -1087,6 +1138,58 @@ interface web.
 > Fora de escopo nesta fase: transporte HTTP, autenticação do servidor MCP e publicação em
 > registry — dependem do deploy (§12).
 
+## Fase 12 — Usabilidade e clareza
+
+**Objetivo:** o próximo passo sempre visível e ao alcance do polegar (§8.10).
+
+1. `ActionBar` (barra fixa embaixo) na mão do dia, pré-batalha, batalha e resultado.
+2. Header de uma linha no celular (menu `<details>`), escondido ao rolar para baixo; abas do ginásio
+   numa linha e fora da tela durante a corrida (estado de foco em memória).
+3. Draft com as ofertas primeiro (cartões em linha no celular) e o orçamento compacto; pré-batalha
+   em linhas compactas e adversário em 3 colunas.
+4. Tela inicial: cartão "Próximo passo" (função pura `nextStep`), hero completo só na primeira
+   visita, botões em largura total, regras recolhidas.
+5. Dicas da primeira corrida (uma vez cada, salvas), "Zona de perigo" para apagar o progresso,
+   caminhos até a Master Ball com progresso e textos corrigidos.
+6. Testes: unitário de `nextStep`; E2E de próximo passo, barra de ação, dicas, reset e menu; axe.
+7. Nota: `docs/phases/12-usability.md`.
+
+## Fase 13 — Diário: "Quem é esse Pokémon?"
+
+**Objetivo:** um jogo diário de 30 segundos que usa só a Pokédex (§8.10).
+
+1. `lib/quiz.ts` (puro): Pokémon do dia pela data, normalização de palpites, dicas, pontuação,
+   texto para compartilhar. Config em `config/quiz.ts`.
+2. Rota `/quiz` (do dia + sequência infinita), imagem do dia por rota própria, revelação com jingle.
+3. Progresso em `localStorage` (Zod), XP e Pokébolas, sequência de dias junto com o desafio do dia.
+4. Testes unitários e E2E; nota `docs/phases/13-daily-quiz.md`.
+
+## Fase 14 — Emboscada Rocket
+
+**Objetivo:** trocar a maratona do desafio do dia por um quebra-cabeça justo e calibrado (§8.10).
+
+1. `lib/battle/puzzle.ts` (puro): mão de 8, adversário fixo de 4, times de 3 em ordem, calibração
+   da seed do dia por taxa de vitória, tentativas e recompensas.
+2. Tela do quebra-cabeça com a barra de ação, tentativas anteriores e explicação da derrota.
+3. Teste de calibração (faixa de vitória em muitos dias) e E2E; nota
+   `docs/phases/14-rocket-ambush.md`.
+
+## Fase 15 — Profundidade do jogo
+
+**Objetivo:** mais decisões durante a corrida sem perder o equilíbrio (§8.10).
+
+1. Itens da Mochila usáveis na corrida; recompensa entre batalhas; escolha manual após desmaio
+   (simulação pura com a lista de escolhas); regra de campo por ginásio.
+2. Metas de equilíbrio revalidadas; E2E; nota `docs/phases/15-game-depth.md`.
+
+## Fase 16 — Pokédex conectada
+
+**Objetivo:** ligar Pokédex, Favoritos, Meu time e o jogo (§8.10).
+
+1. Vistos/usados com progresso; batalha amistosa com Meu time; favoritos no draft e Parceiro;
+   "Comparar com…"; missões semanais; conquistas com progresso; imagens de prévia.
+2. Testes e nota `docs/phases/16-connected-pokedex.md`.
+
 ---
 
 # 12. Depois deste plano (não implementar agora)
@@ -1095,7 +1198,7 @@ interface web.
   MCP (ver `docs/phases/10-deploy.md`). Depois da Fase 11, opcionalmente: expor o servidor MCP também
   por **Streamable HTTP** numa rota `/api/mcp` do Next, para ser usado sem clonar o repositório.
 - Ideias futuras, só se houver motivo real: conta de usuário + banco para sincronizar favoritos/times
-  entre dispositivos; quiz "Quem é esse Pokémon?"; filtros por stats; i18n (inglês além do português).
+  entre dispositivos; filtros por stats; i18n (inglês além do português).
 - Evoluções do Modo Ginásio (§8.8): os outros 7 ginásios de Kanto e a Liga; golpes reais, habilidades
   e status na batalha; ranking de corridas (exigiria backend, então só com motivo real). O desafio
   do dia saiu desta lista e entrou na Fase 9 (§8.9).

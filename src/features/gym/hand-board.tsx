@@ -2,6 +2,7 @@
 
 import { Check, Swords } from "lucide-react";
 import { useState } from "react";
+import { ActionBar } from "@/components/ui/action-bar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { GYMS, TEAM_SIZE } from "@/config/gym";
@@ -10,6 +11,7 @@ import { teamBst } from "@/lib/battle/team";
 import { formatName } from "@/lib/format";
 import type { BattlePokemon } from "@/types/battle";
 import { GymPokemon } from "./gym-pokemon";
+import { Tip } from "./tip";
 import { sfx } from "./use-gym";
 
 const m = messages.gym;
@@ -51,30 +53,7 @@ export function HandBoard({
         <p className="text-muted text-base">{g.handHint}</p>
       </div>
 
-      <div className="border-border bg-surface sticky top-16 z-10 grid gap-2 rounded-2xl border-2 p-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <span className="font-display text-[0.6rem]" data-testid="hand-count">
-            {g.selected(chosen.length)}
-          </span>
-          <span className="text-sm tabular-nums" data-testid="budget">
-            {m.budget(used, cap)}
-          </span>
-        </div>
-        <div className="bg-border h-3 overflow-hidden rounded-full" aria-hidden>
-          <div
-            className="from-primary-600 h-full bg-linear-to-r to-amber-500 transition-all duration-300"
-            style={{ width: `${ratio * 100}%` }}
-          />
-        </div>
-        <Button
-          disabled={!full}
-          onClick={() => onConfirm(team.map((p) => p.name))}
-          className={cn(full && "motion-safe:animate-pulse")}
-        >
-          <Swords aria-hidden className="size-4" />
-          {g.confirm}
-        </Button>
-      </div>
+      <Tip id="hand" />
 
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {hand.map((pokemon, index) => {
@@ -117,6 +96,35 @@ export function HandBoard({
           );
         })}
       </ul>
+      <ActionBar
+        hint={
+          <div className="grid gap-1">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="font-display text-[0.6rem]" data-testid="hand-count">
+                {g.selected(chosen.length)}
+              </span>
+              <span className="text-sm tabular-nums" data-testid="budget">
+                {m.budget(used, cap)}
+              </span>
+            </div>
+            <div className="bg-border h-2 overflow-hidden rounded-full" aria-hidden>
+              <div
+                className="from-primary-600 h-full bg-linear-to-r to-amber-500 transition-all duration-300"
+                style={{ width: `${ratio * 100}%` }}
+              />
+            </div>
+          </div>
+        }
+      >
+        <Button
+          disabled={!full}
+          onClick={() => onConfirm(team.map((p) => p.name))}
+          className={cn(full && "motion-safe:animate-pulse")}
+        >
+          <Swords aria-hidden className="size-4" />
+          {g.confirm}
+        </Button>
+      </ActionBar>
     </section>
   );
 }

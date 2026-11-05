@@ -14,6 +14,7 @@ import {
   playsToStreakBonus,
   streakBonus,
   levelFor,
+  nextStep,
   totalXp,
   xpForLevel,
   xpForRun,
@@ -357,5 +358,39 @@ describe("daily streak", () => {
       finished(0, false, { mode: "daily", daily: "2026-11-05" }),
     );
     expect(streakBonus(played("2026-11-04"), two, "2026-11-05")).toBeUndefined();
+  });
+});
+
+describe("next step on the hub", () => {
+  const played = { ...EMPTY_STATS, runs: 3 };
+  it("starts a first visit in the easy gym, then asks for the daily challenge", () => {
+    expect(nextStep({ stats: EMPTY_STATS, badges: [], playedToday: false })).toEqual({
+      kind: "gym",
+      mode: "easy",
+      reason: "first",
+    });
+    expect(nextStep({ stats: played, badges: [], playedToday: false })).toEqual({
+      kind: "daily",
+    });
+  });
+
+  it("spends a Master Ball, then chases the missing badge, then replays", () => {
+    const master = { ...played, balls: { ...played.balls, master: 1 } };
+    expect(nextStep({ stats: master, badges: [], playedToday: true }).kind).toBe("legendary");
+    expect(nextStep({ stats: played, badges: [], playedToday: true })).toMatchObject({
+      mode: "easy",
+      reason: "badge",
+    });
+    expect(nextStep({ stats: played, badges: ["boulder"], playedToday: true })).toMatchObject({
+      mode: "hard",
+      reason: "badge",
+    });
+    expect(
+      nextStep({
+        stats: { ...played, lastMode: "hard" },
+        badges: ["boulder", "cascade"],
+        playedToday: true,
+      }),
+    ).toEqual({ kind: "gym", mode: "hard", reason: "again" });
   });
 });
