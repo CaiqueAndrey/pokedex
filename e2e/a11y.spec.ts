@@ -13,6 +13,7 @@ const pages = [
   "/gym/recompensas",
   "/gym/historico",
   "/gym/treinador",
+  "/quiz",
 ];
 
 for (const theme of ["light", "dark"] as const) {

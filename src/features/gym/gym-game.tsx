@@ -109,7 +109,7 @@ export function GymGame({
 }) {
   const { run, setRun } = useGymRun();
   const { badges, add: addBadge } = useBadges();
-  const { stats, daily } = useGymProgress();
+  const { stats, daily, days } = useGymProgress();
   const { trainer } = useTrainer();
   const history = useGymHistory();
   const { today, secondsLeft } = useToday();
@@ -232,6 +232,7 @@ export function GymGame({
           stats={stats}
           badges={badges}
           daily={daily}
+          days={days}
           today={today}
           secondsLeft={secondsLeft}
           items={items}

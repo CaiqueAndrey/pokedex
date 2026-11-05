@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { messages } from "@/config/messages";
 import { GymBanner } from "@/features/gym/gym-banner";
+import { QuizBanner } from "@/features/quiz/quiz-banner";
 import { Filters } from "@/features/pokedex/filters";
 import { InfiniteGrid } from "@/features/pokedex/infinite-grid";
 import { ViewToggle } from "@/features/pokedex/view-toggle";
@@ -62,7 +63,12 @@ export default async function HomePage({
         }
       />
       {/* The gym mode's front door; out of the way once the user is searching. */}
-      {!hasActiveFilters && <GymBanner />}
+      {!hasActiveFilters && (
+        <>
+          <GymBanner />
+          <QuizBanner />
+        </>
+      )}
       <Filters hasActiveFilters={hasActiveFilters} />
       <p className="text-muted mb-4 text-sm" aria-live="polite" data-testid="results-count">
         {results.length === 0

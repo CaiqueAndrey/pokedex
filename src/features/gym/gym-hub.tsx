@@ -33,6 +33,7 @@ import type { GameItem } from "@/types/item";
 import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
 import { ItemIcon } from "./item-icon";
+import { QuizHubCard } from "../quiz/quiz-hub-card";
 import { HistoryCard } from "./gym-history";
 import { RocketDuo } from "./run-result-dialog";
 import type { BattlePokemon } from "@/types/battle";
@@ -46,6 +47,8 @@ export interface HubProps {
   stats: GymStats;
   badges: string[];
   daily: DailyResult[];
+  /** Days with any daily game played (gym daily or quiz): the streak. */
+  days: { date: string }[];
   today: string;
   secondsLeft: number;
   items: GameItem[];
@@ -217,6 +220,7 @@ export function GymHub({
   stats,
   badges,
   daily,
+  days,
   today,
   secondsLeft,
   items,
@@ -232,7 +236,7 @@ export function GymHub({
   const todayItem = today ? itemsByName.get(dailyItem(today)) : undefined;
   const archive = today ? pastDays(today, DAILY_ARCHIVE_DAYS) : [];
   const dailyTotal = GYMS.daily.battles.length;
-  const streak = today ? dailyStreak(daily, today) : 0;
+  const streak = today ? dailyStreak(days, today) : 0;
 
   return (
     <div className="grid gap-10">
@@ -347,7 +351,7 @@ export function GymHub({
                   ) : null}
                   <p className="font-bold" data-testid="daily-streak">
                     {streak > 0 && `${h.streak(streak)} · `}
-                    {h.streakHint(playsToStreakBonus(daily, today), Boolean(todayResult))}
+                    {h.streakHint(playsToStreakBonus(days, today), Boolean(todayResult))}
                   </p>
                   <p className="text-muted">{h.dailyOnce}</p>
                   <p className="font-bold tabular-nums" data-testid="daily-countdown">
@@ -376,6 +380,8 @@ export function GymHub({
           </ModeCard>
         </div>
 
+        {today && <QuizHubCard today={today} />}
+
         {/* The Master Ball's use: a legendary on your team (regular gyms only). */}
         <Card className="flex flex-wrap items-center gap-3" data-testid="legendary-option">
           <BallIcon ball="master" earned={masterBalls > 0} className="size-10" />
@@ -399,7 +405,7 @@ export function GymHub({
                       <BallIcon ball="master" earned={false} className="size-5 shrink-0" />
                       <span>
                         {h.legendaryPaths.streak(
-                          playsToStreakBonus(daily, today),
+                          playsToStreakBonus(days, today),
                           Boolean(todayResult),
                         )}
                       </span>

@@ -322,6 +322,7 @@ export const ACHIEVEMENTS = [
   "variety-champion",
   "streak-3",
   "master-ball",
+  "sharp-eye",
   "legend-champion",
 ] as const;
 export type AchievementId = (typeof ACHIEVEMENTS)[number];

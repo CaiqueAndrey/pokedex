@@ -19,6 +19,7 @@ import {
   type RewardItemName,
 } from "@/config/gym";
 import { messages } from "@/config/messages";
+import { QUIZ_XP } from "@/config/quiz";
 import type { BattlePokemon } from "@/types/battle";
 import { hashString } from "./rng";
 import { battleCount, byName, gymRunSchema, type GymMode, type GymRun } from "./run";
@@ -50,6 +51,8 @@ export const gymStatsSchema = z.object({
   caught: z.array(z.string()),
   /** Last mode chosen on the start screen (the daily challenge doesn't change it). */
   lastMode: z.enum(["easy", "hard"]).optional(),
+  /** Daily "Quem é esse Pokémon?" solved (XP). */
+  quizSolved: count.default(0),
 });
 
 export type GymStats = z.infer<typeof gymStatsSchema>;
@@ -65,6 +68,7 @@ export const EMPTY_STATS: GymStats = {
   bestStreak: 0,
   used: {},
   caught: [],
+  quizSolved: 0,
 };
 
 /** Spends a Master Ball (for a legendary encounter); a no-op without one. */
@@ -166,6 +170,8 @@ export function achievementsFor(
     "variety-champion": won && new Set(team.flatMap((p) => p.types)).size >= VARIETY_CHAMPION_TYPES,
     "streak-3": stats.streak >= 3,
     "master-ball": rewardFor(run) === "master",
+    // Unlocked by the daily quiz, not by a gym run.
+    "sharp-eye": false,
     "legend-champion": won && team.some((p) => p.legendary),
   };
   return ACHIEVEMENTS.filter((id) => unlocked[id]);
@@ -273,7 +279,8 @@ export function totalXp(stats: GymStats): number {
     stats.cleared.easy * XP.clear.easy +
     stats.cleared.hard * XP.clear.hard +
     stats.cleared.daily * XP.clear.daily +
-    stats.caught.length * XP.legendary
+    stats.caught.length * XP.legendary +
+    stats.quizSolved * QUIZ_XP
   );
 }
 
@@ -306,7 +313,15 @@ export function addToHistory(
   return [{ finishedAt, run }, ...history].slice(0, HISTORY_SIZE);
 }
 
-// ---- Daily streak: play on consecutive days (any result) ----
+// ---- Daily streak: play any daily game on consecutive days (any result) ----
+
+/** Every day with a daily game played (the gym's daily challenge or the quiz), once each. */
+export function playedDays(
+  daily: readonly DailyResult[],
+  other: readonly string[],
+): { date: string }[] {
+  return [...new Set([...daily.map((r) => r.date), ...other])].sort().map((date) => ({ date }));
+}
 
 const previousDay = (key: string) => pastDays(key, 1)[0] ?? key;
 
@@ -314,7 +329,7 @@ const previousDay = (key: string) => pastDays(key, 1)[0] ?? key;
  * Days in a row with a daily result, ending on `today` (or yesterday, if today isn't played yet:
  * the streak is still alive until midnight).
  */
-export function dailyStreak(results: readonly DailyResult[], today: string): number {
+export function dailyStreak(results: readonly { date: string }[], today: string): number {
   const played = new Set(results.map((r) => r.date));
   let day = played.has(today) ? today : previousDay(today);
   let streak = 0;
@@ -329,7 +344,7 @@ export function dailyStreak(results: readonly DailyResult[], today: string): num
  * Daily plays still needed (1–3) for the next streak bonus, today's included when it isn't played
  * yet. 1 with today unplayed means "play today and get the Master Ball".
  */
-export function playsToStreakBonus(results: readonly DailyResult[], today: string): number {
+export function playsToStreakBonus(results: readonly { date: string }[], today: string): number {
   return DAILY_STREAK_BONUS - (dailyStreak(results, today) % DAILY_STREAK_BONUS);
 }
 
@@ -338,8 +353,8 @@ export function playsToStreakBonus(results: readonly DailyResult[], today: strin
  * `DAILY_STREAK_BONUS` days in a row), else undefined.
  */
 export function streakBonus(
-  before: readonly DailyResult[],
-  after: readonly DailyResult[],
+  before: readonly { date: string }[],
+  after: readonly { date: string }[],
   day: string,
 ): number | undefined {
   if (after.length === before.length || !after.some((r) => r.date === day)) return undefined;

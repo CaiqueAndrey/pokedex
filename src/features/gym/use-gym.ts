@@ -1,8 +1,8 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { z } from "zod";
-import type { AchievementId, BattleSpeed } from "@/config/gym";
+import { DAILY_HISTORY, type AchievementId, type Ball, type BattleSpeed } from "@/config/gym";
 import {
   EMPTY_STATS,
   achievementsFor,
@@ -14,6 +14,7 @@ import {
   catchLegendary,
   dailyKey,
   dailyResultsSchema,
+  playedDays,
   gymStatsSchema,
   historySchema,
   recordDaily,
@@ -33,6 +34,7 @@ import type { BattlePokemon } from "@/types/battle";
 import { createListStore } from "@/lib/list-store";
 import { STORAGE_KEYS } from "@/lib/storage";
 import { createValueStore } from "@/lib/value-store";
+import { resetQuiz } from "../quiz/use-quiz";
 import { playTune, vibrate } from "./sound";
 
 const NO_DAILY: DailyResult[] = [];
@@ -125,6 +127,13 @@ const historyStore = createValueStore<HistoryEntry[]>(
   historySchema,
   NO_HISTORY,
 );
+const NO_DAYS: string[] = [];
+/** Days a daily game was played: the streak counts the gym's daily challenge and the quiz alike. */
+const playedStore = createValueStore<string[]>(
+  STORAGE_KEYS.playedDays,
+  z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(DAILY_HISTORY * 2),
+  NO_DAYS,
+);
 const trainerStore = createValueStore<Trainer | null>(
   STORAGE_KEYS.trainer,
   trainerSchema.nullable(),
@@ -152,7 +161,51 @@ export function useGymProgress() {
     bagStore.getSnapshot,
     bagStore.getServerSnapshot,
   );
-  return { stats, achievements, daily, bag };
+  const played = useSyncExternalStore(
+    playedStore.subscribe,
+    playedStore.getSnapshot,
+    playedStore.getServerSnapshot,
+  );
+  const days = useMemo(() => playedDays(daily, played), [daily, played]);
+  return { stats, achievements, daily, bag, days };
+}
+
+/**
+ * Marks `date` as played (any daily game). Returns the streak when this completes a Master Ball
+ * bonus (and adds the ball), else undefined. A day already played changes nothing.
+ */
+function markPlayed(date: string): number | undefined {
+  const before = playedDays(dailyStore.getSnapshot(), playedStore.getSnapshot());
+  if (before.some((d) => d.date === date)) return undefined;
+  playedStore.set([...playedStore.getSnapshot(), date].sort().slice(-DAILY_HISTORY * 2));
+  const after = playedDays(dailyStore.getSnapshot(), playedStore.getSnapshot());
+  return streakBonus(before, after, date);
+}
+
+/**
+ * Folds a finished daily quiz into the progress: the day counts for the streak, a solve gives XP and
+ * a Pokéball, a first-guess solve unlocks "Olho de treinador". Called once, when the day ends.
+ */
+export function recordQuizDay(
+  date: string,
+  ball: Ball | undefined,
+  firstGuess: boolean,
+): { streakBonus?: number; unlocked: AchievementId[] } {
+  const bonus = markPlayed(date);
+  let stats = statsStore.getSnapshot();
+  if (ball) {
+    stats = {
+      ...stats,
+      quizSolved: stats.quizSolved + 1,
+      balls: { ...stats.balls, [ball]: stats.balls[ball] + 1 },
+    };
+  }
+  if (bonus) stats = addStreakBall(stats);
+  statsStore.set(stats);
+  const unlocked: AchievementId[] = [];
+  if (firstGuess && achievementStore.add("sharp-eye")) unlocked.push("sharp-eye");
+  if (bonus && achievementStore.add("master-ball")) unlocked.push("master-ball");
+  return bonus ? { streakBonus: bonus, unlocked } : { unlocked };
 }
 
 /** Uses a Master Ball for a legendary encounter. Returns false when there is none. */
@@ -196,11 +249,10 @@ export function recordFinishedRun(
 
 /** Records a daily attempt; returns the streak when it completes a Master Ball bonus. */
 function recordDailyWithStreak(run: GymRun): number | undefined {
-  if (!run.daily) return undefined;
-  const before = dailyStore.getSnapshot();
-  const after = recordDaily(before, run);
-  dailyStore.set(after);
-  return streakBonus(before, after, run.daily);
+  if (!run.daily || run.practice) return undefined;
+  const bonus = markPlayed(run.daily);
+  dailyStore.set(recordDaily(dailyStore.getSnapshot(), run));
+  return bonus;
 }
 
 /** A clock that ticks once per second (only while something is subscribed). */
@@ -304,4 +356,6 @@ export function resetGymProgress() {
   historyStore.set(NO_HISTORY);
   trainerStore.set(null);
   tipStore.clear();
+  playedStore.set(NO_DAYS);
+  resetQuiz();
 }

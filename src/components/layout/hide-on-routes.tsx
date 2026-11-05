@@ -3,8 +3,8 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-/** Focus routes (the gym game) trade page chrome for screen space, especially on phones. */
-export const FOCUS_ROUTES = ["/gym"];
+/** Focus routes (the games) trade page chrome for screen space, especially on phones. */
+export const FOCUS_ROUTES = ["/gym", "/quiz"];
 
 export function isFocusRoute(pathname: string) {
   return FOCUS_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));

@@ -1,4 +1,4 @@
-import { Swords } from "lucide-react";
+import { CircleHelp, Swords } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -35,7 +35,16 @@ export function SiteHeader() {
             data-testid="nav-gym"
           >
             <Swords aria-hidden className="size-4" />
-            {messages.nav.gym}
+            {/* Very narrow phones keep the button but hide its word (still read aloud). */}
+            <span className="max-[400px]:sr-only">{messages.nav.gym}</span>
+          </Link>
+          <Link
+            href="/quiz"
+            className="font-display mr-1 inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border-2 border-sky-500 bg-sky-500/10 px-2 text-[0.6rem] hover:bg-sky-500/20 sm:px-3"
+            data-testid="nav-quiz"
+          >
+            <CircleHelp aria-hidden className="size-4" />
+            <span className="max-sm:sr-only">{messages.nav.quiz}</span>
           </Link>
           <ul className="hidden items-center sm:flex">
             {NAV_LINKS.map(({ href, label, Icon }) => (
