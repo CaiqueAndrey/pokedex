@@ -14,6 +14,7 @@ import { sharedWeaknesses, teamCoverage } from "@/lib/type-effectiveness";
 import type { PokemonSummary, TypeRelations } from "@/types/pokemon";
 import { PokemonPicker } from "../pokedex/pokemon-picker";
 import { usePokemonSummaries } from "../pokedex/use-pokemon-summaries";
+import { FriendlyBattle } from "./friendly-battle";
 import { TEAM_SIZE, useTeam } from "./use-team";
 
 const m = messages.team;
@@ -171,6 +172,7 @@ export function TeamView({ relations }: { relations: TypeRelations }) {
           </>
         )}
       </section>
+      <FriendlyBattle names={team.names} relations={relations} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { MAX_ATTACKS, STRUGGLE_RECOIL } from "@/config/gym";
-import type { BattleEvent, BattlePokemon, BattleResult, Side } from "@/types/battle";
-import type { TypeRelations } from "@/types/pokemon";
+import type { BattleEvent, BattlePokemon, BattleResult, ChoicePoint, Side } from "@/types/battle";
+import type { PokemonTypeName, TypeRelations } from "@/types/pokemon";
 import { levelStats, matchupScore, rollDamage, type LevelStats } from "./damage";
 import { mulberry32, hashString, type Rng } from "./rng";
 
@@ -31,19 +31,29 @@ export function chooseReplacement(
   return bestIndex;
 }
 
+export interface BattleOptions {
+  /** The gauntlet starts the player's team hurt: Pokémon at 0 HP sit out. */
+  playerHp?: readonly number[];
+  /** The gym's field: damage multipliers by attack type (e.g. rain: water ×1.3, fire ×0.7). */
+  field?: Partial<Record<PokemonTypeName, number>>;
+  /**
+   * Your picks at each choice point, in order (team indexes). Missing or invalid picks fall back to
+   * the best-matchup reserve. Re-simulating with one more pick replays the same battle up to there.
+   */
+  choices?: readonly number[];
+}
+
 /**
- * One-on-one, in sequence: the leads fight, a fainted Pokémon is replaced by the reserve with the
- * best matchup, and the side with Pokémon left wins. Fully deterministic for a given seed.
- *
- * `playerHp` (the gauntlet) starts the player's team hurt: Pokémon at 0 HP sit out, and the first
- * one still standing opens.
+ * One-on-one, in sequence: the leads fight, a fainted Pokémon is replaced (by the player's choice,
+ * or the reserve with the best matchup), and the side with Pokémon left wins. Fully deterministic
+ * for a given seed and choices.
  */
 export function simulateBattle(
   player: BattlePokemon[],
   opponent: BattlePokemon[],
   relations: TypeRelations,
   seed: string | number,
-  { playerHp }: { playerHp?: readonly number[] } = {},
+  { playerHp, field, choices = [] }: BattleOptions = {},
 ): BattleResult {
   const rng: Rng = mulberry32(typeof seed === "number" ? seed : hashString(seed));
   const toFighters = (team: BattlePokemon[], hp?: readonly number[]): Fighter[] =>
@@ -70,6 +80,17 @@ export function simulateBattle(
     { kind: "send", side: "opponent", index: 0 },
   ];
   const fighter = (side: Side) => teams[side][active[side]] as Fighter;
+  const choicePoints: ChoicePoint[] = [];
+  /** The player's replacement: their pick when there's a real choice, else the matchup heuristic. */
+  const replacePlayer = (against: BattlePokemon): number => {
+    const auto = chooseReplacement(teams.player, against, relations);
+    const options = teams.player.flatMap((f, index) => (f.hp > 0 ? [index] : []));
+    if (options.length < 2) return auto;
+    const wanted = choices[choicePoints.length];
+    const chosen = wanted !== undefined && options.includes(wanted) ? wanted : auto;
+    choicePoints.push({ event: events.length - 1, options, auto, chosen });
+    return chosen;
+  };
 
   let winner: Side | undefined;
   for (let attacks = 0; !winner && attacks < MAX_ATTACKS;) {
@@ -87,7 +108,10 @@ export function simulateBattle(
         attacker: attacker.stats,
         defender: defender.stats,
       });
-      defender.hp = Math.max(0, defender.hp - roll.damage);
+      // The field scales a typed hit (Struggle is typeless); a hit always does at least 1.
+      const boost = roll.struggle ? 1 : (field?.[roll.type] ?? 1);
+      const damage = boost === 1 ? roll.damage : Math.max(1, Math.floor(roll.damage * boost));
+      defender.hp = Math.max(0, defender.hp - damage);
       const recoil = roll.struggle
         ? Math.min(attacker.hp, Math.max(1, Math.floor(attacker.stats.hp * STRUGGLE_RECOIL)))
         : 0;
@@ -99,7 +123,7 @@ export function simulateBattle(
         attacker: active[side],
         defender: active[defenderSide],
         type: roll.type,
-        damage: roll.damage,
+        damage,
         effectiveness: roll.effectiveness,
         critical: roll.critical,
         struggle: roll.struggle,
@@ -111,7 +135,10 @@ export function simulateBattle(
       // Faints resolve defender first, then the attacker (Struggle recoil).
       const knockOut = (fainted: Side, against: BattlePokemon) => {
         events.push({ kind: "faint", side: fainted, index: active[fainted] });
-        const next = chooseReplacement(teams[fainted], against, relations);
+        const next =
+          fainted === "player"
+            ? replacePlayer(against)
+            : chooseReplacement(teams[fainted], against, relations);
         if (next < 0) {
           winner ??= other(fainted);
         } else {
@@ -133,6 +160,7 @@ export function simulateBattle(
 
   return {
     winner,
+    choicePoints,
     events,
     startHp,
     finalHp: {

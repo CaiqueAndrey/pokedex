@@ -15,6 +15,20 @@ async function begin(page: Page, mode: "Fácil" | "Difícil" = "Fácil") {
   await page.getByRole("button", { name: `Jogar no ${mode}` }).click();
 }
 
+/** A fixed day, so the daily ambush (calibrated from the date) is the same on every run. */
+const DAY = new Date(2026, 10, 5, 12, 0, 0);
+
+/** The ambush hand is sorted by strength: the three weakest always fit the cap. */
+async function pickWeakestThree(page: Page) {
+  for (let i = 0; i < 3; i++) {
+    await page
+      .getByTestId("rocket-ambush")
+      .getByRole("button", { name: /^Escolher / })
+      .first()
+      .click();
+  }
+}
+
 /** The start screen: the hub with the challenges. */
 const hub = (page: Page) => page.getByRole("heading", { name: "Escolha seu desafio" });
 
@@ -29,9 +43,27 @@ async function draftStrongest(page: Page, pick: "first" | "last" = "last") {
   await expect(page.getByRole("button", { name: "Batalhar!" })).toBeVisible();
 }
 
+/**
+ * Fights the next battle and skips to its end. A pending reward is skipped first, and when one of
+ * your Pokémon faints with a choice to make, the recommended one goes in.
+ */
 async function fightAndSkip(page: Page) {
+  const skipReward = page.getByRole("button", { name: "Dispensar" });
+  if (await skipReward.isVisible()) await skipReward.click();
   await page.getByRole("button", { name: "Batalhar!" }).click();
-  await page.getByRole("button", { name: "Pular animação" }).click();
+  await playToEnd(page);
+}
+
+async function playToEnd(page: Page) {
+  const done = page.locator('[data-testid="battle"][data-finished]');
+  const skip = page.getByRole("button", { name: "Pular animação" });
+  const auto = page.getByTestId("choice-auto");
+  for (let i = 0; i < 12; i++) {
+    await expect(done.or(skip).or(auto).first()).toBeVisible();
+    if ((await done.count()) > 0) return;
+    if (await auto.isVisible()) await auto.click();
+    else if (await skip.isVisible()) await skip.click().catch(() => undefined);
+  }
 }
 
 async function loseFirstBattle(page: Page) {
@@ -156,28 +188,28 @@ test("the team order can be changed before a battle", async ({ page }) => {
   await expect(first).not.toHaveText(before);
 });
 
-test("the daily challenge counts once a day", async ({ page }) => {
+test("the daily ambush: attempts are saved and count for the streak", async ({ page }) => {
+  await page.clock.setFixedTime(DAY);
   await page.goto("/gym");
   await hydrated(page);
-  await page.getByRole("button", { name: "Jogar o desafio de hoje" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Esconderijo da Equipe Rocket", level: 1 }),
-  ).toBeVisible();
+  await page.getByRole("link", { name: "Jogar o desafio de hoje" }).click();
+  const ambush = page.getByTestId("rocket-ambush");
+  await expect(ambush).toBeVisible();
   await expect(page.getByText(/^Desafio do dia \d\d\/\d\d$/)).toBeVisible();
-  await expect(page.getByTestId("hand-board")).toBeVisible();
-  await page.getByRole("button", { name: "Abandonar desafio" }).click();
-  const dialog = page.getByRole("dialog", { name: "Abandonar o desafio?" });
-  await expect(dialog).toContainText("desafio do dia");
-  await dialog.getByRole("button", { name: "Abandonar", exact: true }).click();
+  await expect(page.getByTestId("rocket-opponent")).toHaveCount(4);
+  await pickWeakestThree(page);
+  await page.getByRole("button", { name: /^Atacar!/ }).click();
+  await page.getByRole("button", { name: "Pular animação" }).click();
+  await page.getByRole("button", { name: "Voltar ao quebra-cabeça" }).click();
+  await expect(page.getByTestId("rocket-attempt")).toHaveCount(1);
 
-  // Already played today: the result, the countdown and a practice run instead of a new attempt.
-  await expect(page.getByTestId("daily-played")).toContainText("0 de 5");
-  // Playing counts for the streak, whatever the result.
+  // Back on the hub: today's progress, the streak and the countdown.
+  await page.goto("/gym");
+  await hydrated(page);
+  await expect(page.getByTestId("daily-played")).toContainText(/Faltam 2 tentativas|Você venceu/);
   await expect(page.getByTestId("daily-streak")).toContainText("Sequência: 1 dia");
   await expect(page.getByTestId("daily-countdown")).toContainText(/Novo desafio em \d\d:\d\d:\d\d/);
-  await expect(page.getByRole("button", { name: "Jogar o desafio de hoje" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Treinar (não vale)" }).click();
-  await expect(page.getByText(/^Treino · Desafio do dia/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Jogar o desafio de hoje" })).toHaveCount(0);
 });
 
 test.describe("modes, history and controls", () => {
@@ -339,7 +371,7 @@ test.describe("hub, rewards and legendaries", () => {
     await expect(page.getByTestId("prize-easy")).toContainText("Ultra Bola");
     await expect(page.getByTestId("prize-hard")).toContainText("Master Ball");
     await expect(page.getByTestId("prize-daily")).toContainText("Ultra Bola");
-    await expect(page.getByTestId("mode-card-daily")).toContainText("5: Ultra Bola");
+    await expect(page.getByTestId("mode-card-daily")).toContainText("1ª tentativa: Ultra Bola");
     // Without a Master Ball the legendary encounter only explains how to get one.
     await expect(page.getByTestId("legendary-option")).toContainText("Ganhe uma Master Ball");
     await page.getByRole("link", { name: "Recompensas", exact: true }).click();
@@ -353,11 +385,12 @@ test.describe("hub, rewards and legendaries", () => {
     await hydrated(page);
     await page.getByText("Desafios anteriores").click();
     await page
-      .getByRole("button", { name: /^Treinar \d\d\/\d\d$/ })
+      .getByRole("link", { name: /^Treinar \d\d\/\d\d$/ })
       .first()
       .click();
     await expect(page.getByText(/^Treino · Desafio do dia/)).toBeVisible();
-    await expect(page.getByTestId("hand-board")).toBeVisible();
+    await expect(page.getByText("Treino: não vale recompensas")).toBeVisible();
+    await expect(page.getByTestId("rocket-ambush")).toBeVisible();
   });
 
   test("a Master Ball opens a legendary encounter and catches the pick", async ({ page }) => {
@@ -439,27 +472,173 @@ test.describe("trainer, history, gauntlet and navigation", () => {
     await expect(page.getByTestId("path-lost")).toHaveCount(1);
   });
 
-  test("the daily gauntlet: pick 6 from the hand, HP carries over", async ({ page }) => {
+  test("the ambush puzzle: pick 3 in order, the same plan can't be retried", async ({ page }) => {
+    await page.clock.setFixedTime(DAY);
+    await page.goto("/gym/emboscada");
+    const hand = page.getByTestId("rocket-ambush");
+    await expect(hand.getByRole("button", { name: /^Escolher / })).toHaveCount(8);
+    const attack = page.getByRole("button", { name: /^Atacar!/ });
+    await expect(attack).toBeDisabled();
+    await pickWeakestThree(page);
+    await expect(page.getByTestId("rocket-slot")).toHaveCount(3);
+    await expect(page.getByTestId("rocket-strength")).toContainText("/ 1250");
+    await attack.click();
+    await expect(page.getByTestId("battle-header")).toContainText("Tentativa 1 de 3");
+    await page.getByRole("button", { name: "Pular animação" }).click();
+    await page.getByRole("button", { name: "Voltar ao quebra-cabeça" }).click();
+    const won = await page.getByTestId("rocket-result").count();
+    if (won === 0) {
+      // The team stays picked to tweak it; the same three in the same order would lose the same way.
+      await expect(page.getByText("Você já tentou esse time nessa ordem")).toBeVisible();
+      await expect(attack).toBeDisabled();
+    }
+  });
+});
+
+test.describe("usability: next step, action bar, tips and reset", () => {
+  test("a first visit suggests the easy gym; the action bar holds the fight button", async ({
+    page,
+  }) => {
+    await page.goto("/gym?seed=e2e2");
+    await hydrated(page);
+    const next = page.getByTestId("next-step");
+    await expect(next).toContainText("Comece pelo Ginásio de Pewter");
+    await next.getByRole("button", { name: "Começar no Fácil" }).click();
+    await expect(page.getByRole("heading", { name: "Draft · rodada 1 de 6" })).toBeVisible();
+    // The gym tabs step aside during a run; a first-run tip explains the draft.
+    await expect(page.getByRole("navigation", { name: "Seções do Modo Ginásio" })).toHaveCount(0);
+    await expect(page.getByTestId("tip-draft")).toBeVisible();
+    await page.getByTestId("tip-draft").getByRole("button", { name: "Entendi" }).click();
+    await expect(page.getByTestId("tip-draft")).toHaveCount(0);
+    await draftStrongest(page);
+    const bar = page.getByTestId("action-bar");
+    await expect(bar.getByRole("button", { name: "Batalhar!" })).toBeInViewport();
+    await expect(page.getByTestId("lead-hint")).toContainText("Abre a batalha");
+  });
+
+  test("the hub explains both ways to a Master Ball", async ({ page }) => {
     await page.goto("/gym");
     await hydrated(page);
-    await page.getByRole("button", { name: "Jogar o desafio de hoje" }).click();
-    const hand = page.getByTestId("hand-board");
-    await expect(hand.getByRole("button", { name: /^Escolher / })).toHaveCount(12);
-    const confirm = page.getByRole("button", { name: "Enfrentar a Equipe Rocket" });
+    const paths = page.getByTestId("legendary-paths");
+    await expect(paths).toContainText("Vença a Misty no Difícil");
+    await expect(paths).toContainText("3 dias seguidos");
+  });
+
+  test("resetting progress asks for the confirmation word and clears everything", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded")) return;
+      sessionStorage.setItem("seeded", "1");
+      localStorage.setItem("pokedex:badges:v1", JSON.stringify(["boulder"]));
+      localStorage.setItem(
+        "pokedex:trainer:v1",
+        JSON.stringify({ name: "Misty Fã", id: "12345", since: "2026-11-01" }),
+      );
+      localStorage.setItem("pokedex:favorites:v1", JSON.stringify(["pikachu"]));
+    });
+    await page.goto("/gym/treinador");
+    await expect(page.getByTestId("trainer-name")).toHaveText("Misty Fã");
+    await page.getByRole("button", { name: "Apagar todo o progresso" }).click();
+    const dialog = page.getByRole("dialog", { name: "Apagar todo o progresso?" });
+    await expect(dialog).toContainText("insígnias, Pokébolas");
+    const confirm = dialog.getByRole("button", { name: "Apagar tudo" });
     await expect(confirm).toBeDisabled();
-    // The hand is sorted by strength: the six weakest always fit the cap.
-    for (let i = 0; i < 6; i++) {
-      await hand
-        .getByRole("button", { name: /^Escolher / })
-        .first()
-        .click();
-    }
-    await expect(page.getByTestId("hand-count")).toHaveText("6 de 6 escolhidos");
+    await dialog.getByLabel("Digite APAGAR para confirmar").fill("apagar");
     await confirm.click();
-    await expect(page.getByTestId("gauntlet-status")).toContainText("Derrotados: 0 de 5");
-    await expect(page.getByTestId("member-hp")).toHaveCount(6);
-    await expect(page.getByTestId("trainer")).toContainText("Recruta Rocket");
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("Progresso apagado. Bom recomeço!")).toBeVisible();
+    await expect(page.getByTestId("trainer-name")).toHaveText("Escolha seu nome de treinador");
+    // Favorites belong to the Pokédex: they stay.
+    const favorites = await page.evaluate(() => localStorage.getItem("pokedex:favorites:v1"));
+    expect(favorites).toContain("pikachu");
+    await page.getByRole("link", { name: "Recompensas", exact: true }).click();
+    await expect(
+      page.getByTestId("badges").getByRole("img", { name: "Insígnia da Rocha" }).locator(".."),
+    ).toHaveClass(/grayscale/);
+  });
+
+  test("phones get a one-line header with a menu", async ({ page }) => {
+    await page.goto("/gym");
+    await page.getByTestId("mobile-menu").locator("summary").click();
+    await page.getByRole("link", { name: "Meu time" }).click();
+    await expect(page).toHaveURL(/\/team$/);
+    await expect(page.getByRole("link", { name: "Surpreenda-me" })).toHaveCount(0);
+    await page.goto("/");
+    await expect(page.getByRole("link", { name: "Surpreenda-me" })).toBeVisible();
+  });
+});
+
+test.describe("game depth: choices, rewards, the bag and fields", () => {
+  test("a fainted Pokémon lets you choose who comes in", async ({ page }) => {
+    await page.goto("/gym?seed=e2e2");
+    await begin(page);
+    await draftStrongest(page, "first");
+    await page.getByRole("button", { name: "Batalhar!" }).click();
+    await page.getByRole("button", { name: "Pular animação" }).click();
+    const panel = page.getByTestId("replace");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("desmaiou! Quem entra?");
+    await expect(page.getByTestId("choice-auto")).toContainText("Recomendado");
+    await page.getByTestId("choice-option").first().click();
+    await expect(panel).toBeHidden();
+
+    // The battle is saved with the pick: a reload resumes it instead of the pre-battle screen.
+    await page.reload();
+    await expect(page.getByTestId("battle-header")).toBeVisible();
+    await playToEnd(page);
+    await expect(page.getByRole("dialog", { name: "Fim do desafio" })).toBeVisible();
+  });
+
+  test("a won battle offers a reward; training marks the Pokémon", async ({ page }) => {
+    await page.goto("/gym?seed=e2e2");
+    await begin(page);
+    await draftStrongest(page);
     await fightAndSkip(page);
-    await expect(page.getByTestId("battle-header")).toContainText("Batalha 1 de 5");
+    await page.getByRole("button", { name: "Próxima batalha" }).click();
+    const reward = page.getByTestId("battle-reward");
+    await expect(reward).toBeVisible();
+    await expect(page.getByRole("button", { name: "Batalhar!" })).toBeDisabled();
+    await reward.getByTestId("reward-train").click();
+    await reward.getByTestId("reward-target").first().click();
+    await expect(reward).toBeHidden();
+    await expect(page.getByTestId("trained")).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Batalhar!" })).toBeEnabled();
+  });
+
+  test("bag items: a Rare Candy evolves, a Nugget buys a reroll", async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("bag-seeded")) return;
+      sessionStorage.setItem("bag-seeded", "1");
+      localStorage.setItem("pokedex:gym-bag:v1", JSON.stringify({ "rare-candy": 1, nugget: 1 }));
+    });
+    await page.goto("/gym?seed=e2e2");
+    await begin(page);
+    const reroll = page.getByRole("button", { name: /Rolar de novo/ });
+    await reroll.click();
+    const buy = page.getByRole("button", { name: "Usar Pepita: +1 rolagem" });
+    await expect(buy).toBeVisible();
+    await buy.click();
+    await expect(buy).toHaveCount(0);
+    await expect(reroll).toBeDisabled();
+
+    await draftStrongest(page, "first");
+    await page.getByTestId("bag-button").click();
+    const use = page.getByTestId("bag-use").first();
+    const text = await use.innerText();
+    await use.click();
+    const evolvedTo = text.split("→").at(-1)?.trim() ?? "";
+    await expect(page.getByTestId("order-item").filter({ hasText: evolvedTo })).toHaveCount(1);
+    await expect(page.getByTestId("bag-button")).toHaveCount(0);
+  });
+
+  test("each gym has its field, shown on the hub and before battles", async ({ page }) => {
+    await page.goto("/gym?seed=e2e2");
+    await hydrated(page);
+    await expect(page.getByTestId("field-easy")).toContainText("Terreno rochoso");
+    await expect(page.getByTestId("field-hard")).toContainText("Chuva");
+    await begin(page);
+    await draftStrongest(page);
+    await expect(page.getByTestId("field")).toContainText("Pedra e Terra");
   });
 });

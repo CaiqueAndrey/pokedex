@@ -1,9 +1,12 @@
+import { Shuffle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { LinkButton } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { messages } from "@/config/messages";
 import { GymBanner } from "@/features/gym/gym-banner";
+import { QuizBanner } from "@/features/quiz/quiz-banner";
+import { DexProgressCard } from "@/features/pokedex/dex-progress";
 import { Filters } from "@/features/pokedex/filters";
 import { InfiniteGrid } from "@/features/pokedex/infinite-grid";
 import { ViewToggle } from "@/features/pokedex/view-toggle";
@@ -50,10 +53,24 @@ export default async function HomePage({
       <PageHeader
         title={messages.appName}
         description={messages.appDescription}
-        actions={<ViewToggle />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <LinkButton href="/random" prefetch={false} variant="secondary">
+              <Shuffle aria-hidden className="size-4" />
+              {messages.random.surprise}
+            </LinkButton>
+            <ViewToggle />
+          </div>
+        }
       />
       {/* The gym mode's front door; out of the way once the user is searching. */}
-      {!hasActiveFilters && <GymBanner />}
+      {!hasActiveFilters && (
+        <>
+          <GymBanner />
+          <QuizBanner />
+          <DexProgressCard />
+        </>
+      )}
       <Filters hasActiveFilters={hasActiveFilters} />
       <p className="text-muted mb-4 text-sm" aria-live="polite" data-testid="results-count">
         {results.length === 0

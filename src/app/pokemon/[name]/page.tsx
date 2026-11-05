@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Scale } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +10,7 @@ import { FavoriteButton } from "@/features/favorites/favorite-button";
 import { ArtworkViewer } from "@/features/pokemon-detail/artwork-viewer";
 import { EvolutionChain } from "@/features/pokemon-detail/evolution-chain";
 import { FormsSelector } from "@/features/pokemon-detail/forms-selector";
+import { GameFacts } from "@/features/pokemon-detail/game-facts";
 import { Stats } from "@/features/pokemon-detail/stats";
 import { TypeEffectiveness } from "@/features/pokemon-detail/type-effectiveness";
 import { TeamButton } from "@/features/team/team-button";
@@ -100,15 +101,24 @@ export default async function PokemonPage({ params }: Props) {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <FavoriteButton name={detail.name} label={title} className="border-border border" />
             <TeamButton name={detail.name} />
+            <LinkButton
+              href={`/compare?a=${encodeURIComponent(detail.name)}`}
+              variant="secondary"
+              data-testid="compare-with"
+            >
+              <Scale aria-hidden className="size-4" />
+              {messages.facts.compareWith}
+            </LinkButton>
           </div>
         </div>
         <div className="mt-4 grid items-center gap-6 md:grid-cols-2">
           <ArtworkViewer id={detail.id} name={title} artwork={detail.artwork} cry={detail.cry} />
           <div className="grid gap-4">
             {detail.flavorText && <p className="text-base leading-relaxed">{detail.flavorText}</p>}
+            {detail.isDefault && <GameFacts id={detail.speciesId} name={detail.name} />}
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-background/70 rounded-xl p-3">
                 <dt className="text-muted">{messages.detail.height}</dt>

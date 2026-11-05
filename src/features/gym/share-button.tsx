@@ -8,21 +8,29 @@ import { shareText, type ShareResult } from "@/lib/battle/progress";
 
 const m = messages.gym;
 
-/** Web Share API on phones; elsewhere the text goes to the clipboard. */
+/**
+ * Web Share API on phones; elsewhere the text goes to the clipboard. Takes a gym result, or any
+ * text built from the page's origin (the quiz).
+ */
 export function ShareButton({
   result,
+  text: build,
+  title = m.shareTitle,
   variant = "secondary",
 }: {
-  result: ShareResult;
+  result?: ShareResult;
+  text?: (origin: string) => string;
+  title?: string;
   variant?: "primary" | "secondary";
 }) {
   const [copied, setCopied] = useState(false);
 
   async function share() {
-    const text = shareText(result, window.location.origin);
+    const origin = window.location.origin;
+    const text = build ? build(origin) : result ? shareText(result, origin) : origin;
     try {
       if (typeof navigator.share === "function") {
-        await navigator.share({ title: m.shareTitle, text });
+        await navigator.share({ title, text });
         return;
       }
       await navigator.clipboard.writeText(text);

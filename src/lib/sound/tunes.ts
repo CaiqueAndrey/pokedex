@@ -94,6 +94,8 @@ export const TUNES = {
     n("B5", 0.12),
     n("C6", 0.5),
   ],
+  reveal: [n("C5", 0.08), n("G5", 0.08), n("E6", 0.08), rest(0.04), n("C6", 0.3)],
+  wrong: [n("E4", 0.08, "triangle"), n("C4", 0.16, "triangle")],
 } satisfies Record<string, Note[]>;
 
 export type TuneName = keyof typeof TUNES;

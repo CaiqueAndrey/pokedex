@@ -3,12 +3,15 @@
 import { FastForward } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ActionBar } from "@/components/ui/action-bar";
 import { TypeBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { TYPE_LABELS, messages } from "@/config/messages";
 import { formatName } from "@/lib/format";
+import { matchupScore } from "@/lib/battle/damage";
 import type { BattleEvent, BattlePokemon, BattleResult, Side } from "@/types/battle";
+import type { TypeRelations } from "@/types/pokemon";
 import { BATTLE_SPEEDS } from "@/config/gym";
 import { battleEventTune } from "@/lib/sound/tunes";
 import { PokemonImage } from "../pokedex/pokemon-image";
@@ -188,6 +191,11 @@ export function BattleView({
   doneHint,
   badge = false,
   children,
+  relations,
+  choicesMade = 0,
+  onChoose,
+  onEnd,
+  startAtEnd = false,
 }: {
   result: BattleResult;
   team: BattlePokemon[];
@@ -207,13 +215,29 @@ export function BattleView({
   badge?: boolean;
   /** Replaces the "done" button once the battle ends (the end-of-run dialog); null keeps it. */
   children?: ReactNode;
+  /** For matchup hints when you pick a replacement. */
+  relations?: TypeRelations;
+  /**
+   * Interactive battles: your replacement picks so far and how to add one. The battle pauses at
+   * each choice point (`result.choicePoints`); the parent re-simulates with the new pick.
+   */
+  choicesMade?: number;
+  onChoose?: (index: number) => void;
+  /** Called once, when the last event has played. */
+  onEnd?: () => void;
+  /** Open at the end, without the intro (a battle that was just played). */
+  startAtEnd?: boolean;
 }) {
-  const [step, setStep] = useState(0);
-  const [intro, setIntro] = useState(true);
-  const { speed } = useBattleSpeed();
   const total = result.events.length;
+  const [step, setStep] = useState(startAtEnd ? total : 0);
+  const [intro, setIntro] = useState(!startAtEnd);
+  const { speed } = useBattleSpeed();
   const finished = step >= total;
-  const played = useRef(0);
+  const played = useRef(startAtEnd ? total : 0);
+  const ended = useRef(startAtEnd);
+  const pending = onChoose ? result.choicePoints[choicesMade] : undefined;
+  const pauseAt = pending ? pending.event + 1 : total;
+  const waiting = Boolean(pending) && step >= pauseAt;
 
   // The "VS" card first, like a trainer battle in the games; then the events play out.
   useEffect(() => {
@@ -223,10 +247,16 @@ export function BattleView({
   }, [intro, speed]);
 
   useEffect(() => {
-    if (finished || intro) return;
+    if (step >= pauseAt || intro) return;
     const timer = setTimeout(() => setStep((s) => s + 1), BATTLE_SPEEDS[speed]);
     return () => clearTimeout(timer);
-  }, [finished, intro, step, speed]);
+  }, [pauseAt, intro, step, speed]);
+
+  useEffect(() => {
+    if (!finished || ended.current) return;
+    ended.current = true;
+    onEnd?.();
+  }, [finished, onEnd]);
 
   // One effect per new event; skipping jumps straight to the ending sound.
   useEffect(() => {
@@ -254,8 +284,14 @@ export function BattleView({
     maxHp: result.maxHp[side][view.active[side]] ?? 0,
   });
 
+  const faint = pending ? result.events[pending.event] : undefined;
+  const fainted = faint?.kind === "faint" ? team[faint.index] : undefined;
+  const against = teams.opponent[view.active.opponent];
+  const fit = (pokemon: BattlePokemon) =>
+    relations && against ? matchupScore(pokemon, against, relations) : 0;
+
   return (
-    <div className="grid gap-3 sm:gap-4">
+    <div className="grid gap-3 sm:gap-4" data-testid="battle" data-finished={finished || undefined}>
       <div
         className="border-border bg-surface flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 px-3 py-2"
         data-testid="battle-header"
@@ -309,6 +345,69 @@ export function BattleView({
         />
       </div>
 
+      {waiting && pending && (
+        <section
+          aria-labelledby="replace-title"
+          className="border-primary-600 bg-surface grid gap-2 rounded-2xl border-2 p-3"
+          data-testid="replace"
+        >
+          <h2 id="replace-title" className="text-[0.65rem] leading-relaxed">
+            {m.replace.title(formatName(fainted?.name ?? ""))}
+          </h2>
+          {against && (
+            <p className="text-muted text-sm">{m.replace.against(formatName(against.name))}</p>
+          )}
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {pending.options.map((index) => {
+              const pokemon = team[index];
+              if (!pokemon) return null;
+              const score = fit(pokemon);
+              return (
+                <li key={pokemon.name}>
+                  <button
+                    type="button"
+                    onClick={() => onChoose?.(index)}
+                    className={cn(
+                      "border-border hover:bg-border/60 flex min-h-14 w-full items-center gap-2 rounded-xl border-2 p-2 text-left",
+                      index === pending.auto && "border-primary-600",
+                    )}
+                    data-testid={index === pending.auto ? "choice-auto" : "choice-option"}
+                    aria-label={m.replace.pick(formatName(pokemon.name))}
+                  >
+                    <span className="relative size-10 shrink-0">
+                      <PokemonImage id={pokemon.id} alt="" sizes="40px" />
+                    </span>
+                    <span className="grid flex-1 gap-0.5">
+                      <span className="font-display text-[0.6rem] leading-relaxed">
+                        {formatName(pokemon.name)}
+                      </span>
+                      <span className="text-xs tabular-nums">
+                        PS {view.hp.player[index] ?? 0} / {result.maxHp.player[index] ?? 0}
+                      </span>
+                    </span>
+                    {score !== 0 && (
+                      <span
+                        className={cn(
+                          "rounded-md px-1.5 py-0.5 text-xs font-bold",
+                          score > 0 ? "bg-green-600 text-white" : "bg-primary-600 text-on-primary",
+                        )}
+                      >
+                        {score > 0 ? `▲ ${m.matchupGood}` : `▼ ${m.matchupBad}`}
+                      </span>
+                    )}
+                    {index === pending.auto && (
+                      <span className="bg-foreground text-background rounded-md px-1.5 py-0.5 text-xs font-bold">
+                        {m.replace.recommended}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       <div
         className="border-border bg-background font-display min-h-20 rounded-2xl border-4 p-2 text-[0.6rem] leading-loose sm:min-h-28 sm:p-3"
         aria-live="polite"
@@ -321,37 +420,47 @@ export function BattleView({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <SpeedToggle />
-          <SoundToggle />
-        </div>
-        {finished ? (
-          (children ?? (
-            <div className="flex flex-wrap items-center gap-3">
-              {doneHint && (
-                <p className="font-display text-[0.6rem]" role="status">
+      <div className="flex flex-wrap items-center gap-2">
+        <SpeedToggle />
+        <SoundToggle />
+      </div>
+
+      {finished ? (
+        (children ?? (
+          <ActionBar
+            hint={
+              doneHint && (
+                <p className="font-display text-[0.6rem] leading-relaxed" role="status">
                   {doneHint}
                 </p>
-              )}
-              <Button onClick={onDone} className="animate-pop">
-                {doneLabel}
-              </Button>
-            </div>
-          ))
-        ) : (
+              )
+            }
+          >
+            <Button onClick={onDone} className="animate-pop" autoFocus>
+              {doneLabel}
+            </Button>
+          </ActionBar>
+        ))
+      ) : waiting && pending ? (
+        <ActionBar hint={<p>{m.replace.waiting}</p>}>
+          <Button onClick={() => onChoose?.(pending.auto)}>
+            {m.replace.pick(formatName(team[pending.auto]?.name ?? ""))}
+          </Button>
+        </ActionBar>
+      ) : (
+        <ActionBar>
           <Button
             variant="secondary"
             onClick={() => {
               setIntro(false);
-              setStep(total);
+              setStep(pauseAt);
             }}
           >
             <FastForward aria-hidden className="size-4" />
             {m.skip}
           </Button>
-        )}
-      </div>
+        </ActionBar>
+      )}
     </div>
   );
 }

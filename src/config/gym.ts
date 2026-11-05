@@ -1,3 +1,5 @@
+import type { PokemonTypeName } from "@/types/pokemon";
+
 /** Gym content and game rules (project-goal.md §8.8–8.9). Tune balance here, not in the engine. */
 
 /** Last national-dex number of each generation. */
@@ -63,7 +65,12 @@ export interface BallReward {
   ball: Ball;
 }
 
+/** A gym's field: damage multipliers by attack type, for both sides (labels in messages). */
+export type Field = Partial<Record<PokemonTypeName, number>>;
+
 export interface Gym {
+  /** The field every battle here is fought on (Pewter's rocky ground, Cerulean's rain). */
+  field?: Field;
   /**
    * `gym`: a six-round die draft, then the battles, fully healed between them. `gauntlet` (the daily
    * Team Rocket hideout): pick 6 from the same hand of 12 for everyone, then as many battles as you
@@ -140,6 +147,7 @@ export const GYMS: Record<GymMode, Gym> = {
     badge: "Insígnia da Rocha",
     badgeImage: "/img/insignia_rock.webp",
     trophyImage: "/img/championKanto.png",
+    field: { rock: 1.2, ground: 1.2 },
     rewards: [
       { wins: 3, ball: "poke" },
       { wins: 4, ball: "great" },
@@ -176,6 +184,7 @@ export const GYMS: Record<GymMode, Gym> = {
     badge: "Insígnia da Cascata",
     badgeImage: "/img/insignia_water.png",
     trophyImage: "/img/championCerulean.png",
+    field: { water: 1.2, fire: 0.8 },
     rewards: [
       { wins: 3, ball: "poke" },
       { wins: 4, ball: "great" },
@@ -206,7 +215,7 @@ export const GYMS: Record<GymMode, Gym> = {
   daily: {
     format: "gauntlet",
     badgeId: null,
-    name: "Esconderijo da Equipe Rocket",
+    name: "Emboscada da Equipe Rocket",
     leader: "Jessie",
     leaderImage: "/img/jessie.png",
     badge: null,
@@ -250,6 +259,74 @@ export const GYMS: Record<GymMode, Gym> = {
   },
 };
 
+/**
+ * The daily Team Rocket ambush (project-goal.md §8.10, Phase 14): a puzzle with open information.
+ *
+ * - `hand`, `pick`, `cap`: the day's hand, how many you take (in order) and their strength cap.
+ * - `opponents`, `opponentBudget`, `signatures`: Jessie and James's revealed team.
+ * - `attempts`: tries per day; `rewards[n]` is the ball for winning on attempt n + 1.
+ * - `winRange`: the share of legal ordered teams that must win for a seed to be the day's puzzle;
+ *   `maxSeeds` seeds are tried (then the closest one wins). Tuning in docs/phases/14-rocket-ambush.md.
+ */
+export const ROCKET_PUZZLE = {
+  hand: 8,
+  pick: 3,
+  cap: 1250,
+  opponents: 4,
+  opponentBudget: 1800,
+  signatures: ["arbok", "weezing"],
+  attempts: 3,
+  rewards: ["ultra", "great", "poke"],
+  winRange: [0.1, 0.25],
+  maxSeeds: 30,
+} as const satisfies {
+  hand: number;
+  pick: number;
+  cap: number;
+  opponents: number;
+  opponentBudget: number;
+  signatures: readonly string[];
+  attempts: number;
+  rewards: readonly Ball[];
+  winRange: readonly [number, number];
+  maxSeeds: number;
+};
+
+/** "Treino" (a reward between battles): this share is added to one Pokémon's attacks and speed. */
+export const TRAIN_BOOST = 0.1;
+/** Stats a training raises. */
+export const TRAINED_STATS = ["attack", "special-attack", "speed"] as const;
+/** Extra rerolls a run can buy with valuables (Pepita, Pedaço de Estrela). */
+export const MAX_BONUS_REROLLS = 3;
+
+/**
+ * What each bag item does in a run (simplified, see docs/phases/15-game-depth.md):
+ * stones evolve a Pokémon whose evolution has one of the stone's types; the Rare Candy evolves any;
+ * valuables buy one more reroll during the draft.
+ */
+export const ITEM_EFFECTS: Record<
+  RewardItemName,
+  { kind: "evolve"; types?: readonly PokemonTypeName[] } | { kind: "reroll" }
+> = {
+  "fire-stone": { kind: "evolve", types: ["fire"] },
+  "water-stone": { kind: "evolve", types: ["water"] },
+  "thunder-stone": { kind: "evolve", types: ["electric"] },
+  "leaf-stone": { kind: "evolve", types: ["grass"] },
+  "ice-stone": { kind: "evolve", types: ["ice"] },
+  "moon-stone": { kind: "evolve", types: ["fairy", "normal", "poison"] },
+  "sun-stone": { kind: "evolve", types: ["grass", "fire"] },
+  "shiny-stone": { kind: "evolve", types: ["fairy", "normal"] },
+  "dusk-stone": { kind: "evolve", types: ["dark", "ghost"] },
+  "dawn-stone": { kind: "evolve", types: ["psychic", "fighting", "ice"] },
+  "rare-candy": { kind: "evolve" },
+  nugget: { kind: "reroll" },
+  "star-piece": { kind: "reroll" },
+};
+
+/** Rewards offered after a won battle (one of three; "scout" only where the team is hidden). */
+export const BATTLE_REWARDS = ["train", "item", "evolve", "scout"] as const;
+export type BattleReward = (typeof BATTLE_REWARDS)[number];
+
 /** Pokéballs won at the end of a run, from the worst to the best. */
 export const BALLS = ["poke", "great", "ultra", "master"] as const;
 export type Ball = (typeof BALLS)[number];
@@ -288,7 +365,7 @@ export const DAILY_ARCHIVE_DAYS = 7;
  * Bumped whenever a rule change would alter the opponents or battles derived from a saved seed:
  * runs saved under other rules are discarded instead of changing mid-run.
  */
-export const RULES_VERSION = 2;
+export const RULES_VERSION = 3;
 
 /** Default player cap when one applies (hard mode). */
 export const TEAM_BUDGET = 2500;
@@ -322,9 +399,17 @@ export const ACHIEVEMENTS = [
   "variety-champion",
   "streak-3",
   "master-ball",
+  "sharp-eye",
   "legend-champion",
 ] as const;
 export type AchievementId = (typeof ACHIEVEMENTS)[number];
+
+/** Achievements whose description stays a surprise until unlocked. */
+export const SECRET_ACHIEVEMENTS: readonly AchievementId[] = [
+  "sharp-eye",
+  "flawless-leader",
+  "baby-champion",
+];
 
 /** "Budget champion": win the badge with a team at or under this strength. */
 export const BUDGET_CHAMPION_BST = 2300;
@@ -338,6 +423,7 @@ export const XP = {
   battle: 10,
   clear: { easy: 50, hard: 100, daily: 100 },
   legendary: 30,
+  mission: 30,
 } as const;
 /** Trainer ranks by level (labels in messages.gym.trainer.ranks). */
 export const RANKS = [

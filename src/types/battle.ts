@@ -37,8 +37,23 @@ export type BattleEvent =
   | { kind: "faint"; side: Side; index: number }
   | { kind: "end"; winner: Side };
 
+/**
+ * A moment when one of your Pokémon fainted and more than one could come in: the player may pick
+ * (`options`, team indexes); `auto` is the best-matchup pick used when they don't.
+ */
+export interface ChoicePoint {
+  /** Index of the faint event in `events`. */
+  event: number;
+  options: number[];
+  auto: number;
+  /** Who came in. */
+  chosen: number;
+}
+
 export interface BattleResult {
   winner: Side;
+  /** Your replacement decisions, in order (only where there was more than one option). */
+  choicePoints: ChoicePoint[];
   events: BattleEvent[];
   /** Max HP of each member, by side, in team order. */
   maxHp: Record<Side, number[]>;

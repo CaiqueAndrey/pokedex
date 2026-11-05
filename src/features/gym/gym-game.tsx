@@ -1,7 +1,8 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { RotateCcw, Swords } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ActionBar } from "@/components/ui/action-bar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
@@ -18,31 +19,34 @@ import {
   totalXp,
   xpForRun,
 } from "@/lib/battle/progress";
-import { levelStats } from "@/lib/battle/damage";
 import {
+  addBonusReroll,
   applyResult,
   battleConfig,
   battleCount,
   battleFor,
   byName,
+  chooseReplacementPick,
+  chooseReward,
   countersLead,
   currentDraft,
+  evolveMember,
   gymOf,
-  handFor,
-  isGauntlet,
   opponentFor,
-  pickHand,
+  opponentRevealed,
   pickPokemon,
   playerTeam,
   reorder,
   reroll,
+  rewardItem,
+  startBattle,
   startRun,
-  teamHp,
   trainerFor,
   type GymRun,
   type StartOptions,
 } from "@/lib/battle/run";
 import { newSeed } from "@/lib/battle/rng";
+import { formatName } from "@/lib/format";
 import type { BattlePokemon, BattleResult } from "@/types/battle";
 import type { GameItem } from "@/types/item";
 import type { TypeRelations } from "@/types/pokemon";
@@ -52,8 +56,8 @@ import { DraftBoard } from "./draft-board";
 import { GymBadge } from "./gym-badge";
 import { GymPokemon } from "./gym-pokemon";
 import { GymHub, Section } from "./gym-hub";
-import { HandBoard } from "./hand-board";
 import { PreBattle } from "./pre-battle";
+import { BagButton, RewardPicker } from "./run-extras";
 import { RunPath } from "./run-path";
 import { resultLine, RunResultDialog } from "./run-result-dialog";
 import { ShareButton } from "./share-button";
@@ -63,7 +67,10 @@ import {
   recordAbandonedDaily,
   recordCatch,
   recordFinishedRun,
+  addItem,
+  setGymFocus,
   sfx,
+  spendItem,
   takeMasterBall,
   useBadges,
   useGymHistory,
@@ -106,7 +113,7 @@ export function GymGame({
 }) {
   const { run, setRun } = useGymRun();
   const { badges, add: addBadge } = useBadges();
-  const { stats, daily } = useGymProgress();
+  const { stats, days, bag } = useGymProgress();
   const { trainer } = useTrainer();
   const history = useGymHistory();
   const { today, secondsLeft } = useToday();
@@ -120,6 +127,12 @@ export function GymGame({
   const outdated = run !== null && run.rules !== RULES_VERSION;
   const valid = run && !outdated && run.picks.every((name) => names.has(name)) ? run : null;
   const team = valid ? playerTeam(valid, pool) : [];
+  // While drafting, ordering or battling, the gym's tabs step aside (see GymTabs).
+  const focus = Boolean(battle) || valid?.phase === "draft" || valid?.phase === "ready";
+  useEffect(() => {
+    setGymFocus(focus);
+    return () => setGymFocus(false);
+  }, [focus]);
   const itemFor = (run: GymRun) => {
     if (!earnsDailyItem(run) || !run.daily) return undefined;
     const name = dailyItem(run.daily);
@@ -148,10 +161,20 @@ export function GymGame({
     newRun();
   }
 
+  /**
+   * Starts the battle. It is saved as "in progress" (with your replacement picks as you make them),
+   * so a reload resumes the same battle instead of letting you re-plan after seeing it.
+   */
   function fight(current: GymRun) {
+    sfx("send");
+    setRun(startBattle(current));
+    window.scrollTo({ top: 0 });
+  }
+
+  /** The battle has played out with your picks: apply it, record the run's end, show the ending. */
+  function finish(current: GymRun) {
     const result = battleFor(current, pool, relations);
     const next = applyResult(current, result, pool, relations);
-    // The outcome is saved before the animation: reloading can't re-roll a lost battle.
     setRun(next);
     const over = next.phase === "won" || next.phase === "lost";
     const badgeId = gymOf(next).badgeId;
@@ -160,7 +183,6 @@ export function GymGame({
     const { unlocked, streakBonus } = over ? recordFinishedRun(next, pool) : { unlocked: [] };
     const xp = over ? xpForRun(next) : 0;
     const after = levelFor(before.xp + xp);
-    window.scrollTo({ top: 0 });
     setBattle({
       result,
       team: playerTeam(current, pool),
@@ -174,13 +196,42 @@ export function GymGame({
     });
   }
 
+  // A battle in progress: it plays, pausing for your replacement picks, then `finish` applies it.
+  if (!battle && valid?.phase === "ready" && valid.battling) {
+    const live = valid;
+    const result = battleFor(live, pool, relations);
+    return (
+      <BattleView
+        key={`${live.seed}-${live.battle}-live`}
+        result={result}
+        team={playerTeam(live, pool)}
+        opponent={opponentFor(live, live.battle, pool, relations)}
+        trainer={trainerFor(live, live.battle)}
+        playerName={playerName}
+        heading={`${gymOf(live).name} · ${m.battleOf(live.battle + 1, battleCount(live))}`}
+        trainerImage={battleConfig(live, live.battle)?.image}
+        doneLabel={m.next}
+        badge={live.battle === battleCount(live) - 1 && result.winner === "player"}
+        relations={relations}
+        choicesMade={live.battling?.choices.length ?? 0}
+        onChoose={(index) => {
+          sfx("send");
+          setRun(chooseReplacementPick(live, index));
+        }}
+        onEnd={() => finish(live)}
+        onDone={() => undefined}
+      />
+    );
+  }
+
   if (battle) {
     const over = battle.next.phase !== "ready";
     const nextTrainer = trainerFor(battle.next, battle.next.battle);
     const index = battle.next.history.length - 1;
     return (
       <BattleView
-        key={`${battle.next.seed}-${battle.next.battle}-${battle.next.phase}`}
+        key={`${battle.next.seed}-${battle.next.battle}-${battle.next.phase}-done`}
+        startAtEnd
         result={battle.result}
         team={battle.team}
         opponent={battle.opponent}
@@ -191,7 +242,10 @@ export function GymGame({
         doneLabel={m.next}
         doneHint={over ? undefined : m.wonNext(nextTrainer)}
         badge={battle.next.phase === "won"}
-        onDone={() => setBattle(null)}
+        onDone={() => {
+          setBattle(null);
+          window.scrollTo({ top: 0 });
+        }}
       >
         {over ? (
           <RunResultDialog
@@ -222,7 +276,7 @@ export function GymGame({
           lastMode={stats.lastMode}
           stats={stats}
           badges={badges}
-          daily={daily}
+          days={days}
           today={today}
           secondsLeft={secondsLeft}
           items={items}
@@ -232,11 +286,16 @@ export function GymGame({
         />
         <Section id="regras" title={m.rulesTitle}>
           <Card className="grid gap-4">
-            <ol className="grid list-decimal gap-2 pl-5 text-base">
-              {m.rules.map((rule) => (
-                <li key={rule}>{rule}</li>
-              ))}
-            </ol>
+            <details data-testid="rules">
+              <summary className="font-display cursor-pointer text-[0.6rem] leading-relaxed">
+                {m.rulesToggle}
+              </summary>
+              <ol className="mt-3 grid list-decimal gap-2 pl-5 text-base">
+                {m.rules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ol>
+            </details>
             <h3 className="text-[0.6rem]">{m.hub.settingsTitle}</h3>
             <div className="flex flex-wrap items-center gap-2">
               <SpeedToggle />
@@ -289,21 +348,6 @@ export function GymGame({
     </div>
   );
 
-  if (valid.phase === "draft" && isGauntlet(valid)) {
-    return (
-      <>
-        {runBar}
-        <HandBoard
-          hand={handFor(valid, pool)}
-          onConfirm={(picks) => {
-            sfx("pick");
-            setRun(pickHand(valid, picks, pool));
-          }}
-        />
-      </>
-    );
-  }
-
   if (valid.phase === "draft") {
     return (
       <>
@@ -322,6 +366,12 @@ export function GymGame({
             sfx("roll");
             setRun(reroll(valid));
           }}
+          bag={valid.practice ? {} : bag}
+          onBuyReroll={(item) => {
+            if (!spendItem(item)) return;
+            sfx("roll");
+            setRun(reroll(addBonusReroll(valid)));
+          }}
         />
       </>
     );
@@ -331,8 +381,25 @@ export function GymGame({
     return (
       <>
         {runBar}
+        {valid.reward && (
+          <div className="mb-5">
+            <RewardPicker
+              run={valid}
+              team={team}
+              pool={pool}
+              items={items}
+              onChoose={(kind, target) => {
+                sfx("pick");
+                if (kind === "item" && !valid.practice) addItem(rewardItem(valid, valid.battle));
+                setRun(chooseReward(valid, kind, pool, target));
+              }}
+            />
+          </div>
+        )}
         <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
           <PreBattle
+            revealed={opponentRevealed(valid)}
+            boosts={valid.boosts}
             battle={valid.battle}
             mode={valid.mode}
             trainer={trainerFor(valid, valid.battle)}
@@ -340,20 +407,36 @@ export function GymGame({
             opponent={opponentFor(valid, valid.battle, pool, relations)}
             relations={relations}
             counters={gymOf(valid).rules.reveal && countersLead(valid, valid.battle)}
-            {...(isGauntlet(valid)
-              ? {
-                  health: teamHp(valid, pool).map((hp, i) => ({
-                    hp,
-                    max: team[i] ? levelStats(team[i].stats).hp : hp,
-                  })),
-                  defeated: battlesWon(valid),
-                }
-              : {})}
             onReorder={(order) => setRun(reorder(valid, order))}
-            onFight={() => fight(valid)}
           />
           <RunPath run={valid} pool={pool} />
         </div>
+        <ActionBar
+          hint={
+            valid.reward ? (
+              <p className="font-bold">{m.rewards.pending}</p>
+            ) : (
+              team[0] && <p data-testid="lead-hint">{m.leadHint(formatName(team[0].name))}</p>
+            )
+          }
+        >
+          <BagButton
+            run={valid}
+            team={team}
+            pool={pool}
+            bag={bag}
+            items={items}
+            onUse={(item, member) => {
+              if (!spendItem(item)) return;
+              sfx("pick");
+              setRun(evolveMember(valid, member, item, pool));
+            }}
+          />
+          <Button onClick={() => fight(valid)} disabled={Boolean(valid.reward)}>
+            <Swords aria-hidden className="size-4" />
+            {m.fight}
+          </Button>
+        </ActionBar>
       </>
     );
   }
@@ -385,21 +468,6 @@ export function GymGame({
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <ShareButton
-            result={{
-              mode: valid.mode,
-              battlesWon: wins,
-              won,
-              daily: valid.daily,
-              seed: valid.seed,
-            }}
-          />
-          <Button onClick={newRun}>
-            <RotateCcw aria-hidden className="size-4" />
-            {m.newRun}
-          </Button>
-        </div>
         <ul className="grid w-full grid-cols-3 gap-2 sm:grid-cols-6">
           {team.map((pokemon) => (
             <li key={pokemon.name}>
@@ -409,6 +477,21 @@ export function GymGame({
         </ul>
       </Card>
       <RunPath run={valid} pool={pool} />
+      <ActionBar className="mt-4">
+        <ShareButton
+          result={{
+            mode: valid.mode,
+            battlesWon: wins,
+            won,
+            daily: valid.daily,
+            seed: valid.seed,
+          }}
+        />
+        <Button onClick={newRun}>
+          <RotateCcw aria-hidden className="size-4" />
+          {m.newRun}
+        </Button>
+      </ActionBar>
     </>
   );
 }

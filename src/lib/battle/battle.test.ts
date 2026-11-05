@@ -26,6 +26,7 @@ import {
   opponentBudget,
   opponentFor,
   pickHand,
+  chooseReward,
   teamHp,
   pickPokemon,
   reorder,
@@ -341,7 +342,7 @@ describe("gym run", () => {
     expect(reorder(run, ["pikachu"])).toBe(run);
   });
 
-  type Strategy = "random" | "strongest" | "expert";
+  type Strategy = "random" | "strongest" | "expert" | "rewarded";
 
   /** What a thoughtful player drafts: strong, new types, no stacked weaknesses. */
   function expertPick(team: BattlePokemon[], offers: BattlePokemon[]) {
@@ -378,13 +379,22 @@ describe("gym run", () => {
         const choice =
           strategy === "random"
             ? (legal[Math.floor(rng() * legal.length)] as BattlePokemon)
-            : strategy === "expert"
+            : strategy === "expert" || strategy === "rewarded"
               ? expertPick(team, legal)
               : (legal.at(-1) as BattlePokemon);
         run = pickPokemon(run, choice.name, pool);
       }
       while (run.phase === "ready") {
-        if (strategy === "expert") {
+        // "Rewarded": an expert who also trains its lead (or evolves it) after every win.
+        if (strategy === "rewarded" && run.reward) {
+          const lead = run.order[0] ?? run.picks[0] ?? "";
+          const evolve = run.reward.options.includes("evolve")
+            ? chooseReward(run, "evolve", pool, lead)
+            : run;
+          run = evolve.reward ? chooseReward(run, "train", pool, lead) : evolve;
+          if (run.reward) run = chooseReward(run, undefined, pool);
+        }
+        if (strategy === "expert" || strategy === "rewarded") {
           const ready = run;
           const options = run.picks.map((lead) =>
             reorder(ready, [lead, ...ready.picks.filter((name) => name !== lead)]),
@@ -407,7 +417,7 @@ describe("gym run", () => {
   it("is a real challenge in every mode, and playing well pays off", () => {
     // The daily gauntlet has its own format and its own test below.
     const modes = ["easy", "hard"] as const;
-    const strategies = ["random", "strongest", "expert"] as const;
+    const strategies = ["random", "strongest", "expert", "rewarded"] as const;
     const rates = Object.fromEntries(
       modes.flatMap((mode) =>
         strategies.map((strategy) => [`${mode}-${strategy}`, clearRate(mode, strategy)]),
@@ -432,6 +442,9 @@ describe("gym run", () => {
     }
     // Easy is the easiest for anyone playing with intent.
     expect(rates["hard-expert"].cleared).toBeLessThan(rates["easy-expert"].cleared);
+    // Rewards between battles help, without turning a gym into a sure thing.
+    expect(rates["easy-rewarded"].cleared).toBeLessThanOrEqual(0.6);
+    expect(rates["hard-rewarded"].cleared).toBeLessThanOrEqual(0.35);
   }, 600_000);
 
   it("opponents scale per battle and leaders counter your lead", () => {

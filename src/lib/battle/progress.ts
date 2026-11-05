@@ -19,6 +19,7 @@ import {
   type RewardItemName,
 } from "@/config/gym";
 import { messages } from "@/config/messages";
+import { QUIZ_XP } from "@/config/quiz";
 import type { BattlePokemon } from "@/types/battle";
 import { hashString } from "./rng";
 import { battleCount, byName, gymRunSchema, type GymMode, type GymRun } from "./run";
@@ -50,6 +51,10 @@ export const gymStatsSchema = z.object({
   caught: z.array(z.string()),
   /** Last mode chosen on the start screen (the daily challenge doesn't change it). */
   lastMode: z.enum(["easy", "hard"]).optional(),
+  /** Daily "Quem é esse Pokémon?" solved (XP). */
+  quizSolved: count.default(0),
+  /** Weekly missions claimed (XP). */
+  missions: count.default(0),
 });
 
 export type GymStats = z.infer<typeof gymStatsSchema>;
@@ -65,6 +70,8 @@ export const EMPTY_STATS: GymStats = {
   bestStreak: 0,
   used: {},
   caught: [],
+  quizSolved: 0,
+  missions: 0,
 };
 
 /** Spends a Master Ball (for a legendary encounter); a no-op without one. */
@@ -166,9 +173,27 @@ export function achievementsFor(
     "variety-champion": won && new Set(team.flatMap((p) => p.types)).size >= VARIETY_CHAMPION_TYPES,
     "streak-3": stats.streak >= 3,
     "master-ball": rewardFor(run) === "master",
+    // Unlocked by the daily quiz, not by a gym run.
+    "sharp-eye": false,
     "legend-champion": won && team.some((p) => p.legendary),
   };
   return ACHIEVEMENTS.filter((id) => unlocked[id]);
+}
+
+/** Progress towards achievements that build up over time, as [current, target]. */
+export function achievementProgress(
+  id: AchievementId,
+  stats: GymStats,
+  badges: readonly string[],
+): [number, number] | undefined {
+  if (id === "streak-3") return [Math.min(stats.streak, 3), 3];
+  if (id === "both-badges") {
+    const earned = (["easy", "hard"] as const).filter((mode) =>
+      badges.includes(GYMS[mode].badgeId ?? ""),
+    ).length;
+    return [earned, 2];
+  }
+  return undefined;
 }
 
 /** Local calendar date as YYYY-MM-DD: the daily challenge changes at the player's midnight. */
@@ -249,6 +274,8 @@ export function pastDays(key: string, count: number): string[] {
 
 export const trainerSchema = z.object({
   name: z.string().trim().min(1).max(TRAINER_NAME_MAX),
+  /** A favorite chosen as partner on the Trainer Card (else the most used). */
+  partner: z.string().min(1).max(80).optional(),
   /** Five digits, like the trainer ID on a Trainer Card. */
   id: z.string().regex(/^\d{5}$/),
   /** When the card was issued (YYYY-MM-DD). */
@@ -273,7 +300,9 @@ export function totalXp(stats: GymStats): number {
     stats.cleared.easy * XP.clear.easy +
     stats.cleared.hard * XP.clear.hard +
     stats.cleared.daily * XP.clear.daily +
-    stats.caught.length * XP.legendary
+    stats.caught.length * XP.legendary +
+    stats.quizSolved * QUIZ_XP +
+    stats.missions * XP.mission
   );
 }
 
@@ -306,7 +335,15 @@ export function addToHistory(
   return [{ finishedAt, run }, ...history].slice(0, HISTORY_SIZE);
 }
 
-// ---- Daily streak: play on consecutive days (any result) ----
+// ---- Daily streak: play any daily game on consecutive days (any result) ----
+
+/** Every day with a daily game played (the gym's daily challenge or the quiz), once each. */
+export function playedDays(
+  daily: readonly DailyResult[],
+  other: readonly string[],
+): { date: string }[] {
+  return [...new Set([...daily.map((r) => r.date), ...other])].sort().map((date) => ({ date }));
+}
 
 const previousDay = (key: string) => pastDays(key, 1)[0] ?? key;
 
@@ -314,7 +351,7 @@ const previousDay = (key: string) => pastDays(key, 1)[0] ?? key;
  * Days in a row with a daily result, ending on `today` (or yesterday, if today isn't played yet:
  * the streak is still alive until midnight).
  */
-export function dailyStreak(results: readonly DailyResult[], today: string): number {
+export function dailyStreak(results: readonly { date: string }[], today: string): number {
   const played = new Set(results.map((r) => r.date));
   let day = played.has(today) ? today : previousDay(today);
   let streak = 0;
@@ -329,7 +366,7 @@ export function dailyStreak(results: readonly DailyResult[], today: string): num
  * Daily plays still needed (1–3) for the next streak bonus, today's included when it isn't played
  * yet. 1 with today unplayed means "play today and get the Master Ball".
  */
-export function playsToStreakBonus(results: readonly DailyResult[], today: string): number {
+export function playsToStreakBonus(results: readonly { date: string }[], today: string): number {
   return DAILY_STREAK_BONUS - (dailyStreak(results, today) % DAILY_STREAK_BONUS);
 }
 
@@ -338,8 +375,8 @@ export function playsToStreakBonus(results: readonly DailyResult[], today: strin
  * `DAILY_STREAK_BONUS` days in a row), else undefined.
  */
 export function streakBonus(
-  before: readonly DailyResult[],
-  after: readonly DailyResult[],
+  before: readonly { date: string }[],
+  after: readonly { date: string }[],
   day: string,
 ): number | undefined {
   if (after.length === before.length || !after.some((r) => r.date === day)) return undefined;
@@ -352,3 +389,33 @@ export const addStreakBall = (stats: GymStats): GymStats => ({
   ...stats,
   balls: { ...stats.balls, master: stats.balls.master + 1 },
 });
+
+// ---- What to do next: one clear suggestion on the hub ----
+
+export type NextStep =
+  | { kind: "daily" }
+  | { kind: "legendary" }
+  | { kind: "gym"; mode: "easy" | "hard"; reason: "first" | "badge" | "again" };
+
+/**
+ * The hub's "next step": a first visit starts in the easy gym; then today's daily challenge until it
+ * is played; a Master Ball in hand asks for a legendary encounter; otherwise the missing badge, or
+ * the last gym played.
+ */
+export function nextStep({
+  stats,
+  badges,
+  playedToday,
+}: {
+  stats: GymStats;
+  badges: readonly string[];
+  playedToday: boolean;
+}): NextStep {
+  if (stats.runs === 0) return { kind: "gym", mode: "easy", reason: "first" };
+  if (!playedToday) return { kind: "daily" };
+  if (stats.balls.master > 0) return { kind: "legendary" };
+  const has = (mode: "easy" | "hard") => badges.includes(GYMS[mode].badgeId ?? "");
+  if (!has("easy")) return { kind: "gym", mode: "easy", reason: "badge" };
+  if (!has("hard")) return { kind: "gym", mode: "hard", reason: "badge" };
+  return { kind: "gym", mode: stats.lastMode ?? "easy", reason: "again" };
+}
