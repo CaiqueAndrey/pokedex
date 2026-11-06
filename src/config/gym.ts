@@ -401,8 +401,26 @@ export const ACHIEVEMENTS = [
   "master-ball",
   "sharp-eye",
   "legend-champion",
+  "legend-set",
 ] as const;
 export type AchievementId = (typeof ACHIEVEMENTS)[number];
+
+/**
+ * The legendary collection, in groups (labels in messages.gym.legends.sets). Completing a group
+ * gives a Master Ball back (and XP), so catching leads to the next encounter.
+ */
+export const LEGENDARY_SETS = {
+  birds: ["articuno", "zapdos", "moltres"],
+  beasts: ["raikou", "entei", "suicune"],
+  towers: ["lugia", "ho-oh"],
+  golems: ["regirock", "regice", "registeel", "regigigas"],
+  eon: ["latias", "latios"],
+  weather: ["kyogre", "groudon", "rayquaza"],
+  lake: ["uxie", "mesprit", "azelf"],
+  creation: ["dialga", "palkia", "giratina"],
+  loners: ["mewtwo", "heatran", "cresselia"],
+} as const satisfies Record<string, readonly string[]>;
+export type LegendarySet = keyof typeof LEGENDARY_SETS;
 
 /** Achievements whose description stays a surprise until unlocked. */
 export const SECRET_ACHIEVEMENTS: readonly AchievementId[] = [
@@ -424,6 +442,7 @@ export const XP = {
   clear: { easy: 50, hard: 100, daily: 100 },
   legendary: 30,
   mission: 30,
+  legendSet: 50,
 } as const;
 /** Trainer ranks by level (labels in messages.gym.trainer.ranks). */
 export const RANKS = [

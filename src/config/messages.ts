@@ -59,6 +59,7 @@ export const messages = {
     menu: "Menu",
     skip: "Pular para o conteúdo",
   },
+  tip: { more: (topic: string) => `Saiba mais: ${topic}`, close: "Fechar" },
   theme: { toggle: "Alternar tema", light: "Tema claro", dark: "Tema escuro" },
   search: {
     label: "Buscar Pokémon",
@@ -245,6 +246,15 @@ export const messages = {
     teamCount: (n: number, total: number) => `Seu time (${n}/${total})`,
     leadHint: (name: string) => `Abre a batalha: ${name}. Reordene acima se quiser.`,
     rulesToggle: "Ver todas as regras",
+    tipTitles: {
+      opponent: "Como o adversário joga",
+      field: "Campo",
+      order: "Ordem do time",
+      budget: "Limite de força",
+      difficulty: "Dificuldade do dia",
+      hand: "A mão do dia",
+      quiz: "Como jogar",
+    },
     tipDismiss: "Entendi",
     tips: {
       draft: {
@@ -414,12 +424,50 @@ export const messages = {
     achievementSecret: "Conquista secreta: descubra jogando.",
     achievementProgress: (n: number, total: number) => `${n}/${total}`,
     favoriteTag: "♥ Favorito",
+    legends: {
+      title: "Lendários",
+      caught: (n: number, total: number) => `${n} de ${total} na coleção`,
+      sets: (n: number, total: number) => `${n} de ${total} grupos completos`,
+      choiceLabel: "Lendário neste desafio",
+      none: "Sem lendário",
+      encounter: (n: number) => `Encontro lendário (gasta 1 de ${n} Master Ball)`,
+      summon: (name: string) => `Chamar ${name}`,
+      noBall: "Sem Master Ball para um encontro novo.",
+      how: "Como funcionam",
+      howTitle: "Lendários: capture, chame de novo, complete grupos",
+      loop: [
+        "Ganhe uma Master Ball: vença a Misty no Difícil, jogue 3 dias seguidos (desafio do dia ou Quem é?) ou complete um grupo de lendários.",
+        "Use-a num encontro: a primeira rodada do draft oferece 3 lendários, e os que você ainda não tem aparecem primeiro. O escolhido é capturado.",
+        "Ele é seu para sempre: chame-o em qualquer desafio futuro, sem gastar Master Ball. Ele começa no seu time e conta no limite de força, então pense no resto do time.",
+        "Complete um grupo (por exemplo, as três aves) e ganhe uma Master Ball de volta e 50 XP. É assim que a coleção continua.",
+      ],
+      pathsTitle: "Como ganhar a próxima Master Ball",
+      setsTitle: "Grupos",
+      setNames: {
+        birds: "Aves lendárias",
+        beasts: "Feras lendárias",
+        towers: "Guardiões das torres",
+        golems: "Golens",
+        eon: "Dupla Eon",
+        weather: "Trio do clima",
+        lake: "Trio do lago",
+        creation: "Trio da criação",
+        loners: "Solitários",
+      },
+      setProgress: (n: number, total: number) => `${n}/${total}`,
+      setDone: (name: string) => `Grupo completo: ${name}! Você ganhou uma Master Ball.`,
+      caughtNow: (name: string) => `${name} entrou para a sua coleção!`,
+      summoned: "Lendário chamado",
+    },
     missions: {
       title: "Missões da semana",
       hint: (days: number) =>
         days === 1 ? "Novas missões amanhã." : `Novas missões em ${days} dias.`,
       claim: "Resgatar",
       claimed: "Resgatada",
+      summary: (done: number, total: number) => `${done} de ${total} concluídas`,
+      open: "Ver missões",
+      ready: "Recompensa pronta!",
       reward: "Grande Bola + 30 XP",
       items: {
         battles: (n: number) => `Vença ${n} batalhas de ginásio`,
@@ -465,6 +513,10 @@ export const messages = {
       "sharp-eye": {
         label: "Olho de treinador",
         description: "Acerte o Quem é esse Pokémon? do dia no primeiro palpite.",
+      },
+      "legend-set": {
+        label: "Guardião de lendas",
+        description: "Complete um grupo de lendários (por exemplo, as três aves).",
       },
       "legend-champion": {
         label: "Lenda viva",
@@ -521,6 +573,10 @@ export const messages = {
       play: { easy: "Jogar no Fácil", hard: "Jogar no Difícil", daily: "Jogar o desafio de hoje" },
       practice: "Treinar (não vale)",
       seeDaily: "Ver a emboscada de hoje",
+      details: "Detalhes",
+      rulesButton: "Como funciona",
+      streakTip: "Sequência de dias",
+      dailyTip: "Desafio do dia",
       continueDaily: "Continuar a emboscada",
       archiveResult: (won: boolean) => (won ? "Vencida" : "Escaparam"),
       badgeEarned: "Insígnia conquistada",
@@ -556,7 +612,8 @@ export const messages = {
       legendaryToggle: (n: number) => `Usar uma Master Ball (você tem ${n})`,
       legendaryHelp:
         "A primeira rodada do draft oferece 3 lendários. O escolhido entra no time e conta no limite de força. A Master Ball é gasta ao começar. Não vale no desafio do dia.",
-      legendaryLocked: "Ganhe uma Master Ball para ter um encontro lendário. Há dois caminhos:",
+      legendaryLocked:
+        "Ganhe uma Master Ball para ter um encontro lendário. Veja como em “Como funcionam”.",
       legendaryPaths: {
         hard: (clears: number) =>
           clears > 0

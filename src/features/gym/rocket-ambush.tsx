@@ -6,6 +6,7 @@ import { ActionBar } from "@/components/ui/action-bar";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/components/ui/cn";
+import { InfoTip } from "@/components/ui/info-tip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { REWARD_ITEMS, ROCKET_PUZZLE } from "@/config/gym";
 import { messages } from "@/config/messages";
@@ -264,8 +265,11 @@ export function RocketAmbush({
       <Tip id="ambush" />
 
       <section aria-labelledby="rocket-opponent" className="grid gap-2">
-        <h2 id="rocket-opponent" className="text-[0.65rem]">
+        <h2 id="rocket-opponent" className="flex items-center text-[0.65rem]">
           {r.opponentTitle}
+          <InfoTip label={m.tipTitles.difficulty} testId="rocket-difficulty">
+            {r.difficulty(Math.round(puzzle.winRate * 100))}
+          </InfoTip>
         </h2>
         <ol className="grid grid-cols-4 gap-1 sm:gap-2">
           {puzzle.opponent.map((pokemon, i) => (
@@ -277,7 +281,6 @@ export function RocketAmbush({
             </li>
           ))}
         </ol>
-        <p className="text-muted text-sm">{r.difficulty(Math.round(puzzle.winRate * 100))}</p>
       </section>
 
       <AttemptList attempts={attempts} total={total} />
@@ -345,10 +348,10 @@ export function RocketAmbush({
           </section>
 
           <section aria-labelledby="rocket-hand" className="grid gap-2">
-            <h2 id="rocket-hand" className="text-[0.65rem]">
+            <h2 id="rocket-hand" className="flex items-center text-[0.65rem]">
               {r.handTitle}
+              <InfoTip label={m.tipTitles.hand}>{r.handHint(CAP)}</InfoTip>
             </h2>
-            <p className="text-muted text-sm">{r.handHint(CAP)}</p>
             <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {puzzle.hand.map((pokemon) => {
                 const selected = chosen.includes(pokemon.name);

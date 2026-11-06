@@ -2,7 +2,13 @@
 
 import { useMemo, useSyncExternalStore } from "react";
 import { z } from "zod";
-import { DAILY_HISTORY, type AchievementId, type Ball, type BattleSpeed } from "@/config/gym";
+import {
+  DAILY_HISTORY,
+  type AchievementId,
+  type Ball,
+  type BattleSpeed,
+  type LegendarySet,
+} from "@/config/gym";
 import {
   EMPTY_STATS,
   achievementsFor,
@@ -12,7 +18,7 @@ import {
   bagSchema,
   cleanTrainerName,
   battlesWon,
-  catchLegendary,
+  catchAndComplete,
   dailyItem,
   dailyKey,
   dailyResultsSchema,
@@ -285,8 +291,11 @@ export function takeMasterBall(): boolean {
 }
 
 /** Records the legendary picked in an encounter (the Master Ball always catches). */
-export function recordCatch(name: string) {
-  statsStore.set(catchLegendary(statsStore.getSnapshot(), name));
+export function recordCatch(name: string): LegendarySet[] {
+  const { stats, completed } = catchAndComplete(statsStore.getSnapshot(), name);
+  statsStore.set(stats);
+  if (completed.length > 0) achievementStore.add("legend-set");
+  return completed;
 }
 
 /**

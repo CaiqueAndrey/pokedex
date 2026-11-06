@@ -895,6 +895,12 @@ Emboscada e viram o Parceiro do Cartão; "Comparar com…" na página do Pokémo
 ISO (Grande Bola + XP); conquistas secretas e com progresso; prévias `next/og` da home, ginásio,
 quiz e de cada Pokémon. Detalhes em `docs/phases/16-connected-pokedex.md`.
 
+**Fase 17 (feedback pós-Fase 16):** menos informação na tela, com dicas (ⓘ) e botões que abrem
+modal (detalhes de cada desafio, regras, missões e lendários). Os lendários ganham um ciclo: o
+encontro prioriza os que você ainda não tem, o capturado pode ser chamado de novo em qualquer
+desafio sem Master Ball, e completar um dos 9 grupos devolve uma Master Ball. Chamar um lendário não
+desequilibra (o teto de força compensa). Detalhes em `docs/phases/17-clarity-and-legends.md`.
+
 ---
 
 # 9. Design

@@ -140,7 +140,6 @@ export function DailyQuiz({
             total={QUIZ_MAX_GUESSES}
           />
           <GuessList guesses={guesses} pool={pool} answer={answer} />
-          <p className="text-muted text-sm">{q.rules}</p>
         </div>
       </div>
 

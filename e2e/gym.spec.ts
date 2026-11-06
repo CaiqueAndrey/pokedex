@@ -371,8 +371,13 @@ test.describe("hub, rewards and legendaries", () => {
     await expect(page.getByTestId("prize-easy")).toContainText("Ultra Bola");
     await expect(page.getByTestId("prize-hard")).toContainText("Master Ball");
     await expect(page.getByTestId("prize-daily")).toContainText("Ultra Bola");
-    await expect(page.getByTestId("mode-card-daily")).toContainText("1ª tentativa: Ultra Bola");
-    // Without a Master Ball the legendary encounter only explains how to get one.
+    // The details of a challenge live in a dialog, not on the card.
+    await page.getByTestId("details-daily").click();
+    await expect(page.getByTestId("details-daily-dialog")).toContainText(
+      "1ª tentativa: Ultra Bola",
+    );
+    await page.getByTestId("details-daily-dialog").getByRole("button", { name: "Fechar" }).click();
+    // Without a Master Ball the legendary panel explains how to get one.
     await expect(page.getByTestId("legendary-option")).toContainText("Ganhe uma Master Ball");
     await page.getByRole("link", { name: "Recompensas", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Recompensas" })).toBeVisible();
@@ -413,24 +418,115 @@ test.describe("hub, rewards and legendaries", () => {
     });
     await page.goto("/gym?seed=e2e2");
     await hydrated(page);
-    await page.getByLabel("Usar uma Master Ball (você tem 1)").check();
+    await page.getByTestId("legend-choice").selectOption("encounter");
     await page.getByRole("button", { name: "Jogar no Fácil" }).click();
     await expect(page.getByTestId("legendary-round")).toBeVisible();
     await expect(page.getByText("✦ Lendário")).toHaveCount(3);
-    await page
-      .getByRole("button", { name: /^Escolher / })
-      .first()
-      .click();
+    const offer = page.getByRole("button", { name: /^Escolher / }).first();
+    const name = ((await offer.getAttribute("aria-label")) ?? "").replace("Escolher ", "");
+    await offer.click();
     await expect(page.getByRole("heading", { name: "Draft · rodada 2 de 6" })).toBeVisible();
-    await expect(page.getByTestId("legendary-round")).toHaveCount(0);
+    await expect(page.getByTestId("catch-notice")).toContainText(
+      `${name} entrou para a sua coleção!`,
+    );
 
     await page.getByRole("button", { name: "Abandonar desafio" }).click();
     const dialog = page.getByRole("dialog", { name: "Abandonar o desafio?" });
     await expect(dialog).toContainText("A Master Ball usada não volta.");
     await dialog.getByRole("button", { name: "Abandonar", exact: true }).click();
-    await expect(page.getByTestId("legendary-option")).toContainText("Ganhe uma Master Ball");
+
+    // Caught for good: it can be called into the next challenge without a Master Ball.
+    const choice = page.getByTestId("legend-choice");
+    await expect(choice.getByRole("option", { name: `Chamar ${name}` })).toHaveCount(1);
+    await expect(choice.getByRole("option", { name: /Encontro lendário/ })).toHaveCount(0);
+    await choice.selectOption({ label: `Chamar ${name}` });
+    await page.getByRole("button", { name: "Jogar no Fácil" }).click();
+    await expect(page.getByRole("heading", { name: "Draft · rodada 2 de 6" })).toBeVisible();
+    await expect(page.getByText(/Lendário chamado/)).toBeVisible();
+    await page.getByRole("button", { name: "Abandonar desafio" }).click();
+    await page.getByRole("button", { name: "Abandonar", exact: true }).click();
+
     await page.getByRole("link", { name: "Recompensas", exact: true }).click();
     await expect(page.getByTestId("legends")).toContainText("1 de 26");
+  });
+
+  test("completing a legendary group gives a Master Ball back", async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded")) return;
+      sessionStorage.setItem("seeded", "1");
+      localStorage.setItem(
+        "pokedex:gym-stats:v1",
+        JSON.stringify({
+          runs: 3,
+          cleared: { easy: 1, hard: 1, daily: 0 },
+          balls: { poke: 0, great: 0, ultra: 0, master: 1 },
+          battlesWon: 10,
+          best: 5,
+          dailyBest: 0,
+          streak: 0,
+          bestStreak: 1,
+          used: {},
+          // Every legendary but Latios, every group but the Eon duo already paid out.
+          caught: [
+            "articuno",
+            "zapdos",
+            "moltres",
+            "mewtwo",
+            "raikou",
+            "entei",
+            "suicune",
+            "lugia",
+            "ho-oh",
+            "regirock",
+            "regice",
+            "registeel",
+            "latias",
+            "kyogre",
+            "groudon",
+            "rayquaza",
+            "uxie",
+            "mesprit",
+            "azelf",
+            "dialga",
+            "palkia",
+            "heatran",
+            "regigigas",
+            "giratina",
+            "cresselia",
+          ],
+          legendSets: [
+            "birds",
+            "beasts",
+            "towers",
+            "golems",
+            "weather",
+            "lake",
+            "creation",
+            "loners",
+          ],
+        }),
+      );
+    });
+    await page.goto("/gym?seed=e2e2");
+    await hydrated(page);
+    await page.getByTestId("legends-how").click();
+    await expect(page.getByTestId("legends-how-dialog")).toContainText("Dupla Eon");
+    await expect(page.getByTestId("legendary-paths")).toContainText("Vença a Misty");
+    await page.getByTestId("legends-how-dialog").getByRole("button", { name: "Fechar" }).click();
+
+    await page.getByTestId("legend-choice").selectOption("encounter");
+    await page.getByRole("button", { name: "Jogar no Fácil" }).click();
+    // Uncaught legendaries come first: Latios is always offered.
+    await page.getByRole("button", { name: "Escolher Latios" }).click();
+    await expect(page.getByTestId("catch-notice")).toContainText(
+      "Grupo completo: Dupla Eon! Você ganhou uma Master Ball.",
+    );
+    await page.getByRole("button", { name: "Abandonar desafio" }).click();
+    await page.getByRole("button", { name: "Abandonar", exact: true }).click();
+    // The ball spent on the encounter came back.
+    await expect(
+      page.getByTestId("legend-choice").getByRole("option", { name: /Encontro lendário/ }),
+    ).toHaveCount(1);
   });
 });
 
@@ -519,6 +615,7 @@ test.describe("usability: next step, action bar, tips and reset", () => {
   test("the hub explains both ways to a Master Ball", async ({ page }) => {
     await page.goto("/gym");
     await hydrated(page);
+    await page.getByTestId("legends-how").click();
     const paths = page.getByTestId("legendary-paths");
     await expect(paths).toContainText("Vença a Misty no Difícil");
     await expect(paths).toContainText("3 dias seguidos");
@@ -635,8 +732,12 @@ test.describe("game depth: choices, rewards, the bag and fields", () => {
   test("each gym has its field, shown on the hub and before battles", async ({ page }) => {
     await page.goto("/gym?seed=e2e2");
     await hydrated(page);
+    await page.getByTestId("details-easy").click();
     await expect(page.getByTestId("field-easy")).toContainText("Terreno rochoso");
+    await page.getByTestId("details-easy-dialog").getByRole("button", { name: "Fechar" }).click();
+    await page.getByTestId("details-hard").click();
     await expect(page.getByTestId("field-hard")).toContainText("Chuva");
+    await page.getByTestId("details-hard-dialog").getByRole("button", { name: "Fechar" }).click();
     await begin(page);
     await draftStrongest(page);
     await expect(page.getByTestId("field")).toContainText("Pedra e Terra");

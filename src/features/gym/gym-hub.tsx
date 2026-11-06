@@ -1,11 +1,21 @@
 "use client";
 
-import { ArrowRight, CalendarDays, Check, Dumbbell, History, Sparkles, Swords } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  Check,
+  Dumbbell,
+  History,
+  Info,
+  Swords,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { Button, LinkButton } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { InfoTip } from "@/components/ui/info-tip";
+import { ModalButton } from "@/components/ui/modal-button";
 import { cn } from "@/components/ui/cn";
 import {
   DAILY_ARCHIVE_DAYS,
@@ -23,12 +33,14 @@ import {
   formatDailyDate,
   nextStep,
   pastDays,
+  resultGrid,
+  battlesWon,
   topBall,
   type GymStats,
   type HistoryEntry,
 } from "@/lib/battle/progress";
 import { rocketGrid } from "@/lib/battle/puzzle";
-import type { StartOptions } from "@/lib/battle/run";
+import { battleCount, gymOf, type StartOptions } from "@/lib/battle/run";
 import { formatCountdown } from "@/lib/format";
 import type { GameItem } from "@/types/item";
 import { BallIcon } from "./ball-icon";
@@ -36,7 +48,7 @@ import { GymBadge } from "./gym-badge";
 import { ItemIcon } from "./item-icon";
 import { QuizHubCard } from "../quiz/quiz-hub-card";
 import { MissionsCard } from "./missions-card";
-import { HistoryCard } from "./gym-history";
+import { LegendsPanel, type LegendChoice } from "./legends-panel";
 import { RocketDuo } from "./run-result-dialog";
 import { useRocketProgress } from "./use-gym";
 import type { BattlePokemon } from "@/types/battle";
@@ -114,8 +126,26 @@ function Prize({ mode, item }: { mode: GymMode; item?: GameItem }) {
           </li>
         )}
       </ul>
-      {mode === "daily" && <p className="text-muted text-xs">{h.dailyLadder}</p>}
     </div>
+  );
+}
+
+/** What a challenge is, in full: who you face, the field, the reward ladder and the rules. */
+function ModeDetails({ mode, extra }: { mode: GymMode; extra?: ReactNode }) {
+  const gym = GYMS[mode];
+  return (
+    <>
+      <p>
+        <strong>{h.youFace}:</strong> {h.face[mode]}
+      </p>
+      {gym.field && (
+        <p data-testid={`field-${mode}`}>
+          <strong>{m.fields[mode].label}:</strong> {m.fields[mode].text}
+        </p>
+      )}
+      <p className="text-sm">{mode === "daily" ? h.dailyLadder : m.modes[mode].description}</p>
+      {extra}
+    </>
   );
 }
 
@@ -126,6 +156,7 @@ function ModeCard({
   status,
   children,
   item,
+  details,
   artClassName = "w-20",
 }: {
   mode: GymMode;
@@ -134,6 +165,8 @@ function ModeCard({
   status: ReactNode;
   children: ReactNode;
   item?: GameItem;
+  /** Extra lines for the details dialog. */
+  details?: ReactNode;
   /** Width of the art box (the Rocket duo needs more room than one leader). */
   artClassName?: string;
 }) {
@@ -152,7 +185,7 @@ function ModeCard({
         </span>
       )}
       <div className="flex items-end gap-3">
-        <div className={cn("relative h-28 shrink-0", artClassName)}>{art}</div>
+        <div className={cn("relative h-24 shrink-0", artClassName)}>{art}</div>
         <div className="grid gap-1 pb-1">
           <span className="font-display bg-primary-600 text-on-primary w-fit rounded-md px-1.5 py-0.5 text-[0.55rem]">
             {m.modes[mode].label}
@@ -163,18 +196,20 @@ function ModeCard({
           </p>
         </div>
       </div>
-      <div className="grid gap-1">
-        <p className="text-muted text-xs">{h.youFace}</p>
-        <p className="text-sm">{h.face[mode]}</p>
-        {gym.field && (
-          <p className="text-sm" data-testid={`field-${mode}`}>
-            <strong>{m.fields[mode].label}:</strong> {m.fields[mode].text}
-          </p>
-        )}
-      </div>
       <Prize mode={mode} item={item} />
       <div className="text-sm">{status}</div>
-      <div className="mt-auto flex flex-wrap gap-2">{children}</div>
+      <div className="mt-auto grid gap-1">
+        {children}
+        <ModalButton
+          label={h.details}
+          title={gym.name}
+          icon={<Info aria-hidden className="size-4" />}
+          className="w-full"
+          testId={`details-${mode}`}
+        >
+          <ModeDetails mode={mode} extra={details} />
+        </ModalButton>
+      </div>
     </article>
   );
 }
@@ -221,6 +256,29 @@ function NextStepCard({
   );
 }
 
+/** The last finished run in one line, with the way to the full history. */
+function LastRunLine({ entry }: { entry: HistoryEntry }) {
+  const { run } = entry;
+  const wins = battlesWon(run);
+  const total = battleCount(run);
+  return (
+    <p
+      className="border-border bg-surface flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border-2 p-3 text-sm"
+      data-testid="history-entry"
+    >
+      <span className="font-display text-[0.6rem]">{h.lastRun}:</span>
+      <span>{gymOf(run).name}</span>
+      <span>
+        {resultGrid(wins, run.phase === "won", total)} {m.shareScore(wins, total)}
+      </span>
+      <LinkButton href="/gym/historico" variant="ghost" className="ml-auto">
+        <History aria-hidden className="size-4" />
+        {h.seeHistory}
+      </LinkButton>
+    </p>
+  );
+}
+
 export function GymHub({
   lastMode,
   stats,
@@ -233,9 +291,19 @@ export function GymHub({
   pool,
   onStart,
 }: HubProps) {
-  const [legendary, setLegendary] = useState(false);
+  const [legend, setLegend] = useState<LegendChoice>("none");
   const masterBalls = stats.balls.master;
-  const withLegendary = legendary && masterBalls > 0;
+  // A choice that no longer applies (the ball was spent, the legendary is gone) falls back to none.
+  const choice: LegendChoice =
+    legend === "encounter"
+      ? masterBalls > 0
+        ? legend
+        : "none"
+      : legend === "none" || stats.caught.includes(legend)
+        ? legend
+        : "none";
+  const legendOptions: StartOptions =
+    choice === "encounter" ? { legendary: true } : choice === "none" ? {} : { summon: choice };
   const itemsByName = new Map(items.map((item) => [item.name, item]));
   const rocket = useRocketProgress();
   const todayRocket = rocket.days.find((entry) => entry.date === today);
@@ -248,7 +316,22 @@ export function GymHub({
     <div className="grid gap-10">
       {/* Hero, in the spirit of 7a0: the full pitch on a first visit, the title afterwards. */}
       <header className="animate-fade-up grid gap-3">
-        <h1 className="text-base sm:text-lg">{m.title}</h1>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-base sm:text-lg">{m.title}</h1>
+          <ModalButton
+            label={h.rulesButton}
+            title={m.rulesTitle}
+            icon={<BookOpen aria-hidden className="size-4" />}
+            variant="secondary"
+            testId="rules"
+          >
+            <ol className="grid list-decimal gap-2 pl-5 text-base">
+              {m.rules.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ol>
+          </ModalButton>
+        </div>
         <p className="font-display text-primary-600 text-[0.7rem] leading-relaxed sm:text-xs">
           {h.tagline}
         </p>
@@ -283,22 +366,9 @@ export function GymHub({
           onStart={onStart}
         />
       )}
-      {today && <MissionsCard today={today} />}
+      {today && <MissionsCard today={today} compact />}
 
-      {lastRun && (
-        <Section id="ultimo" title={h.lastRun}>
-          <HistoryCard entry={lastRun} pool={pool} />
-          <div className="flex flex-wrap gap-2">
-            <LinkButton href="/gym/historico" variant="secondary">
-              <History aria-hidden className="size-4" />
-              {h.seeHistory}
-            </LinkButton>
-            <LinkButton href="/gym/recompensas" variant="ghost">
-              {h.seeRewards}
-            </LinkButton>
-          </div>
-        </Section>
-      )}
+      {lastRun && <LastRunLine entry={lastRun} />}
 
       <Section id="desafios" title={h.playTitle} description={h.playDescription}>
         <div className="grid gap-5 lg:grid-cols-3">
@@ -327,10 +397,7 @@ export function GymHub({
                   </p>
                 }
               >
-                <Button
-                  className="w-full"
-                  onClick={() => onStart(mode, { legendary: withLegendary })}
-                >
+                <Button className="w-full" onClick={() => onStart(mode, legendOptions)}>
                   <Swords aria-hidden className="size-4" />
                   {h.play[mode]}
                 </Button>
@@ -341,6 +408,7 @@ export function GymHub({
           <ModeCard
             mode="daily"
             item={todayItem}
+            details={<p className="text-sm">{h.dailyOnce}</p>}
             artClassName="w-28"
             art={
               <RocketDuo className="absolute inset-0 flex items-end [&_img]:!h-24 [&_img:last-child]:!h-28" />
@@ -359,12 +427,13 @@ export function GymHub({
                       {h.dailyInProgress(ROCKET_PUZZLE.attempts - todayRocket.attempts.length)}
                     </p>
                   ) : null}
-                  <p className="font-bold" data-testid="daily-streak">
-                    {streak > 0 && `${h.streak(streak)} · `}
-                    {h.streakHint(playsToStreakBonus(days, today), playedToday)}
+                  <p className="flex items-center gap-1 font-bold" data-testid="daily-streak">
+                    {streak > 0 ? h.streak(streak) : h.streakTip}
+                    <InfoTip label={h.streakTip}>
+                      {h.streakHint(playsToStreakBonus(days, today), playedToday)}
+                    </InfoTip>
                   </p>
-                  <p className="text-muted">{h.dailyOnce}</p>
-                  <p className="font-bold tabular-nums" data-testid="daily-countdown">
+                  <p className="text-muted tabular-nums" data-testid="daily-countdown">
                     {h.nextDaily(formatCountdown(secondsLeft))}
                   </p>
                 </div>
@@ -388,48 +457,15 @@ export function GymHub({
 
         {today && <QuizHubCard today={today} />}
 
-        {/* The Master Ball's use: a legendary on your team (regular gyms only). */}
-        <Card className="flex flex-wrap items-center gap-3" data-testid="legendary-option">
-          <BallIcon ball="master" earned={masterBalls > 0} className="size-10" />
-          <div className="grid min-w-48 flex-1 gap-1">
-            <p className="font-display flex items-center gap-2 text-[0.6rem]">
-              <Sparkles aria-hidden className="size-4 text-amber-500" />
-              {h.legendaryTitle}
-            </p>
-            {masterBalls > 0 ? (
-              <p className="text-muted text-sm">{h.legendaryHelp}</p>
-            ) : (
-              <div className="grid gap-1 text-sm" data-testid="legendary-paths">
-                <p className="text-muted">{h.legendaryLocked}</p>
-                <ul className="grid gap-1">
-                  <li className="flex items-start gap-2">
-                    <BallIcon ball="master" earned={false} className="size-5 shrink-0" />
-                    <span>{h.legendaryPaths.hard(stats.cleared.hard)}</span>
-                  </li>
-                  {today && (
-                    <li className="flex items-start gap-2">
-                      <BallIcon ball="master" earned={false} className="size-5 shrink-0" />
-                      <span>
-                        {h.legendaryPaths.streak(playsToStreakBonus(days, today), playedToday)}
-                      </span>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-          </div>
-          {masterBalls > 0 && (
-            <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
-              <input
-                type="checkbox"
-                className="accent-primary-600 size-5"
-                checked={legendary}
-                onChange={(event) => setLegendary(event.target.checked)}
-              />
-              {h.legendaryToggle(masterBalls)}
-            </label>
-          )}
-        </Card>
+        <LegendsPanel
+          stats={stats}
+          pool={pool}
+          days={days}
+          today={today}
+          playedToday={playedToday}
+          choice={choice}
+          onChoose={setLegend}
+        />
 
         {archive.length > 0 && (
           <details

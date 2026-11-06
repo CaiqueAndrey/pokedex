@@ -81,6 +81,10 @@ export const gymRunSchema = z.object({
   hp: z.record(z.string(), z.number().int().min(0)).default({}),
   /** A Master Ball was spent: the first draft round is a legendary encounter. */
   legendary: z.boolean().default(false),
+  /** The encounter's three legendaries, fixed at the start (uncaught ones first). */
+  encounter: z.array(z.string()).max(3).optional(),
+  /** A legendary from your collection called in: it starts in the first slot (no Master Ball). */
+  summon: z.string().optional(),
   /** Practice: replays a seed (e.g. a past daily) without stats, rewards or daily results. */
   practice: z.boolean().default(false),
   /** Trained Pokémon (names): attacks and speed up for the rest of the run. */
@@ -109,22 +113,30 @@ export interface StartOptions {
   /** The daily challenge's date (YYYY-MM-DD). */
   daily?: string;
   legendary?: boolean;
+  /** The encounter's offers (see `encounterOffers`). */
+  encounter?: string[];
+  /** A caught legendary to bring along. */
+  summon?: string;
   practice?: boolean;
 }
 
 export function startRun(
   seed: string,
   mode: GymMode = "easy",
-  { daily, legendary = false, practice = false }: StartOptions = {},
+  { daily, legendary = false, practice = false, encounter, summon }: StartOptions = {},
 ): GymRun {
+  // A summoned legendary takes the first slot; it can't stack with an encounter.
+  const called = summon && !legendary ? summon : undefined;
   return {
     rules: RULES_VERSION,
     ...(daily ? { daily } : {}),
+    ...(legendary && encounter ? { encounter } : {}),
+    ...(called ? { summon: called } : {}),
     legendary,
     practice,
     hp: {},
     seed,
-    picks: [],
+    picks: called ? [called] : [],
     rerollsUsed: 0,
     bonusRerolls: 0,
     boosts: [],
@@ -159,9 +171,18 @@ export function currentDraft(run: GymRun, pool: readonly BattlePokemon[]): Draft
   const rng = rngFrom(run.seed, "draft", run.picks.length, run.rerollsUsed);
   const budget = GYMS[run.mode].rules.player;
   const team = resolve(run.picks, pool);
-  return run.legendary && run.picks.length === 0
-    ? legendaryRound(pool, team, rng, budget)
-    : draftRound(pool, team, rng, budget);
+  if (run.legendary && run.picks.length === 0) {
+    const fixed = run.encounter ? resolve(run.encounter, pool) : [];
+    return fixed.length > 0
+      ? {
+          type: fixed[0]?.types[0] ?? "normal",
+          legendary: true,
+          offers: fixed.sort((a, b) => a.bst - b.bst || a.id - b.id),
+          blocked: [],
+        }
+      : legendaryRound(pool, team, rng, budget);
+  }
+  return draftRound(pool, team, rng, budget);
 }
 
 export function pickPokemon(run: GymRun, name: string, pool: readonly BattlePokemon[]): GymRun {

@@ -3,6 +3,7 @@
 import { CalendarDays, Infinity as InfinityIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/components/ui/cn";
+import { InfoTip } from "@/components/ui/info-tip";
 import { messages } from "@/config/messages";
 import type { QuizEntry } from "@/lib/quiz";
 import { DailyQuiz } from "./daily-quiz";
@@ -23,7 +24,10 @@ export function QuizGame({ pool }: { pool: QuizEntry[] }) {
   return (
     <div className="grid gap-5">
       <header className="grid gap-2">
-        <h1 className="text-base sm:text-lg">{q.title}</h1>
+        <h1 className="flex items-center text-base sm:text-lg">
+          {q.title}
+          <InfoTip label={messages.gym.tipTitles.quiz}>{q.rules}</InfoTip>
+        </h1>
         <p className="text-muted text-base">{q.description}</p>
       </header>
       <div role="group" aria-label={q.modesLabel} className="grid grid-cols-2 gap-1 sm:w-fit">

@@ -29,6 +29,7 @@ import { BallIcon } from "./ball-icon";
 import { GymBadge } from "./gym-badge";
 import { Section } from "./gym-hub";
 import { ItemIcon } from "./item-icon";
+import { LegendSets } from "./legends-panel";
 import { MissionsCard } from "./missions-card";
 import { useBadges, useGymProgress, useToday } from "./use-gym";
 
@@ -168,6 +169,7 @@ export function GymRewards({
           hint={h.legendsHint(caught.size, legendaries.length)}
           testId="legends"
         >
+          <LegendSets caught={stats.caught} done={stats.legendSets} />
           <ul className="grid grid-cols-6 gap-1 sm:grid-cols-9">
             {legendaries.map((pokemon) => {
               const has = caught.has(pokemon.name);

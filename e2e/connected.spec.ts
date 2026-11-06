@@ -74,7 +74,10 @@ test("favorites are marked in the draft and can be the trainer's partner", async
 test("the hub has weekly missions; rewards keep some achievements secret", async ({ page }) => {
   await page.goto("/gym");
   await expect(page.getByTestId("daily")).toBeVisible();
-  await expect(page.getByTestId("missions").getByTestId("mission")).toHaveCount(3);
+  // On the hub the missions are one line; the list opens in a dialog.
+  await page.getByTestId("missions-open").click();
+  await expect(page.getByTestId("missions-open-dialog").getByTestId("mission")).toHaveCount(3);
+  await page.getByTestId("missions-open-dialog").getByRole("button", { name: "Fechar" }).click();
   await page.getByRole("link", { name: "Recompensas", exact: true }).click();
   await expect(page.getByTestId("missions")).toBeVisible();
   await expect(page.getByTestId("achievements")).toContainText("Conquista secreta");

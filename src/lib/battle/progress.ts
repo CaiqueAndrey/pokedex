@@ -12,7 +12,9 @@ import {
   BUDGET_CHAMPION_BST,
   DAILY_HISTORY,
   GYMS,
+  LEGENDARY_SETS,
   REWARD_ITEM_NAMES,
+  type LegendarySet,
   VARIETY_CHAMPION_TYPES,
   type AchievementId,
   type Ball,
@@ -55,6 +57,8 @@ export const gymStatsSchema = z.object({
   quizSolved: count.default(0),
   /** Weekly missions claimed (XP). */
   missions: count.default(0),
+  /** Legendary groups completed (each gave a Master Ball back). */
+  legendSets: z.array(z.string()).default([]),
 });
 
 export type GymStats = z.infer<typeof gymStatsSchema>;
@@ -72,6 +76,7 @@ export const EMPTY_STATS: GymStats = {
   caught: [],
   quizSolved: 0,
   missions: 0,
+  legendSets: [],
 };
 
 /** Spends a Master Ball (for a legendary encounter); a no-op without one. */
@@ -83,6 +88,36 @@ export function spendMasterBall(stats: GymStats): GymStats {
 /** Records a legendary caught in an encounter (each one counted once). */
 export function catchLegendary(stats: GymStats, name: string): GymStats {
   return stats.caught.includes(name) ? stats : { ...stats, caught: [...stats.caught, name] };
+}
+
+/** Groups whose every member is caught but which haven't paid out yet. */
+export function newLegendSets(stats: GymStats): LegendarySet[] {
+  return (Object.keys(LEGENDARY_SETS) as LegendarySet[]).filter(
+    (set) =>
+      !stats.legendSets.includes(set) &&
+      LEGENDARY_SETS[set].every((name) => stats.caught.includes(name)),
+  );
+}
+
+/**
+ * Catches a legendary and pays out any group it completes: a Master Ball back per group. Returns
+ * the new stats and the groups completed now.
+ */
+export function catchAndComplete(
+  stats: GymStats,
+  name: string,
+): { stats: GymStats; completed: LegendarySet[] } {
+  const caught = catchLegendary(stats, name);
+  const completed = newLegendSets(caught);
+  if (completed.length === 0) return { stats: caught, completed };
+  return {
+    completed,
+    stats: {
+      ...caught,
+      legendSets: [...caught.legendSets, ...completed],
+      balls: { ...caught.balls, master: caught.balls.master + completed.length },
+    },
+  };
 }
 
 /** The bag: reward items won (name → count). */
@@ -176,6 +211,7 @@ export function achievementsFor(
     // Unlocked by the daily quiz, not by a gym run.
     "sharp-eye": false,
     "legend-champion": won && team.some((p) => p.legendary),
+    "legend-set": stats.legendSets.length > 0,
   };
   return ACHIEVEMENTS.filter((id) => unlocked[id]);
 }
@@ -302,7 +338,8 @@ export function totalXp(stats: GymStats): number {
     stats.cleared.daily * XP.clear.daily +
     stats.caught.length * XP.legendary +
     stats.quizSolved * QUIZ_XP +
-    stats.missions * XP.mission
+    stats.missions * XP.mission +
+    stats.legendSets.length * XP.legendSet
   );
 }
 

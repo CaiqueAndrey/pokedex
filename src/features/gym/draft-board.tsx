@@ -12,6 +12,7 @@ import {
   type RewardItemName,
 } from "@/config/gym";
 import { cn } from "@/components/ui/cn";
+import { InfoTip } from "@/components/ui/info-tip";
 import { TYPE_STYLES } from "@/config/pokemon-types";
 import { rerollItems } from "@/lib/battle/items";
 import { currentDraft, rerollsLeft, type GymRun } from "@/lib/battle/run";
@@ -179,8 +180,33 @@ export function DraftBoard({
             data-testid="budget-panel"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-              <span className="font-display text-[0.6rem]" data-testid="budget">
-                {m.budget(plan.used, budget)}
+              <span className="font-display flex items-center text-[0.6rem]">
+                <span data-testid="budget">{m.budget(plan.used, budget)}</span>
+                <InfoTip label={m.tipTitles.budget}>
+                  <span className="grid gap-2">
+                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                      <li className="flex items-center gap-1">
+                        <span
+                          aria-hidden
+                          className="from-primary-600 size-3 rounded-sm bg-linear-to-r to-amber-500"
+                        />
+                        {m.budgetLegendUsed}: {plan.used}
+                      </li>
+                      <li className="flex items-center gap-1">
+                        <span
+                          aria-hidden
+                          className="size-3 rounded-sm bg-[repeating-linear-gradient(45deg,var(--muted)_0_3px,transparent_3px_6px)]"
+                        />
+                        {m.budgetLegendReserved}: {plan.reserved}
+                      </li>
+                      <li className="flex items-center gap-1">
+                        <span aria-hidden className="bg-border size-3 rounded-sm" />
+                        {m.budgetLegendFree}: {plan.free}
+                      </li>
+                    </ul>
+                    <span className="block">{m.budgetHelp}</span>
+                  </span>
+                </InfoTip>
               </span>
               <span className="text-sm">{m.budgetMaxNext(plan.free)}</span>
             </div>
@@ -194,30 +220,6 @@ export function DraftBoard({
                 style={{ width: pct(plan.reserved) }}
               />
             </div>
-            <details>
-              <summary className="text-muted cursor-pointer text-sm">{m.budgetHow}</summary>
-              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                <li className="flex items-center gap-1">
-                  <span
-                    aria-hidden
-                    className="from-primary-600 size-3 rounded-sm bg-linear-to-r to-amber-500"
-                  />
-                  {m.budgetLegendUsed}: {plan.used}
-                </li>
-                <li className="flex items-center gap-1">
-                  <span
-                    aria-hidden
-                    className="size-3 rounded-sm bg-[repeating-linear-gradient(45deg,var(--muted)_0_3px,transparent_3px_6px)]"
-                  />
-                  {m.budgetLegendReserved}: {plan.reserved}
-                </li>
-                <li className="flex items-center gap-1">
-                  <span aria-hidden className="bg-border size-3 rounded-sm" />
-                  {m.budgetLegendFree}: {plan.free}
-                </li>
-              </ul>
-              <p className="text-muted mt-2 text-sm">{m.budgetHelp}</p>
-            </details>
           </div>
         ) : null}
       </section>

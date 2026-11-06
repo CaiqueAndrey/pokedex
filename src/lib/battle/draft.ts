@@ -141,6 +141,26 @@ export function legendaryRound(
 }
 
 /**
+ * A Master Ball encounter's three legendaries, chosen once when the run starts: ones you haven't
+ * caught come first (so the collection grows), then any, all within the mode's cap.
+ */
+export function encounterOffers(
+  pool: readonly BattlePokemon[],
+  caught: readonly string[],
+  rng: Rng,
+  budget: number | null = TEAM_BUDGET,
+): string[] {
+  const fits = (p: BattlePokemon) => budget === null || fitsBudget(p, [], pool, budget);
+  const legendaries = shuffle(
+    rng,
+    pool.filter((p) => p.legendary && fits(p)),
+  );
+  const fresh = legendaries.filter((p) => !caught.includes(p.name));
+  const known = legendaries.filter((p) => caught.includes(p.name));
+  return [...fresh, ...known].slice(0, OFFERS_PER_ROUND).map((p) => p.name);
+}
+
+/**
  * The gauntlet's hand: `size` Pokémon from different families, the same for everyone with the same
  * seed. Thirds of weak, mid and strong (so a legal six always fits the cap), preferring types the
  * hand doesn't have yet. Sorted by strength.

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { TypeBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
+import { InfoTip } from "@/components/ui/info-tip";
 import { messages } from "@/config/messages";
 import { matchupScore } from "@/lib/battle/damage";
 import { battleConfig, gymOf, type GymMode } from "@/lib/battle/run";
@@ -173,24 +174,33 @@ export function PreBattle({
       </div>
 
       <section aria-labelledby="opponent-title" className="grid gap-2">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 id="opponent-title" className="text-[0.65rem]">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 id="opponent-title" className="flex items-center text-[0.65rem]">
             {m.opponentTeam}
+            <InfoTip label={m.tipTitles.opponent}>
+              <span className="grid gap-1">
+                <span data-testid="scout-hint">{m.scoutHint(trainer)}</span>
+                {reveal && <span>{m.opponentHint}</span>}
+                {reveal && counters && (
+                  <strong data-testid="counter-hint">{m.counterHint(trainer)}</strong>
+                )}
+              </span>
+            </InfoTip>
           </h3>
-          {reveal && (
-            <span className="text-sm" data-testid="opponent-power">
-              {m.opponentPower(teamBst(opponent))}
-            </span>
-          )}
+          <span className="flex flex-wrap items-center gap-2 text-sm">
+            {fieldInfo && (
+              <span className="flex items-center rounded-full bg-sky-500/15 pl-2 font-bold">
+                {fieldInfo.label}
+                <InfoTip label={m.tipTitles.field} testId="field">
+                  {fieldInfo.text}
+                </InfoTip>
+              </span>
+            )}
+            {reveal && (
+              <span data-testid="opponent-power">{m.opponentPower(teamBst(opponent))}</span>
+            )}
+          </span>
         </div>
-        <p className="text-muted text-sm" data-testid="scout-hint">
-          {m.scoutHint(trainer)}
-        </p>
-        {fieldInfo && (
-          <p className="text-sm" data-testid="field">
-            <strong>{fieldInfo.label}:</strong> {fieldInfo.text}
-          </p>
-        )}
         {reveal ? (
           <>
             <ol className="grid grid-cols-3 gap-2 lg:grid-cols-6">
@@ -214,12 +224,6 @@ export function PreBattle({
                 </li>
               ))}
             </ol>
-            <p className="text-muted text-sm">{m.opponentHint}</p>
-            {counters && (
-              <p className="text-sm font-bold" data-testid="counter-hint">
-                {m.counterHint(trainer)}
-              </p>
-            )}
           </>
         ) : (
           <>
@@ -236,11 +240,11 @@ export function PreBattle({
       </section>
 
       <section aria-labelledby="order-title" className="grid gap-2">
-        <h3 id="order-title" className="text-[0.65rem]">
+        <h3 id="order-title" className="flex items-center text-[0.65rem]">
           {m.yourTeam}
+          <InfoTip label={m.tipTitles.order}>{m.orderHintDrag}</InfoTip>
         </h3>
         {battle === 0 && <Tip id="order" />}
-        <p className="text-muted text-sm">{m.orderHintDrag}</p>
         {health && (
           <p className="text-sm font-bold" data-testid="gauntlet-status">
             {m.gauntlet.defeated(defeated ?? 0)} · {m.gauntlet.hpCarry}

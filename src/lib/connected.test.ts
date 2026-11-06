@@ -95,3 +95,41 @@ describe("friendly battles and achievement progress", () => {
     expect(achievementProgress("first-win", EMPTY_STATS, [])).toBeUndefined();
   });
 });
+
+describe("the legendary loop", () => {
+  it("encounters offer uncaught legendaries first", async () => {
+    const { snapshotLegendaries } = await import("@/server/pokedex/battle-pool");
+    const { encounterOffers } = await import("./battle/draft");
+    const { rngFrom } = await import("./battle/rng");
+    const pool = [...snapshotPool(), ...snapshotLegendaries()];
+    const all = pool.filter((p) => p.legendary).map((p) => p.name);
+    const caught = all.filter((name) => name !== "latios");
+    const offers = encounterOffers(pool, caught, rngFrom("enc"), GYMS.easy.rules.player);
+    expect(offers).toHaveLength(3);
+    expect(offers[0]).toBe("latios");
+    expect(encounterOffers(pool, [], rngFrom("enc"), 2500).every((n) => all.includes(n))).toBe(
+      true,
+    );
+  });
+
+  it("completing a group pays a Master Ball once", async () => {
+    const { catchAndComplete } = await import("./battle/progress");
+    const start = { ...EMPTY_STATS, caught: ["articuno", "zapdos"] };
+    const done = catchAndComplete(start, "moltres");
+    expect(done.completed).toEqual(["birds"]);
+    expect(done.stats.balls.master).toBe(1);
+    expect(done.stats.legendSets).toEqual(["birds"]);
+    const again = catchAndComplete(done.stats, "moltres");
+    expect(again.completed).toEqual([]);
+    expect(again.stats.balls.master).toBe(1);
+  });
+
+  it("a caught legendary called in starts in the first slot", async () => {
+    const { startRun } = await import("./battle/run");
+    const run = startRun("call", "easy", { summon: "mewtwo" });
+    expect(run.picks).toEqual(["mewtwo"]);
+    expect(run.summon).toBe("mewtwo");
+    // An encounter and a summon don't stack.
+    expect(startRun("call", "easy", { summon: "mewtwo", legendary: true }).picks).toEqual([]);
+  });
+});

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { messages } from "@/config/messages";
-import { RULES_VERSION, type AchievementId, type GymMode } from "@/config/gym";
+import { GYMS, RULES_VERSION, type AchievementId, type GymMode } from "@/config/gym";
 import {
   battlesWon,
   dailyItem,
@@ -45,7 +45,8 @@ import {
   type GymRun,
   type StartOptions,
 } from "@/lib/battle/run";
-import { newSeed } from "@/lib/battle/rng";
+import { encounterOffers } from "@/lib/battle/draft";
+import { newSeed, rngFrom } from "@/lib/battle/rng";
 import { formatName } from "@/lib/format";
 import type { BattlePokemon, BattleResult } from "@/types/battle";
 import type { GameItem } from "@/types/item";
@@ -55,7 +56,7 @@ import { BallIcon } from "./ball-icon";
 import { DraftBoard } from "./draft-board";
 import { GymBadge } from "./gym-badge";
 import { GymPokemon } from "./gym-pokemon";
-import { GymHub, Section } from "./gym-hub";
+import { GymHub } from "./gym-hub";
 import { PreBattle } from "./pre-battle";
 import { BagButton, RewardPicker } from "./run-extras";
 import { RunPath } from "./run-path";
@@ -120,6 +121,8 @@ export function GymGame({
   const playerName = trainer?.name ?? m.trainer.anonymous;
   const [battle, setBattle] = useState<ActiveBattle | null>(null);
   const [confirmAbandon, setConfirmAbandon] = useState(false);
+  /** Lines to celebrate after a catch (the legendary, groups completed). */
+  const [notice, setNotice] = useState<string[]>([]);
   const names = useMemo(() => byName(pool), [pool]);
 
   // A saved run that no longer matches the pool (e.g. after a data update) or that was started
@@ -139,12 +142,30 @@ export function GymGame({
     return items.find((item) => item.name === name);
   };
 
-  /** Starts a run from the hub. A legendary encounter spends a Master Ball up front. */
+  /**
+   * Starts a run from the hub. A legendary encounter spends a Master Ball up front and fixes its
+   * three offers (uncaught ones first); a caught legendary can be called in for free.
+   */
   function start(mode: GymMode, options: StartOptions = {}) {
     const legendary = Boolean(options.legendary) && mode !== "daily" && takeMasterBall();
+    const summon =
+      options.summon && !legendary && stats.caught.includes(options.summon)
+        ? options.summon
+        : undefined;
     sfx("roll");
     const runSeed = options.daily ? dailySeed(options.daily) : (seed ?? newSeed());
-    setRun(startRun(runSeed, mode, { ...options, legendary }));
+    const encounter = legendary
+      ? encounterOffers(pool, stats.caught, rngFrom(runSeed, "encounter"), GYMS[mode].rules.player)
+      : undefined;
+    setNotice([]);
+    setRun(
+      startRun(runSeed, mode, {
+        ...options,
+        legendary,
+        ...(encounter ? { encounter } : {}),
+        ...(summon ? { summon } : {}),
+      }),
+    );
     window.scrollTo({ top: 0 });
   }
 
@@ -284,25 +305,14 @@ export function GymGame({
           pool={pool}
           onStart={start}
         />
-        <Section id="regras" title={m.rulesTitle}>
-          <Card className="grid gap-4">
-            <details data-testid="rules">
-              <summary className="font-display cursor-pointer text-[0.6rem] leading-relaxed">
-                {m.rulesToggle}
-              </summary>
-              <ol className="mt-3 grid list-decimal gap-2 pl-5 text-base">
-                {m.rules.map((rule) => (
-                  <li key={rule}>{rule}</li>
-                ))}
-              </ol>
-            </details>
-            <h3 className="text-[0.6rem]">{m.hub.settingsTitle}</h3>
-            <div className="flex flex-wrap items-center gap-2">
-              <SpeedToggle />
-              <SoundToggle />
-            </div>
-          </Card>
-        </Section>
+        <section
+          aria-label={m.hub.settingsTitle}
+          className="mb-16 flex flex-wrap items-center justify-end gap-2"
+        >
+          <span className="font-display text-[0.6rem]">{m.hub.settingsTitle}</span>
+          <SpeedToggle />
+          <SoundToggle />
+        </section>
       </div>
     );
   }
@@ -319,6 +329,7 @@ export function GymGame({
             ? `${m.dailyBadge} ${formatDailyDate(valid.daily)}`
             : `${m.modeBadge(m.modes[valid.mode].label)} · ${m.seed(valid.seed)}`}
           {valid.legendary && ` · ${m.hub.legendaryTitle}`}
+          {valid.summon && ` · ${m.legends.summoned}`}
         </span>
       </div>
       <div className="flex items-center gap-1">
@@ -352,6 +363,17 @@ export function GymGame({
     return (
       <>
         {runBar}
+        {notice.length > 0 && (
+          <div
+            className="mb-4 grid gap-1 rounded-2xl border-2 border-amber-500 bg-amber-500/10 p-3 text-sm font-bold"
+            role="status"
+            data-testid="catch-notice"
+          >
+            {notice.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        )}
         <DraftBoard
           run={valid}
           pool={pool}
@@ -359,7 +381,13 @@ export function GymGame({
           relations={relations}
           onPick={(name) => {
             sfx("pick");
-            if (currentDraft(valid, pool).legendary && !valid.practice) recordCatch(name);
+            if (currentDraft(valid, pool).legendary && !valid.practice) {
+              const completed = recordCatch(name);
+              setNotice([
+                m.legends.caughtNow(formatName(name)),
+                ...completed.map((set) => m.legends.setDone(m.legends.setNames[set])),
+              ]);
+            }
             setRun(pickPokemon(valid, name, pool));
           }}
           onReroll={() => {
